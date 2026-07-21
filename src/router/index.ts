@@ -1,0 +1,94 @@
+import { createRouter, createWebHistory } from 'vue-router'
+import { applyGuards } from '@/router/guards'
+
+// meta.public: accesible sin sesión.
+// meta.bare: sin header de la app (login, registro, check-in).
+// meta.roles: roles permitidos; sin definir = cualquier usuario autenticado.
+
+const router = createRouter({
+  history: createWebHistory(),
+  routes: [
+    { path: '/', redirect: { name: 'dashboard' } },
+    {
+      path: '/login',
+      name: 'login',
+      component: () => import('@/views/auth/LoginView.vue'),
+      meta: { public: true, bare: true },
+    },
+    {
+      path: '/registro',
+      name: 'registro',
+      component: () => import('@/views/auth/RegisterView.vue'),
+      meta: { public: true, bare: true },
+    },
+    {
+      path: '/checkin/:token',
+      name: 'checkin',
+      component: () => import('@/views/checkin/CheckinView.vue'),
+      meta: { public: true, bare: true },
+    },
+    {
+      path: '/dashboard',
+      name: 'dashboard',
+      component: () => import('@/views/dashboard/DashboardView.vue'),
+    },
+    {
+      path: '/capacitaciones/:id',
+      name: 'training-detail',
+      component: () => import('@/views/trainings/TrainingDetailView.vue'),
+    },
+    {
+      path: '/perfil',
+      name: 'perfil',
+      component: () => import('@/views/ProfileView.vue'),
+    },
+    {
+      path: '/admin',
+      component: () => import('@/views/admin/AdminLayout.vue'),
+      meta: { roles: ['administrador', 'owner'] },
+      children: [
+        { path: '', redirect: { name: 'admin-trainings' } },
+        {
+          path: 'capacitaciones',
+          name: 'admin-trainings',
+          component: () => import('@/views/admin/AdminTrainingListView.vue'),
+        },
+        {
+          path: 'capacitaciones/nueva',
+          name: 'admin-training-new',
+          component: () => import('@/views/admin/AdminTrainingFormView.vue'),
+        },
+        {
+          path: 'capacitaciones/:id',
+          name: 'admin-training-detail',
+          component: () => import('@/views/admin/AdminTrainingDetailView.vue'),
+        },
+        {
+          path: 'capacitaciones/:id/editar',
+          name: 'admin-training-edit',
+          component: () => import('@/views/admin/AdminTrainingFormView.vue'),
+        },
+        {
+          path: 'usuarios',
+          name: 'admin-users',
+          component: () => import('@/views/admin/AdminUsersView.vue'),
+        },
+        {
+          path: 'catalogos',
+          name: 'admin-catalogs',
+          component: () => import('@/views/admin/AdminCatalogsView.vue'),
+        },
+      ],
+    },
+    {
+      path: '/:pathMatch(.*)*',
+      name: 'not-found',
+      component: () => import('@/views/NotFoundView.vue'),
+      meta: { public: true, bare: true },
+    },
+  ],
+})
+
+applyGuards(router)
+
+export default router

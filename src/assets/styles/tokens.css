@@ -1,0 +1,59 @@
+/* Tokens de diseño de la marca CLARVI.
+   Toda la UI consume estas variables; no usar colores sueltos en componentes. */
+
+:root {
+  /* Colores de marca */
+  --clarvi-navy: #00205c;
+  --clarvi-blue: #009bdd;
+  --clarvi-navy-rgb: 0, 32, 92;
+  --clarvi-blue-rgb: 0, 155, 221;
+
+  /* Texto */
+  --text-strong: #0b1f44;
+  --text-body: #2c3e5d;
+  --text-muted: #64748f;
+  --text-inverse: #ffffff;
+
+  /* Fondos */
+  --bg-page: linear-gradient(160deg, #eef6fd 0%, #dfeefa 45%, #d2e7f7 100%);
+  --bg-surface: rgba(255, 255, 255, 0.62);
+
+  /* Efecto glass */
+  --glass-bg: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.72),
+    rgba(var(--clarvi-blue-rgb), 0.08)
+  );
+  --glass-bg-deep: linear-gradient(
+    135deg,
+    rgba(var(--clarvi-navy-rgb), 0.92),
+    rgba(var(--clarvi-blue-rgb), 0.82)
+  );
+  --glass-border: 1px solid rgba(255, 255, 255, 0.55);
+  --glass-blur: 14px;
+  --glass-shadow: 0 8px 32px rgba(var(--clarvi-navy-rgb), 0.1);
+  --glass-shadow-hover: 0 12px 36px rgba(var(--clarvi-navy-rgb), 0.16);
+
+  /* Estados */
+  --color-success: #0e9f6e;
+  --color-success-bg: rgba(14, 159, 110, 0.12);
+  --color-warning: #b45309;
+  --color-warning-bg: rgba(217, 119, 6, 0.12);
+  --color-danger: #dc2626;
+  --color-danger-bg: rgba(220, 38, 38, 0.1);
+  --color-info-bg: rgba(var(--clarvi-blue-rgb), 0.12);
+
+  /* Geometría */
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-full: 999px;
+
+  /* Transiciones (solo :hover/:active, nada en loop) */
+  --transition-fast: 140ms ease-out;
+  --transition-med: 220ms ease-out;
+
+  /* Tipografía */
+  --font-sans: 'Segoe UI', system-ui, -apple-system, 'Helvetica Neue', Arial,
+    sans-serif;
+}
