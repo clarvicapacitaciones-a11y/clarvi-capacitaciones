@@ -31,20 +31,27 @@ seguridad real la aplican las políticas RLS de Postgres. La service role key
 > de Vercel en lugar del archivo, define ahí `VITE_SUPABASE_URL` y
 > `VITE_SUPABASE_ANON_KEY`; las de Vercel tienen prioridad sobre el archivo.)
 
-## Cómo se construyó el primer deploy (bootstrap)
+## Despliegue por Git (actual)
 
-El repo de GitHub es privado y este primer despliegue se hizo sin conectar
-Git: el código fuente se empaquetó (`tar.gz`), se guardó en la tabla
-`deploy_source` de Supabase — protegida por RLS con un header secreto
-`x-deploy-key` — y el `installCommand` de Vercel (`bootstrap.sh`) lo descarga,
-**verifica su SHA-256** y lo compila (`npm run build`, que incluye el
-type-check de vue-tsc).
+El proyecto de Vercel está conectado al repo de GitHub: cada push a la rama de
+producción dispara un build automático. Los comandos del build están fijados en
+`vercel.json` (`framework: vite`, `installCommand: npm install`,
+`buildCommand: npm run build`, `outputDirectory: dist`) para que no dependan de
+la configuración del dashboard y el deploy sea reproducible desde el código.
 
-> **Recomendado para el día a día:** conectar el proyecto de Vercel al repo
-> de GitHub (Vercel → Settings → Git → Connect). Con eso, cada push a `main`
-> despliega solo, y `bootstrap.sh` + la tabla `deploy_source` se pueden
-> eliminar. Hasta entonces, para redesplegar cambios hay que actualizar la
-> tabla `deploy_source` con el nuevo tarball o conectar Git.
+> **Importante:** lo definido en `vercel.json` tiene prioridad sobre los
+> "Build & Development Settings" del dashboard. Si el dashboard aún tiene un
+> Install Command override (p. ej. `bash bootstrap.sh`), conviene quitar ese
+> override para evitar confusión, pero `vercel.json` ya lo sobrescribe.
+
+### Bootstrap original (histórico)
+
+El primer despliegue se hizo **sin** conectar Git: el código se empaquetó
+(`tar.gz`), se guardó en la tabla `deploy_source` de Supabase — protegida por
+RLS con un header secreto `x-deploy-key` — y un `installCommand` `bootstrap.sh`
+lo descargaba, verificaba su SHA-256 y lo compilaba. Ese `bootstrap.sh` **no
+vive en el repo**; al conectar Git dejó de usarse. La tabla `deploy_source` y
+ese mecanismo se pueden eliminar.
 
 ## Cuenta owner inicial
 
