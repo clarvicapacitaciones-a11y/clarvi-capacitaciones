@@ -48,13 +48,30 @@ async function handleAdd(): Promise<void> {
     }
     newName.value = ''
   } catch (err) {
-    error.value =
-      err instanceof Error && /duplicate/i.test(err.message)
-        ? 'Ya existe un registro con ese nombre'
-        : 'No se pudo agregar'
+    error.value = describeError(err, 'No se pudo agregar')
   } finally {
     adding.value = false
   }
+}
+
+/**
+ * Traduce los errores más comunes a un texto claro y, para cualquier otro,
+ * muestra el mensaje real de Supabase (en vez de ocultarlo) para no dejar al
+ * administrador sin pistas de qué salió mal.
+ */
+function describeError(err: unknown, fallback: string): string {
+  const message = err instanceof Error ? err.message : String(err)
+  if (/duplicate/i.test(message)) return 'Ya existe un registro con ese nombre'
+  if (/row-level security|violates/i.test(message)) {
+    return 'Tu cuenta no tiene permiso para esta acción. Vuelve a iniciar sesión; si continúa, pide a un owner que confirme tu rol.'
+  }
+  if (/jwt|token|expired/i.test(message)) {
+    return 'Tu sesión expiró. Vuelve a iniciar sesión e inténtalo de nuevo.'
+  }
+  if (/fetch|network|failed to/i.test(message)) {
+    return 'Sin conexión con el servidor. Revisa tu internet e inténtalo de nuevo.'
+  }
+  return `${fallback}: ${message}`
 }
 
 function startEdit(row: Area | Sucursal): void {
@@ -76,8 +93,8 @@ async function saveEdit(row: Area | Sucursal): Promise<void> {
       await catalogs.updateSucursal(row.id, { nombre: name })
     }
     editingId.value = null
-  } catch {
-    error.value = 'No se pudo renombrar (¿nombre duplicado?)'
+  } catch (err) {
+    error.value = describeError(err, 'No se pudo renombrar')
   }
 }
 
@@ -89,8 +106,8 @@ async function toggleActive(row: Area | Sucursal): Promise<void> {
     } else {
       await catalogs.updateSucursal(row.id, { activo: !row.activo })
     }
-  } catch {
-    error.value = 'No se pudo actualizar'
+  } catch (err) {
+    error.value = describeError(err, 'No se pudo actualizar')
   }
 }
 </script>

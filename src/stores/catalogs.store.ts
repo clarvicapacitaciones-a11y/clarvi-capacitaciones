@@ -26,7 +26,14 @@ export const useCatalogsStore = defineStore('catalogs', () => {
   }
 
   async function createArea(nombre: string): Promise<void> {
-    const { error } = await supabase.from('areas').insert({ nombre: nombre.trim() })
+    // .select() fuerza la lectura de la fila creada: así un bloqueo de RLS
+    // (o cualquier otro problema) se reporta como error en lugar de fallar
+    // en silencio, y el mensaje real llega a la UI.
+    const { error } = await supabase
+      .from('areas')
+      .insert({ nombre: nombre.trim() })
+      .select()
+      .single()
     if (error) throw new Error(error.message)
     await fetchCatalogs(true)
   }
@@ -44,6 +51,8 @@ export const useCatalogsStore = defineStore('catalogs', () => {
     const { error } = await supabase
       .from('sucursales')
       .insert({ nombre: nombre.trim() })
+      .select()
+      .single()
     if (error) throw new Error(error.message)
     await fetchCatalogs(true)
   }
