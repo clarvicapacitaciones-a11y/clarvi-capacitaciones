@@ -24,6 +24,13 @@ Ambas son **públicas por diseño**: viajan en el bundle del navegador y la
 seguridad real la aplican las políticas RLS de Postgres. La service role key
 (secreta) solo vive dentro de la Edge Function, inyectada por Supabase.
 
+> **No hace falta dar de alta variables de entorno en el panel de Vercel.**
+> `.env.production` está versionado en el repo y Vite lo lee en modo producción
+> durante `vite build`, así que la URL y la anon key quedan **embebidas en el
+> bundle** que Vercel publica. (Si algún día quieres gestionarlas desde el panel
+> de Vercel en lugar del archivo, define ahí `VITE_SUPABASE_URL` y
+> `VITE_SUPABASE_ANON_KEY`; las de Vercel tienen prioridad sobre el archivo.)
+
 ## Cómo se construyó el primer deploy (bootstrap)
 
 El repo de GitHub es privado y este primer despliegue se hizo sin conectar

@@ -2,7 +2,7 @@
 
 import { ref } from 'vue'
 import { defineStore } from 'pinia'
-import { supabase } from '@/services/supabase'
+import { requireActiveSession, supabase } from '@/services/supabase'
 import type { Area, Sucursal } from '@/types/domain'
 
 export const useCatalogsStore = defineStore('catalogs', () => {
@@ -26,6 +26,11 @@ export const useCatalogsStore = defineStore('catalogs', () => {
   }
 
   async function createArea(nombre: string): Promise<void> {
+    // Nos aseguramos de que la escritura lleve el token del usuario: sin esto,
+    // una sesión perdida hacía que el INSERT viajara como anónimo y la RLS lo
+    // rechazara con "violates row-level security", que se leía como falta de
+    // permisos del owner cuando el problema real era la sesión.
+    await requireActiveSession()
     // .select() fuerza la lectura de la fila creada: así un bloqueo de RLS
     // (o cualquier otro problema) se reporta como error en lugar de fallar
     // en silencio, y el mensaje real llega a la UI.
@@ -42,12 +47,14 @@ export const useCatalogsStore = defineStore('catalogs', () => {
     id: string,
     patch: { nombre?: string; activo?: boolean },
   ): Promise<void> {
+    await requireActiveSession()
     const { error } = await supabase.from('areas').update(patch).eq('id', id)
     if (error) throw new Error(error.message)
     await fetchCatalogs(true)
   }
 
   async function createSucursal(nombre: string): Promise<void> {
+    await requireActiveSession()
     const { error } = await supabase
       .from('sucursales')
       .insert({ nombre: nombre.trim() })
@@ -61,6 +68,7 @@ export const useCatalogsStore = defineStore('catalogs', () => {
     id: string,
     patch: { nombre?: string; activo?: boolean },
   ): Promise<void> {
+    await requireActiveSession()
     const { error } = await supabase.from('sucursales').update(patch).eq('id', id)
     if (error) throw new Error(error.message)
     await fetchCatalogs(true)
