@@ -117,6 +117,12 @@ sus propias filas; admin/owner ven todas. Alimenta el dashboard.
 para todos) o si alguna coincide con la del perfil. Un perfil sin área ve
 únicamente las generales.
 
+Excluye las cuentas **desactivadas** y trae `full_name`, `area_nombre` y
+`sucursal_nombre`. Eso la vuelve dos cosas a la vez: el dashboard del usuario
+(que solo ve su propia fila) y, para un admin (que por RLS ve todos los
+perfiles), la **audiencia esperada** de cada capacitación — el denominador del
+cumplimiento y la lista de a quién le falta.
+
 El filtro es **estricto**: quien cambia de área deja de ver en su dashboard las
 capacitaciones del área anterior aunque ya las haya visto o presentado. El
 registro no se pierde — sigue en `watch_progress`, `attendance` y

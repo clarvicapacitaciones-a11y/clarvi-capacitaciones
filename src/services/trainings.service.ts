@@ -206,6 +206,23 @@ export async function listAttendance(
   return data as AttendanceWithProfile[]
 }
 
+/**
+ * Audiencia esperada: quién *debería* tomar esta capacitación según su área,
+ * con el estado de cada quien. Son las filas de user_training_status de esa
+ * capacitación; para un admin, RLS deja pasar todos los perfiles activos.
+ */
+export async function listTrainingAudience(
+  trainingId: string,
+): Promise<TrainingStatusRow[]> {
+  const { data, error } = await supabase
+    .from('user_training_status')
+    .select('*')
+    .eq('training_id', trainingId)
+    .order('full_name', { ascending: true })
+  if (error) throw new Error(error.message)
+  return data
+}
+
 export async function listViewers(
   trainingId: string,
 ): Promise<ViewerProgress[]> {

@@ -586,15 +586,18 @@ export type Database = {
     Views: {
       user_training_status: {
         Row: {
+          area_nombre: string | null
           attended_in_person: boolean | null
           completed_at: string | null
           description: string | null
           exam_best_percent: number | null
           exam_passed: boolean | null
+          full_name: string | null
           has_exam: boolean | null
           last_heartbeat_at: string | null
           last_position_seconds: number | null
           session_date: string | null
+          sucursal_nombre: string | null
           status: string | null
           title: string | null
           training_id: string | null

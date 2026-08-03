@@ -30,8 +30,11 @@ tiene tres pestañas: Capacitaciones, Usuarios y Catálogos.
 
 ### Ficha de una capacitación
 - **Áreas**: a quiénes aplica, junto al título.
-- **Métricas**: asistentes presenciales, personas que han visto el video,
-  completadas y avance promedio.
+- **Métricas**: cuántas personas **deben tomarla**, el **cumplimiento**
+  (cuántas de ellas la completaron), asistentes presenciales, quiénes han visto
+  el video, completadas y avance promedio.
+- **Cobertura**: la lista de **a quién le falta**, con su área, sucursal,
+  estado y avance. Es la lista para ir a buscar a la gente.
 - **QR**: descargar PNG (para imprimir), copiar link, regenerar (invalida el
   QR anterior; la asistencia registrada se conserva).
 - **Asistencia presencial**: quién escaneó, de qué área/sucursal y a qué hora.
@@ -75,6 +78,20 @@ anteriores no cambian, porque cada respuesta guardó copia de su pregunta.
 Borra también su asistencia, el progreso de todos los usuarios y el examen con
 sus resultados (confirmación previa). Si solo quieres ocultarla temporalmente,
 mejor quita el link del video.
+
+### Cómo se cuenta el cumplimiento
+
+"Deben tomarla" es el personal **activo** cuya área coincide con las de la
+capacitación (o todo el personal activo si no tiene áreas). Las cuentas
+desactivadas no cuentan: no pueden entrar a la plataforma.
+
+El **avance promedio** se calcula sobre esa audiencia, no sobre quienes
+abrieron el video: quien ni la ha empezado cuenta como 0%. Es el número
+honesto — si diez personas deben tomarla y solo una la vio al 100%, el avance
+promedio es 10%, no 100%.
+
+Una capacitación entra en la lista de su área cuando ya tiene **video o examen
+publicado**. Antes de eso no le toca a nadie y la cobertura sale vacía.
 
 ## Usuarios
 

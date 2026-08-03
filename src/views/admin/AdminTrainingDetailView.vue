@@ -25,6 +25,7 @@ import {
   getTraining,
   getTrainingAreas,
   listAttendance,
+  listTrainingAudience,
   listViewers,
   regenerateQrToken,
 } from '@/services/trainings.service'
@@ -32,8 +33,11 @@ import { useCatalogsStore } from '@/stores/catalogs.store'
 import type {
   AttendanceWithProfile,
   Training,
+  TrainingStatus,
+  TrainingStatusRow,
   ViewerProgress,
 } from '@/types/domain'
+import { STATUS_LABELS } from '@/types/domain'
 import {
   QUESTION_TYPE_LABELS,
   type ExamDraft,
@@ -46,6 +50,7 @@ const catalogs = useCatalogsStore()
 
 const training = ref<Training | null>(null)
 const areaNames = ref<string[]>([])
+const audience = ref<TrainingStatusRow[]>([])
 const attendance = ref<AttendanceWithProfile[]>([])
 // shallowRef: el tipo Json recursivo de watched_ranges desborda la
 // inferencia profunda de UnwrapRef en un ref normal.
@@ -63,14 +68,36 @@ const completedCount = computed(
   () => viewers.value.filter((viewer) => viewer.completed_at !== null).length,
 )
 
-const averagePercent = computed(() => {
-  if (viewers.value.length === 0) return 0
-  const total = viewers.value.reduce(
-    (sum, viewer) => sum + (viewer.watch_percent ?? 0),
+
+// ── Cobertura ─────────────────────────────────────────────────────────────
+// El denominador honesto: cuánta gente activa debería tomarla según su área,
+// no cuánta la abrió. Quien no la ha empezado cuenta como 0% de avance.
+
+const completedByAudience = computed(
+  () => audience.value.filter((row) => row.status === 'completed').length,
+)
+
+const coveragePercent = computed(() =>
+  audience.value.length === 0
+    ? 0
+    : (completedByAudience.value / audience.value.length) * 100,
+)
+
+const audienceAveragePercent = computed(() => {
+  if (audience.value.length === 0) return 0
+  const total = audience.value.reduce(
+    (sum, row) => sum + (row.watch_percent ?? 0),
     0,
   )
-  return total / viewers.value.length
+  return total / audience.value.length
 })
+
+/** A quién le falta: primero los que ni han empezado. */
+const pendingAudience = computed(() =>
+  audience.value
+    .filter((row) => row.status !== 'completed')
+    .sort((a, b) => (a.watch_percent ?? 0) - (b.watch_percent ?? 0)),
+)
 
 const examPassedCount = computed(
   () => examinees.value.filter((row) => row.passed).length,
@@ -91,19 +118,21 @@ const examPassRate = computed(() =>
 onMounted(async () => {
   const id = String(route.params.id)
   try {
-    const [trainingRow, attendanceRows, viewerRows, examDraft, areaIds] =
+    const [trainingRow, attendanceRows, viewerRows, examDraft, areaIds, audienceRows] =
       await Promise.all([
         getTraining(id),
         listAttendance(id),
         listViewers(id),
         getExamForEdit(id),
         getTrainingAreas(id),
+        listTrainingAudience(id),
         catalogs.fetchCatalogs(),
       ])
     training.value = trainingRow
     attendance.value = attendanceRows
     viewers.value = viewerRows
     exam.value = examDraft
+    audience.value = audienceRows
     areaNames.value = areaIds.map((areaId) => catalogs.areaName(areaId))
 
     if (examDraft?.id) {
@@ -161,6 +190,14 @@ async function confirmRegenerate(): Promise<void> {
 
       <div class="stats-row">
         <GlassCard class="stat">
+          <strong>{{ audience.length }}</strong>
+          <span>Deben tomarla</span>
+        </GlassCard>
+        <GlassCard class="stat" :class="{ 'is-good': coveragePercent >= 90 }">
+          <strong>{{ formatPercent(coveragePercent) }}</strong>
+          <span>Cumplimiento</span>
+        </GlassCard>
+        <GlassCard class="stat">
           <strong>{{ attendance.length }}</strong>
           <span>Asistieron presencial</span>
         </GlassCard>
@@ -173,10 +210,89 @@ async function confirmRegenerate(): Promise<void> {
           <span>Completaron</span>
         </GlassCard>
         <GlassCard class="stat">
-          <strong>{{ formatPercent(averagePercent) }}</strong>
+          <strong>{{ formatPercent(audienceAveragePercent) }}</strong>
           <span>Avance promedio</span>
         </GlassCard>
       </div>
+
+      <GlassCard class="table-card">
+        <header class="coverage-header">
+          <div>
+            <h3>Cobertura ({{ completedByAudience }} de {{ audience.length }})</h3>
+            <p class="muted">
+              Personal activo al que le toca esta capacitación según su área.
+              Quien no la ha empezado cuenta como 0% en el avance promedio.
+            </p>
+          </div>
+          <div class="progress-bar coverage-bar" :class="{ 'is-complete': coveragePercent >= 90 }">
+            <span :style="{ width: `${Math.min(100, coveragePercent)}%` }" />
+          </div>
+        </header>
+
+        <template v-if="audience.length">
+          <template v-if="pendingAudience.length">
+            <h4 class="subsection">Les falta ({{ pendingAudience.length }})</h4>
+            <div class="table-wrap">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Nombre</th>
+                    <th>Área</th>
+                    <th>Sucursal</th>
+                    <th>Estado</th>
+                    <th>Avance</th>
+                    <th>Asistió</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr v-for="row in pendingAudience" :key="row.user_id ?? ''">
+                    <td>{{ row.full_name ?? '—' }}</td>
+                    <td>{{ row.area_nombre ?? '—' }}</td>
+                    <td>{{ row.sucursal_nombre ?? '—' }}</td>
+                    <td>
+                      <GlassBadge
+                        :tone="row.status === 'in_progress' ? 'info' : 'warning'"
+                      >
+                        {{ STATUS_LABELS[(row.status ?? 'pending') as TrainingStatus] }}
+                      </GlassBadge>
+                    </td>
+                    <td>
+                      <div class="percent-cell">
+                        <div class="progress-bar">
+                          <span
+                            :style="{ width: `${Math.min(100, row.watch_percent ?? 0)}%` }"
+                          />
+                        </div>
+                        <span class="percent-label">
+                          {{ formatPercent(row.watch_percent) }}
+                        </span>
+                      </div>
+                    </td>
+                    <td>
+                      <GlassBadge v-if="row.attended_in_person" tone="success">
+                        Presencial ✓
+                      </GlassBadge>
+                      <span v-else class="muted">—</span>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </template>
+
+          <p v-else class="coverage-done">
+            Todo el personal que debía tomarla ya la completó.
+          </p>
+        </template>
+
+        <div v-else class="empty-state">
+          <strong>Todavía no le toca a nadie</strong>
+          <span>
+            Una capacitación entra en la lista de su área cuando ya tiene video
+            o examen publicado.
+          </span>
+        </div>
+      </GlassCard>
 
       <div class="two-col">
         <GlassCard>
@@ -554,6 +670,40 @@ async function confirmRegenerate(): Promise<void> {
   flex-wrap: wrap;
   gap: 0.3rem;
   margin-top: 0.45rem;
+}
+
+.stat.is-good strong {
+  color: var(--color-success);
+}
+
+.coverage-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1.25rem;
+  flex-wrap: wrap;
+  margin-bottom: 0.5rem;
+}
+
+.coverage-header h3 {
+  margin: 0 0 0.2rem;
+}
+
+.coverage-header p {
+  margin: 0;
+  max-width: 46ch;
+}
+
+.coverage-bar {
+  flex: 1;
+  min-width: 160px;
+  margin-top: 0.6rem;
+}
+
+.coverage-done {
+  margin: 0.5rem 0 0;
+  color: var(--color-success);
+  font-weight: 600;
 }
 
 .exam-header {
