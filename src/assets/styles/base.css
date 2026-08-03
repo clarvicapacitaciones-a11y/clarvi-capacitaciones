@@ -1,0 +1,301 @@
+/* Clases compartidas del sistema plano: layout, tablas, formularios, tabs y
+   utilidades. Los componentes Ui* añaden sus propios estilos scoped encima.
+
+   Recordatorio del sistema: líneas de 1px, color plano, esquinas rectas y
+   transiciones solo de color. */
+
+/* ---------- Layout de página ---------- */
+
+.page {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 1.75rem 1.25rem 4rem;
+}
+
+/* Cabecera de página: título + acciones, separados del contenido por la
+   línea de marca. */
+.page-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  padding-bottom: 0.9rem;
+  border-bottom: var(--rule-strong);
+}
+
+.page-header h1 {
+  font-size: 1.4rem;
+  letter-spacing: -0.01em;
+  margin: 0;
+}
+
+.muted {
+  color: var(--text-muted);
+  font-size: 0.9rem;
+}
+
+/* Título de sección: micro-etiqueta en mayúsculas sobre una línea. */
+.section-title {
+  margin: 1.75rem 0 0.75rem;
+  padding-bottom: 0.4rem;
+  border-bottom: var(--rule-strong);
+  color: var(--clarvi-navy);
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-label);
+}
+
+/* ---------- Tabs planos (control segmentado) ---------- */
+
+.tabs {
+  display: flex;
+  width: fit-content;
+  max-width: 100%;
+  overflow-x: auto;
+  margin-bottom: 1.25rem;
+  border: var(--rule);
+  background: var(--bg-surface);
+}
+
+/* Variante a todo lo ancho (formularios de acceso). */
+.tabs.is-block {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: 1fr;
+  width: 100%;
+}
+
+.tab {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  border: none;
+  border-right: var(--rule);
+  background: var(--bg-surface);
+  color: var(--text-muted);
+  font: inherit;
+  font-size: 0.76rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-label);
+  padding: 0.65rem 1.1rem;
+  white-space: nowrap;
+  cursor: pointer;
+  transition:
+    background-color var(--transition-fast),
+    color var(--transition-fast);
+}
+
+.tab:last-child {
+  border-right: none;
+}
+
+.tab:hover:not(.is-active) {
+  background: var(--navy-050);
+  color: var(--clarvi-navy);
+}
+
+.tab.is-active {
+  background: var(--clarvi-navy);
+  color: var(--text-inverse);
+}
+
+/* ---------- Tablas de datos ---------- */
+
+.table-wrap {
+  overflow-x: auto;
+}
+
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.92rem;
+}
+
+.data-table th {
+  text-align: left;
+  padding: 0.5rem 0.75rem;
+  color: var(--clarvi-navy);
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-label);
+  border-bottom: 2px solid var(--clarvi-navy);
+  white-space: nowrap;
+}
+
+.data-table td {
+  padding: 0.7rem 0.75rem;
+  border-bottom: var(--rule);
+  vertical-align: middle;
+}
+
+.data-table tbody tr {
+  transition: background-color var(--transition-fast);
+}
+
+.data-table tbody tr:hover {
+  background: var(--blue-050);
+}
+
+/* ---------- Barra de progreso ---------- */
+
+.progress-bar {
+  height: 6px;
+  background: var(--navy-100);
+  overflow: hidden;
+  min-width: 90px;
+}
+
+.progress-bar > span {
+  display: block;
+  height: 100%;
+  background: var(--clarvi-blue);
+  transition: background-color var(--transition-fast);
+}
+
+.progress-bar.is-complete > span {
+  background: var(--color-success);
+}
+
+/* ---------- Formularios ---------- */
+
+.form-grid {
+  display: grid;
+  gap: 1rem;
+}
+
+.form-row {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+}
+
+/* Campo base: lo usan UiInput/UiSelect y todo lo que se arma a mano
+   (textarea, listas de opciones). Un solo estilo para todos los controles. */
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.field-label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-label);
+  color: var(--clarvi-navy);
+}
+
+.field-input,
+.field-select,
+.field-textarea {
+  font: inherit;
+  font-size: 0.95rem;
+  padding: 0.6rem 0.75rem;
+  border: var(--rule);
+  border-radius: var(--radius-md);
+  background: var(--bg-surface);
+  color: var(--text-strong);
+  transition: border-color var(--transition-fast);
+}
+
+.field-textarea {
+  resize: vertical;
+}
+
+.field-input:hover:not(:disabled),
+.field-select:hover:not(:disabled),
+.field-textarea:hover:not(:disabled) {
+  border-color: var(--line-mid);
+}
+
+.field-input:focus,
+.field-select:focus,
+.field-textarea:focus {
+  outline: 2px solid var(--clarvi-blue);
+  outline-offset: 0;
+  border-color: var(--clarvi-blue);
+}
+
+.field-input:disabled,
+.field-select:disabled,
+.field-textarea:disabled {
+  background: var(--bg-subtle);
+  color: var(--text-muted);
+}
+
+.field-hint {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+}
+
+/* Botón discreto de fila: quitar, subir, bajar. */
+.row-action {
+  border: var(--rule);
+  background: var(--bg-surface);
+  color: var(--text-muted);
+  font: inherit;
+  font-size: 0.95rem;
+  line-height: 1;
+  width: 1.9rem;
+  height: 1.9rem;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  flex-shrink: 0;
+  transition:
+    background-color var(--transition-fast),
+    border-color var(--transition-fast),
+    color var(--transition-fast);
+}
+
+.row-action:hover:not(:disabled) {
+  background: var(--clarvi-navy);
+  border-color: var(--clarvi-navy);
+  color: var(--text-inverse);
+}
+
+.row-action:disabled {
+  color: var(--line-mid);
+  cursor: not-allowed;
+}
+
+/* ---------- Mensajes ---------- */
+
+.form-error,
+.form-success {
+  padding: 0.65rem 0.85rem;
+  font-size: 0.9rem;
+  border-left: var(--accent-width) solid currentColor;
+}
+
+.form-error {
+  background: var(--color-danger-bg);
+  color: var(--color-danger);
+}
+
+.form-success {
+  background: var(--color-success-bg);
+  color: var(--color-success);
+}
+
+/* ---------- Estados vacíos ---------- */
+
+.empty-state {
+  text-align: center;
+  padding: 2.75rem 1rem;
+  color: var(--text-muted);
+  border: 1px dashed var(--line-mid);
+  background: var(--bg-surface);
+}
+
+.empty-state strong {
+  display: block;
+  color: var(--text-strong);
+  margin-bottom: 0.35rem;
+  font-size: 1.05rem;
+}

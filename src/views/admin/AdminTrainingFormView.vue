@@ -6,9 +6,9 @@
 import { computed, onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import ExamBuilder from '@/components/exams/ExamBuilder.vue'
-import GlassButton from '@/components/glass/GlassButton.vue'
-import GlassCard from '@/components/glass/GlassCard.vue'
-import GlassInput from '@/components/glass/GlassInput.vue'
+import UiButton from '@/components/ui/UiButton.vue'
+import UiCard from '@/components/ui/UiCard.vue'
+import UiInput from '@/components/ui/UiInput.vue'
 import { parseYoutubeId } from '@/composables/useYoutubePlayer'
 import { getExamForEdit, saveExam } from '@/services/exams.service'
 import {
@@ -127,10 +127,10 @@ async function handleSubmit(): Promise<void> {
       <h1>{{ editingId ? 'Editar capacitación' : 'Nueva capacitación' }}</h1>
     </header>
 
-    <GlassCard>
+    <UiCard>
       <p v-if="loadingExisting" class="muted">Cargando…</p>
       <form v-else class="form-grid" @submit.prevent="handleSubmit">
-        <GlassInput
+        <UiInput
           v-model="title"
           label="Título"
           placeholder="p. ej. NOM-005-STPS Manejo de sustancias químicas"
@@ -148,12 +148,12 @@ async function handleSubmit(): Promise<void> {
         </label>
 
         <div class="form-row">
-          <GlassInput
+          <UiInput
             v-model="sessionDate"
             label="Fecha de la sesión presencial"
             type="date"
           />
-          <GlassInput
+          <UiInput
             v-model="youtubeUrl"
             label="Link del video de YouTube"
             placeholder="https://youtu.be/…"
@@ -184,18 +184,18 @@ async function handleSubmit(): Promise<void> {
         <p v-if="error" class="form-error">{{ error }}</p>
 
         <div class="form-actions">
-          <GlassButton
+          <UiButton
             variant="ghost"
             @click="router.push({ name: 'admin-trainings' })"
           >
             Cancelar
-          </GlassButton>
-          <GlassButton type="submit" :loading="loading">
+          </UiButton>
+          <UiButton type="submit" :loading="loading">
             {{ editingId ? 'Guardar cambios' : 'Crear capacitación' }}
-          </GlassButton>
+          </UiButton>
         </div>
       </form>
-    </GlassCard>
+    </UiCard>
   </div>
 </template>
 
@@ -214,7 +214,7 @@ async function handleSubmit(): Promise<void> {
 
 .section-divider {
   border: none;
-  border-top: 1px solid rgba(var(--clarvi-navy-rgb), 0.12);
+  border-top: var(--rule);
   margin: 0.5rem 0;
   width: 100%;
 }

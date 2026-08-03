@@ -30,9 +30,9 @@ supabase/
   migrations/          # esquema completo de la BD (ya aplicado al proyecto)
   functions/register/  # Edge Function de registro (correo y usuario)
 src/
-  assets/styles/       # tokens de marca (#00205c, #009bdd) + sistema glass
+  assets/styles/       # tokens de marca (#00205c, #009bdd) + sistema plano
   components/
-    glass/             # GlassCard, GlassButton, GlassInput, GlassSelect, GlassBadge, GlassModal
+    ui/                # UiCard, UiButton, UiInput, UiSelect, UiBadge, UiModal
     trainings/         # YoutubePlayer (con tracking), TrainingCard, QrCodeDisplay
     exams/             # constructor del examen (editors/) y aplicación (runners/)
     layout/            # AppHeader, AuthLayout
@@ -45,6 +45,23 @@ src/
   views/               # auth, dashboard, capacitación, examen, checkin, admin, perfil
 docs/                  # documentación detallada (ver abajo)
 ```
+
+## Diseño
+
+La interfaz es **plana, minimalista y de líneas**: la jerarquía se construye con
+contornos de 1px, espacio y peso tipográfico, no con profundidad simulada.
+
+- Solo color plano: nada de degradados, glass, blur, sombras ni destellos.
+- Esquinas rectas (`--radius-*` en 0) y micro-etiquetas en mayúsculas espaciadas
+  para tabs, botones, badges, encabezados de tabla y labels.
+- Paleta: navy `#00205c` y azul `#009bdd` (como texto se usa
+  `--clarvi-blue-ink`, que sí alcanza contraste AA) sobre superficies blancas.
+- Lo único que se anima es el color (`color`, `background-color`,
+  `border-color`); no hay movimiento, escalas ni sombras animadas.
+
+Todo esto vive en `src/assets/styles/tokens.css` (variables) y `base.css`
+(clases compartidas). Los componentes consumen esas variables; no se escriben
+colores sueltos en los componentes.
 
 ## Documentación
 

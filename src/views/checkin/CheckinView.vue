@@ -6,7 +6,7 @@
 import { onMounted, ref } from 'vue'
 import { useRoute } from 'vue-router'
 import AuthLayout from '@/components/layout/AuthLayout.vue'
-import GlassButton from '@/components/glass/GlassButton.vue'
+import UiButton from '@/components/ui/UiButton.vue'
 import {
   checkinViaQr,
   getMyAttendance,
@@ -83,12 +83,12 @@ onMounted(async () => {
       </p>
       <div class="actions">
         <RouterLink :to="{ name: 'login', query: { redirect: route.fullPath } }">
-          <GlassButton block>Iniciar sesión</GlassButton>
+          <UiButton block>Iniciar sesión</UiButton>
         </RouterLink>
         <RouterLink
           :to="{ name: 'registro', query: { redirect: route.fullPath } }"
         >
-          <GlassButton variant="ghost" block>Crear cuenta</GlassButton>
+          <UiButton variant="ghost" block>Crear cuenta</UiButton>
         </RouterLink>
       </div>
     </div>
@@ -114,7 +114,7 @@ onMounted(async () => {
         <p v-if="scannedAt" class="muted">{{ formatDateTime(scannedAt) }}</p>
       </div>
       <RouterLink :to="{ name: 'dashboard' }">
-        <GlassButton block>Ir a mis capacitaciones</GlassButton>
+        <UiButton block>Ir a mis capacitaciones</UiButton>
       </RouterLink>
     </div>
 
@@ -157,14 +157,16 @@ onMounted(async () => {
   margin: 0;
 }
 
+/* Marca de resultado: cuadro de color plano con contorno del mismo tono. */
 .result-icon {
-  width: 64px;
-  height: 64px;
+  width: 60px;
+  height: 60px;
   margin: 0 auto;
   display: grid;
   place-items: center;
-  border-radius: 50%;
-  font-size: 1.9rem;
+  border: 1px solid currentColor;
+  border-radius: var(--radius-md);
+  font-size: 1.8rem;
   font-weight: 700;
 }
 
@@ -175,7 +177,7 @@ onMounted(async () => {
 
 .result-icon.is-info {
   background: var(--color-info-bg);
-  color: var(--clarvi-blue);
+  color: var(--clarvi-blue-ink);
 }
 
 .result-icon.is-danger {
@@ -184,9 +186,11 @@ onMounted(async () => {
 }
 
 .detail-box {
-  background: rgba(255, 255, 255, 0.6);
+  background: var(--bg-subtle);
+  border-left: var(--accent-width) solid var(--clarvi-blue);
   border-radius: var(--radius-md);
   padding: 0.8rem;
+  text-align: left;
 }
 
 .detail-box p {

@@ -1,5 +1,5 @@
 @import './tokens.css';
-@import './glass.css';
+@import './base.css';
 
 *,
 *::before,
@@ -19,28 +19,7 @@ body {
   font-family: var(--font-sans);
   color: var(--text-body);
   background: var(--bg-page);
-  background-attachment: fixed;
   -webkit-font-smoothing: antialiased;
-}
-
-/* Resplandores decorativos estáticos de marca (sin animación) */
-body::before {
-  content: '';
-  position: fixed;
-  inset: 0;
-  z-index: -1;
-  pointer-events: none;
-  background:
-    radial-gradient(
-      600px 400px at 8% -5%,
-      rgba(var(--clarvi-blue-rgb), 0.18),
-      transparent 65%
-    ),
-    radial-gradient(
-      700px 500px at 105% 110%,
-      rgba(var(--clarvi-navy-rgb), 0.14),
-      transparent 60%
-    );
 }
 
 h1,
@@ -50,6 +29,8 @@ h4 {
   color: var(--text-strong);
   margin: 0 0 0.5rem;
   line-height: 1.25;
+  font-weight: 700;
+  letter-spacing: -0.01em;
 }
 
 p {
@@ -58,7 +39,7 @@ p {
 }
 
 a {
-  color: var(--clarvi-blue);
+  color: var(--clarvi-blue-ink);
   text-decoration: none;
   transition: color var(--transition-fast);
 }
@@ -67,6 +48,13 @@ a:hover {
   color: var(--clarvi-navy);
 }
 
+/* Foco visible y plano en todo lo interactivo. */
+:focus-visible {
+  outline: 2px solid var(--clarvi-blue);
+  outline-offset: 2px;
+}
+
 ::selection {
-  background: rgba(var(--clarvi-blue-rgb), 0.25);
+  background: var(--clarvi-blue);
+  color: var(--text-inverse);
 }

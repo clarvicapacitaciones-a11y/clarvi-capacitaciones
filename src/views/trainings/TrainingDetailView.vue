@@ -3,9 +3,9 @@
 
 import { computed, onMounted, ref, shallowRef } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import GlassButton from '@/components/glass/GlassButton.vue'
-import GlassCard from '@/components/glass/GlassCard.vue'
-import GlassBadge from '@/components/glass/GlassBadge.vue'
+import UiButton from '@/components/ui/UiButton.vue'
+import UiCard from '@/components/ui/UiCard.vue'
+import UiBadge from '@/components/ui/UiBadge.vue'
 import YoutubePlayer from '@/components/trainings/YoutubePlayer.vue'
 import { formatDate, formatMinutes } from '@/composables/useFormat'
 import { getExamStatus } from '@/services/exams.service'
@@ -120,13 +120,13 @@ function goToExam(): void {
           <p class="muted">{{ formatDate(training.session_date) }}</p>
         </div>
         <div class="header-badges">
-          <GlassBadge v-if="attendance" tone="success">
+          <UiBadge v-if="attendance" tone="success">
             Asististe presencialmente ✓
-          </GlassBadge>
-          <GlassBadge v-if="isCompleted" tone="success">Completada ✓</GlassBadge>
-          <GlassBadge v-if="exam?.passed" tone="success">
+          </UiBadge>
+          <UiBadge v-if="isCompleted" tone="success">Completada ✓</UiBadge>
+          <UiBadge v-if="exam?.passed" tone="success">
             Examen aprobado ✓
-          </GlassBadge>
+          </UiBadge>
         </div>
       </header>
 
@@ -141,7 +141,7 @@ function goToExam(): void {
           @progress="onProgress"
         />
 
-        <GlassCard class="progress-card">
+        <UiCard class="progress-card">
           <div class="progress-info">
             <div>
               <strong>{{ Math.round(livePercent) }}%</strong>
@@ -156,19 +156,19 @@ function goToExam(): void {
             Tu avance se guarda automáticamente. Al llegar al 90% la
             capacitación se marca como completada.
           </p>
-        </GlassCard>
+        </UiCard>
       </template>
 
-      <GlassCard v-else class="progress-card">
+      <UiCard v-else class="progress-card">
         <div class="empty-state">
           <strong>El video aún no está disponible</strong>
           <span>
             Cuando el equipo suba la grabación de esta sesión podrás verla aquí.
           </span>
         </div>
-      </GlassCard>
+      </UiCard>
 
-      <GlassCard v-if="exam?.has_exam" class="exam-card">
+      <UiCard v-if="exam?.has_exam" class="exam-card">
         <div class="exam-info">
           <h3>{{ exam.title || 'Examen de la capacitación' }}</h3>
           <p class="muted">
@@ -186,15 +186,15 @@ function goToExam(): void {
             {{ examBlockMessage }}
           </p>
         </div>
-        <GlassButton :disabled="!exam.can_attempt" @click="goToExam">
+        <UiButton :disabled="!exam.can_attempt" @click="goToExam">
           {{ examButtonLabel }}
-        </GlassButton>
-      </GlassCard>
+        </UiButton>
+      </UiCard>
 
-      <GlassCard v-if="training.description" class="description-card">
+      <UiCard v-if="training.description" class="description-card">
         <h3>Acerca de esta capacitación</h3>
         <p class="description-text">{{ training.description }}</p>
-      </GlassCard>
+      </UiCard>
     </template>
 
     <div v-else class="empty-state">
@@ -251,7 +251,7 @@ function goToExam(): void {
 .exam-best {
   font-size: 0.9rem;
   font-weight: 600;
-  color: var(--clarvi-blue);
+  color: var(--clarvi-blue-ink);
   margin-top: 0.2rem;
 }
 

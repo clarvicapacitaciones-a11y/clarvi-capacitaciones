@@ -1,4 +1,11 @@
 /* Tokens de diseño de la marca CLARVI.
+
+   Sistema plano: color sólido, líneas de 1px y esquinas rectas.
+   Reglas del sistema (no romperlas al agregar componentes):
+   - Cero degradados, cero blur, cero sombras, cero destellos.
+   - La jerarquía se construye con LÍNEAS, espacio y peso tipográfico.
+   - Lo único que se anima es el color (color, background-color, border-color).
+
    Toda la UI consume estas variables; no usar colores sueltos en componentes. */
 
 :root {
@@ -8,52 +15,61 @@
   --clarvi-navy-rgb: 0, 32, 92;
   --clarvi-blue-rgb: 0, 155, 221;
 
+  /* Azul legible: el #009bdd de marca no alcanza contraste AA como texto,
+     así que el texto azul usa esta variante y el #009bdd queda para
+     rellenos, líneas y acentos. */
+  --clarvi-blue-ink: #0071a3;
+
+  /* Tintes planos derivados de la marca (sin alpha: son colores sólidos) */
+  --navy-050: #eef1f6;
+  --navy-100: #dfe4ee;
+  --blue-050: #e8f5fc;
+  --blue-100: #cbe9f8;
+
   /* Texto */
   --text-strong: #0b1f44;
   --text-body: #2c3e5d;
-  --text-muted: #64748f;
+  --text-muted: #5c6b80;
   --text-inverse: #ffffff;
 
-  /* Fondos */
-  --bg-page: linear-gradient(160deg, #eef6fd 0%, #dfeefa 45%, #d2e7f7 100%);
-  --bg-surface: rgba(255, 255, 255, 0.62);
+  /* Superficies planas */
+  --bg-page: #f4f6f9;
+  --bg-surface: #ffffff;
+  --bg-subtle: #eef1f6;
 
-  /* Efecto glass */
-  --glass-bg: linear-gradient(
-    135deg,
-    rgba(255, 255, 255, 0.72),
-    rgba(var(--clarvi-blue-rgb), 0.08)
-  );
-  --glass-bg-deep: linear-gradient(
-    135deg,
-    rgba(var(--clarvi-navy-rgb), 0.92),
-    rgba(var(--clarvi-blue-rgb), 0.82)
-  );
-  --glass-border: 1px solid rgba(255, 255, 255, 0.55);
-  --glass-blur: 14px;
-  --glass-shadow: 0 8px 32px rgba(var(--clarvi-navy-rgb), 0.1);
-  --glass-shadow-hover: 0 12px 36px rgba(var(--clarvi-navy-rgb), 0.16);
+  /* Líneas: el recurso gráfico principal del sistema */
+  --line: #d7dde7;
+  --line-mid: #b7c2d2;
+  --line-strong: var(--clarvi-navy);
+  --rule: 1px solid var(--line);
+  --rule-strong: 1px solid var(--clarvi-navy);
+  --accent-width: 3px;
 
   /* Estados */
-  --color-success: #0e9f6e;
-  --color-success-bg: rgba(14, 159, 110, 0.12);
-  --color-warning: #b45309;
-  --color-warning-bg: rgba(217, 119, 6, 0.12);
-  --color-danger: #dc2626;
-  --color-danger-bg: rgba(220, 38, 38, 0.1);
-  --color-info-bg: rgba(var(--clarvi-blue-rgb), 0.12);
+  --color-success: #0b7a53;
+  --color-success-bg: #e3f4ec;
+  --color-warning: #8a4b06;
+  --color-warning-bg: #fbeedd;
+  --color-danger: #c62828;
+  --color-danger-bg: #fbe9e9;
+  --color-info: var(--clarvi-blue-ink);
+  --color-info-bg: var(--blue-050);
 
-  /* Geometría */
-  --radius-sm: 8px;
-  --radius-md: 12px;
-  --radius-lg: 16px;
-  --radius-full: 999px;
+  /* Geometría: esquinas rectas en todo el sistema */
+  --radius-sm: 0;
+  --radius-md: 0;
+  --radius-lg: 0;
+  --radius-full: 0;
 
-  /* Transiciones (solo :hover/:active, nada en loop) */
-  --transition-fast: 140ms ease-out;
-  --transition-med: 220ms ease-out;
+  /* Transiciones: solo cambio de color, sin movimiento */
+  --transition-fast: 120ms linear;
+  --transition-med: 180ms linear;
 
   /* Tipografía */
-  --font-sans: 'Segoe UI', system-ui, -apple-system, 'Helvetica Neue', Arial,
-    sans-serif;
+  --font-sans: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto,
+    'Helvetica Neue', Arial, sans-serif;
+  --font-mono: ui-monospace, 'Cascadia Code', Consolas, monospace;
+
+  /* Micro-etiquetas: mayúsculas espaciadas (tabs, badges, thead, labels) */
+  --tracking-label: 0.08em;
 }

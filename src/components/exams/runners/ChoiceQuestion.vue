@@ -70,7 +70,7 @@ function select(optionId: string): void {
       :aria-pressed="isSelected(option.id)"
       @click="select(option.id)"
     >
-      <span class="option-mark" :class="{ 'is-multi': isMulti }" aria-hidden="true" />
+      <span class="option-mark" aria-hidden="true" />
       <span class="option-text">{{ option.text }}</span>
     </button>
   </div>
@@ -99,42 +99,41 @@ function select(optionId: string): void {
   color: var(--text-body);
   padding: 0.85rem 1rem;
   border-radius: var(--radius-md);
-  border: 1px solid rgba(var(--clarvi-navy-rgb), 0.14);
-  background: rgba(255, 255, 255, 0.6);
+  border: var(--rule);
+  background: var(--bg-surface);
   cursor: pointer;
   transition:
     border-color var(--transition-fast),
-    background var(--transition-fast);
+    background-color var(--transition-fast),
+    color var(--transition-fast);
 }
 
-.option:hover {
-  border-color: rgba(var(--clarvi-blue-rgb), 0.5);
+.option:hover:not(.is-selected) {
+  border-color: var(--clarvi-navy);
 }
 
 .option.is-selected {
-  border-color: var(--clarvi-blue);
+  border-color: var(--clarvi-navy);
   background: var(--color-info-bg);
   color: var(--clarvi-navy);
   font-weight: 600;
 }
 
+/* Marca cuadrada: vacía = sin elegir, sólida = elegida. */
 .option-mark {
-  width: 1.1rem;
-  height: 1.1rem;
-  border-radius: var(--radius-full);
-  border: 2px solid rgba(var(--clarvi-navy-rgb), 0.25);
+  width: 1rem;
+  height: 1rem;
+  border: 2px solid var(--line-mid);
+  background: var(--bg-surface);
   flex-shrink: 0;
-  transition: border-color var(--transition-fast), background var(--transition-fast);
-}
-
-.option-mark.is-multi {
-  border-radius: var(--radius-sm);
+  transition:
+    border-color var(--transition-fast),
+    background-color var(--transition-fast);
 }
 
 .option.is-selected .option-mark {
-  border-color: var(--clarvi-blue);
-  background: var(--clarvi-blue);
-  box-shadow: inset 0 0 0 3px #fff;
+  border-color: var(--clarvi-navy);
+  background: var(--clarvi-navy);
 }
 
 .option-text {

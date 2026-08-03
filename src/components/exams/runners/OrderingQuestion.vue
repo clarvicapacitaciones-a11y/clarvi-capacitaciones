@@ -95,8 +95,8 @@ watch(
   gap: 0.75rem;
   padding: 0.75rem 0.9rem;
   border-radius: var(--radius-md);
-  border: 1px solid rgba(var(--clarvi-navy-rgb), 0.14);
-  background: rgba(255, 255, 255, 0.6);
+  border: var(--rule);
+  background: var(--bg-surface);
 }
 
 .step-number {
@@ -105,10 +105,10 @@ watch(
   display: grid;
   place-items: center;
   border-radius: var(--radius-full);
-  background: var(--color-info-bg);
-  color: var(--clarvi-navy);
+  background: var(--clarvi-navy);
+  color: var(--text-inverse);
   font-weight: 700;
-  font-size: 0.85rem;
+  font-size: 0.8rem;
   flex-shrink: 0;
 }
 

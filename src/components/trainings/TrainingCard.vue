@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import GlassCard from '@/components/glass/GlassCard.vue'
-import GlassBadge from '@/components/glass/GlassBadge.vue'
+import UiCard from '@/components/ui/UiCard.vue'
+import UiBadge from '@/components/ui/UiBadge.vue'
 import StatusBadge from '@/components/trainings/StatusBadge.vue'
 import { formatDate } from '@/composables/useFormat'
 import type { TrainingStatusRow, TrainingStatus } from '@/types/domain'
@@ -13,16 +13,16 @@ defineProps<{ row: TrainingStatusRow }>()
     :to="{ name: 'training-detail', params: { id: row.training_id } }"
     class="card-link"
   >
-    <GlassCard hoverable class="training-card">
+    <UiCard hoverable class="training-card">
       <div class="card-top">
         <StatusBadge :status="(row.status ?? 'pending') as TrainingStatus" />
-        <GlassBadge v-if="row.attended_in_person" tone="success">
+        <UiBadge v-if="row.attended_in_person" tone="success">
           Asististe ✓
-        </GlassBadge>
-        <GlassBadge v-if="row.exam_passed" tone="success">Examen ✓</GlassBadge>
-        <GlassBadge v-else-if="row.has_exam" tone="warning">
+        </UiBadge>
+        <UiBadge v-if="row.exam_passed" tone="success">Examen ✓</UiBadge>
+        <UiBadge v-else-if="row.has_exam" tone="warning">
           Examen pendiente
-        </GlassBadge>
+        </UiBadge>
       </div>
       <h3 class="card-title">{{ row.title }}</h3>
       <p class="card-date">{{ formatDate(row.session_date) }}</p>
@@ -39,7 +39,7 @@ defineProps<{ row: TrainingStatusRow }>()
       <p v-else-if="row.status === 'completed'" class="card-progress">
         Completada
       </p>
-    </GlassCard>
+    </UiCard>
   </RouterLink>
 </template>
 
@@ -53,31 +53,39 @@ defineProps<{ row: TrainingStatusRow }>()
   height: 100%;
   display: flex;
   flex-direction: column;
-  gap: 0.4rem;
+  gap: 0.5rem;
 }
 
 .card-top {
   display: flex;
-  gap: 0.4rem;
+  gap: 0.35rem;
   flex-wrap: wrap;
 }
 
+/* El único efecto del hover es el color: borde de la tarjeta y título. */
 .card-title {
-  font-size: 1.02rem;
-  margin: 0.15rem 0 0;
+  font-size: 1rem;
+  margin: 0.2rem 0 0;
+  transition: color var(--transition-fast);
+}
+
+.card-link:hover .card-title {
+  color: var(--clarvi-blue-ink);
 }
 
 .card-date {
   margin: 0;
   color: var(--text-muted);
-  font-size: 0.85rem;
+  font-size: 0.82rem;
   flex: 1;
 }
 
 .card-progress {
   margin: 0;
-  font-size: 0.8rem;
-  font-weight: 600;
-  color: var(--clarvi-blue);
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-label);
+  color: var(--clarvi-blue-ink);
 }
 </style>

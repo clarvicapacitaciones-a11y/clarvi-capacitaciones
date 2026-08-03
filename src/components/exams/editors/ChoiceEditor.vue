@@ -4,7 +4,7 @@
 // cuál (o cuáles) son correctas; verdadero/falso solo fija el valor.
 
 import { computed } from 'vue'
-import GlassButton from '@/components/glass/GlassButton.vue'
+import UiButton from '@/components/ui/UiButton.vue'
 import {
   newItemId,
   type ExamItem,
@@ -126,7 +126,7 @@ function removeOption(index: number): void {
         </button>
       </div>
 
-      <GlassButton variant="ghost" @click="addOption">Agregar opción</GlassButton>
+      <UiButton variant="ghost" @click="addOption">Agregar opción</UiButton>
     </template>
   </div>
 </template>
@@ -169,16 +169,23 @@ function removeOption(index: number): void {
   gap: 0.4rem;
   padding: 0.45rem 0.9rem;
   border-radius: var(--radius-full);
-  border: 1px solid rgba(var(--clarvi-navy-rgb), 0.14);
-  background: rgba(255, 255, 255, 0.6);
-  font-size: 0.9rem;
-  font-weight: 600;
+  border: var(--rule);
+  background: var(--bg-surface);
+  font-size: 0.82rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-label);
   color: var(--text-muted);
   cursor: pointer;
+  transition: border-color var(--transition-fast), color var(--transition-fast);
+}
+
+.tf-option:hover {
+  color: var(--clarvi-navy);
 }
 
 .tf-option.is-active {
-  border-color: var(--clarvi-blue);
+  border-color: var(--clarvi-navy);
   color: var(--clarvi-navy);
 }
 

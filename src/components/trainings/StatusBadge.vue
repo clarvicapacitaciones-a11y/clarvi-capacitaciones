@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-import GlassBadge from '@/components/glass/GlassBadge.vue'
+import UiBadge from '@/components/ui/UiBadge.vue'
 import { STATUS_LABELS, type TrainingStatus } from '@/types/domain'
 
 const props = defineProps<{ status: TrainingStatus }>()
@@ -13,5 +13,5 @@ const tone = computed(() => {
 </script>
 
 <template>
-  <GlassBadge :tone="tone">{{ STATUS_LABELS[status] }}</GlassBadge>
+  <UiBadge :tone="tone">{{ STATUS_LABELS[status] }}</UiBadge>
 </template>

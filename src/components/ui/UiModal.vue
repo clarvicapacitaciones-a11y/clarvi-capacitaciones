@@ -29,6 +29,7 @@ const emit = defineEmits<{ close: [] }>()
 </template>
 
 <style scoped>
+/* Velo de color plano, sin blur. */
 .modal-backdrop {
   position: fixed;
   inset: 0;
@@ -36,62 +37,59 @@ const emit = defineEmits<{ close: [] }>()
   display: grid;
   place-items: center;
   padding: 1rem;
-  background: rgba(var(--clarvi-navy-rgb), 0.35);
-  backdrop-filter: blur(4px);
+  background: rgba(var(--clarvi-navy-rgb), 0.55);
 }
 
 .modal-panel {
   width: min(480px, 100%);
   max-height: 90vh;
   overflow-y: auto;
-  background: linear-gradient(
-    135deg,
-    rgba(255, 255, 255, 0.95),
-    rgba(var(--clarvi-blue-rgb), 0.08)
-  );
-  border: var(--glass-border);
+  background: var(--bg-surface);
+  border: var(--rule-strong);
   border-radius: var(--radius-lg);
-  box-shadow: var(--glass-shadow-hover);
-  backdrop-filter: blur(var(--glass-blur));
 }
 
 .modal-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 1rem 1.25rem 0.5rem;
+  gap: 0.75rem;
+  padding: 0.9rem 1.25rem;
+  border-bottom: var(--rule);
 }
 
 .modal-header h3 {
   margin: 0;
-  font-size: 1.05rem;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-label);
+  color: var(--clarvi-navy);
 }
 
 .modal-close {
   border: none;
   background: none;
-  font-size: 1.5rem;
+  font-size: 1.4rem;
   line-height: 1;
   color: var(--text-muted);
   cursor: pointer;
   padding: 0.1rem 0.4rem;
-  border-radius: var(--radius-sm);
-  transition: background var(--transition-fast), color var(--transition-fast);
+  transition: color var(--transition-fast);
 }
 
 .modal-close:hover {
-  background: rgba(var(--clarvi-navy-rgb), 0.08);
-  color: var(--text-strong);
+  color: var(--clarvi-navy);
 }
 
 .modal-body {
-  padding: 0.5rem 1.25rem 1rem;
+  padding: 1.1rem 1.25rem;
 }
 
 .modal-footer {
   display: flex;
   justify-content: flex-end;
   gap: 0.6rem;
-  padding: 0 1.25rem 1.25rem;
+  padding: 0.9rem 1.25rem;
+  border-top: var(--rule);
 }
 </style>

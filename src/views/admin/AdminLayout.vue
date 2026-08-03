@@ -20,19 +20,22 @@
 </template>
 
 <style scoped>
+/* Sub-navegación por línea inferior: la sección activa se marca con un
+   filete navy sobre la línea de la barra. */
 .admin-nav {
   display: flex;
-  gap: 0.4rem;
-  margin-bottom: 1.5rem;
-  border-bottom: 1px solid rgba(var(--clarvi-navy-rgb), 0.12);
-  padding-bottom: 0;
+  margin-bottom: 1.75rem;
+  border-bottom: var(--rule);
   flex-wrap: wrap;
 }
 
 .admin-tab {
-  padding: 0.55rem 1rem;
-  font-weight: 600;
-  font-size: 0.92rem;
+  padding: 0.6rem 1rem 0.6rem 0;
+  margin-right: 1.5rem;
+  font-weight: 700;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-label);
   color: var(--text-muted);
   border-bottom: 2px solid transparent;
   margin-bottom: -1px;
@@ -41,10 +44,11 @@
 
 .admin-tab:hover {
   color: var(--clarvi-navy);
+  border-bottom-color: var(--line-mid);
 }
 
 .admin-tab.router-link-active {
   color: var(--clarvi-navy);
-  border-bottom-color: var(--clarvi-blue);
+  border-bottom-color: var(--clarvi-navy);
 }
 </style>

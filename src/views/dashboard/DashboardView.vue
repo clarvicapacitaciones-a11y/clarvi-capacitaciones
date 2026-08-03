@@ -52,11 +52,11 @@ onMounted(async () => {
       </div>
     </header>
 
-    <div class="status-tabs">
+    <div class="tabs">
       <button
         v-for="tabName in tabs"
         :key="tabName"
-        class="status-tab"
+        class="tab"
         :class="{ 'is-active': activeTab === tabName }"
         @click="activeTab = tabName"
       >
@@ -88,52 +88,20 @@ onMounted(async () => {
 </template>
 
 <style scoped>
-.status-tabs {
-  display: flex;
-  gap: 0.5rem;
-  margin-bottom: 1.25rem;
-  flex-wrap: wrap;
-}
-
-.status-tab {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.45rem;
-  border: 1px solid rgba(var(--clarvi-navy-rgb), 0.14);
-  background: rgba(255, 255, 255, 0.55);
-  font: inherit;
-  font-weight: 600;
-  font-size: 0.9rem;
-  color: var(--text-muted);
-  padding: 0.5rem 0.95rem;
-  border-radius: var(--radius-full);
-  cursor: pointer;
-  backdrop-filter: blur(6px);
-  transition:
-    background var(--transition-fast),
-    color var(--transition-fast),
-    border-color var(--transition-fast);
-}
-
-.status-tab:hover {
-  border-color: rgba(var(--clarvi-blue-rgb), 0.4);
-}
-
-.status-tab.is-active {
-  background: linear-gradient(135deg, var(--clarvi-blue), var(--clarvi-navy));
-  border-color: transparent;
-  color: #fff;
-}
-
+/* El control segmentado vive en base.css (.tabs/.tab); aquí solo el
+   contador de cada pestaña. */
 .count {
-  background: rgba(255, 255, 255, 0.25);
-  border-radius: var(--radius-full);
-  padding: 0.05rem 0.5rem;
-  font-size: 0.78rem;
+  font-size: 0.72rem;
+  font-weight: 700;
+  transition: color var(--transition-fast);
 }
 
-.status-tab:not(.is-active) .count {
-  background: rgba(var(--clarvi-navy-rgb), 0.08);
+.tab:not(.is-active) .count {
+  color: var(--text-muted);
+}
+
+.tab.is-active .count {
+  color: var(--blue-100);
 }
 
 .cards-grid {

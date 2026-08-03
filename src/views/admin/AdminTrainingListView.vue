@@ -2,10 +2,10 @@
 // Lista de capacitaciones para administración, con métricas rápidas.
 
 import { onMounted, ref } from 'vue'
-import GlassBadge from '@/components/glass/GlassBadge.vue'
-import GlassButton from '@/components/glass/GlassButton.vue'
-import GlassCard from '@/components/glass/GlassCard.vue'
-import GlassModal from '@/components/glass/GlassModal.vue'
+import UiBadge from '@/components/ui/UiBadge.vue'
+import UiButton from '@/components/ui/UiButton.vue'
+import UiCard from '@/components/ui/UiCard.vue'
+import UiModal from '@/components/ui/UiModal.vue'
 import { formatDate } from '@/composables/useFormat'
 import {
   completedCountsByTraining,
@@ -68,14 +68,14 @@ async function confirmDelete(): Promise<void> {
         <p class="muted">Sesiones, videos y su seguimiento</p>
       </div>
       <RouterLink :to="{ name: 'admin-training-new' }">
-        <GlassButton>+ Nueva capacitación</GlassButton>
+        <UiButton>+ Nueva capacitación</UiButton>
       </RouterLink>
     </header>
 
     <p v-if="error" class="form-error">{{ error }}</p>
     <p v-else-if="loading" class="muted">Cargando…</p>
 
-    <GlassCard v-else-if="trainings.length">
+    <UiCard v-else-if="trainings.length">
       <div class="table-wrap">
         <table class="data-table">
           <thead>
@@ -101,10 +101,10 @@ async function confirmDelete(): Promise<void> {
               </td>
               <td>{{ formatDate(training.session_date) }}</td>
               <td>
-                <GlassBadge v-if="training.youtube_video_id" tone="success">
+                <UiBadge v-if="training.youtube_video_id" tone="success">
                   Publicado
-                </GlassBadge>
-                <GlassBadge v-else tone="warning">Sin video</GlassBadge>
+                </UiBadge>
+                <UiBadge v-else tone="warning">Sin video</UiBadge>
               </td>
               <td>{{ countOf(training.attendance) }}</td>
               <td>{{ countOf(training.watch_progress) }}</td>
@@ -113,24 +113,24 @@ async function confirmDelete(): Promise<void> {
                 <RouterLink
                   :to="{ name: 'admin-training-edit', params: { id: training.id } }"
                 >
-                  <GlassButton variant="ghost">Editar</GlassButton>
+                  <UiButton variant="ghost">Editar</UiButton>
                 </RouterLink>
-                <GlassButton variant="danger" @click="toDelete = training">
+                <UiButton variant="danger" @click="toDelete = training">
                   Eliminar
-                </GlassButton>
+                </UiButton>
               </td>
             </tr>
           </tbody>
         </table>
       </div>
-    </GlassCard>
+    </UiCard>
 
     <div v-else class="empty-state">
       <strong>Aún no hay capacitaciones</strong>
       <span>Crea la primera con el botón “Nueva capacitación”.</span>
     </div>
 
-    <GlassModal
+    <UiModal
       :open="toDelete !== null"
       title="Eliminar capacitación"
       @close="toDelete = null"
@@ -141,14 +141,14 @@ async function confirmDelete(): Promise<void> {
         todos los usuarios. Esta acción no se puede deshacer.
       </p>
       <template #footer>
-        <GlassButton variant="ghost" @click="toDelete = null">
+        <UiButton variant="ghost" @click="toDelete = null">
           Cancelar
-        </GlassButton>
-        <GlassButton variant="danger" :loading="deleting" @click="confirmDelete">
+        </UiButton>
+        <UiButton variant="danger" :loading="deleting" @click="confirmDelete">
           Eliminar definitivamente
-        </GlassButton>
+        </UiButton>
       </template>
-    </GlassModal>
+    </UiModal>
   </div>
 </template>
 
@@ -159,7 +159,7 @@ async function confirmDelete(): Promise<void> {
 }
 
 .row-title:hover {
-  color: var(--clarvi-blue);
+  color: var(--clarvi-blue-ink);
 }
 
 .row-actions {

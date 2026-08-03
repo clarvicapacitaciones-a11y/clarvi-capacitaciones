@@ -4,10 +4,10 @@
 
 import { computed, onMounted, ref, shallowRef } from 'vue'
 import { useRoute } from 'vue-router'
-import GlassBadge from '@/components/glass/GlassBadge.vue'
-import GlassButton from '@/components/glass/GlassButton.vue'
-import GlassCard from '@/components/glass/GlassCard.vue'
-import GlassModal from '@/components/glass/GlassModal.vue'
+import UiBadge from '@/components/ui/UiBadge.vue'
+import UiButton from '@/components/ui/UiButton.vue'
+import UiCard from '@/components/ui/UiCard.vue'
+import UiModal from '@/components/ui/UiModal.vue'
 import QrCodeDisplay from '@/components/trainings/QrCodeDisplay.vue'
 import {
   formatDate,
@@ -139,31 +139,31 @@ async function confirmRegenerate(): Promise<void> {
         <RouterLink
           :to="{ name: 'admin-training-edit', params: { id: training.id } }"
         >
-          <GlassButton variant="ghost">Editar</GlassButton>
+          <UiButton variant="ghost">Editar</UiButton>
         </RouterLink>
       </header>
 
       <div class="stats-row">
-        <GlassCard class="stat">
+        <UiCard class="stat">
           <strong>{{ attendance.length }}</strong>
           <span>Asistieron presencial</span>
-        </GlassCard>
-        <GlassCard class="stat">
+        </UiCard>
+        <UiCard class="stat">
           <strong>{{ viewers.length }}</strong>
           <span>Han visto el video</span>
-        </GlassCard>
-        <GlassCard class="stat">
+        </UiCard>
+        <UiCard class="stat">
           <strong>{{ completedCount }}</strong>
           <span>Completaron</span>
-        </GlassCard>
-        <GlassCard class="stat">
+        </UiCard>
+        <UiCard class="stat">
           <strong>{{ formatPercent(averagePercent) }}</strong>
           <span>Avance promedio</span>
-        </GlassCard>
+        </UiCard>
       </div>
 
       <div class="two-col">
-        <GlassCard>
+        <UiCard>
           <h3>Código QR de asistencia</h3>
           <p class="muted">
             Proyéctalo o imprímelo en la sesión presencial; cada persona lo
@@ -174,13 +174,13 @@ async function confirmRegenerate(): Promise<void> {
             :training-title="training.title"
           />
           <div class="regenerate-row">
-            <GlassButton variant="danger" @click="showRegenerateModal = true">
+            <UiButton variant="danger" @click="showRegenerateModal = true">
               Regenerar código
-            </GlassButton>
+            </UiButton>
           </div>
-        </GlassCard>
+        </UiCard>
 
-        <GlassCard>
+        <UiCard>
           <h3>Video</h3>
           <template v-if="training.youtube_video_id">
             <div class="video-frame">
@@ -199,10 +199,10 @@ async function confirmRegenerate(): Promise<void> {
               “Editar”. Los usuarios lo verán como pendiente en su dashboard.
             </span>
           </div>
-        </GlassCard>
+        </UiCard>
       </div>
 
-      <GlassCard class="table-card">
+      <UiCard class="table-card">
         <h3>Asistencia presencial ({{ attendance.length }})</h3>
         <div v-if="attendance.length" class="table-wrap">
           <table class="data-table">
@@ -225,9 +225,9 @@ async function confirmRegenerate(): Promise<void> {
           </table>
         </div>
         <p v-else class="muted">Nadie ha escaneado el QR todavía.</p>
-      </GlassCard>
+      </UiCard>
 
-      <GlassCard class="table-card">
+      <UiCard class="table-card">
         <h3>Visualización del video ({{ viewers.length }})</h3>
         <div v-if="viewers.length" class="table-wrap">
           <table class="data-table">
@@ -266,9 +266,9 @@ async function confirmRegenerate(): Promise<void> {
                 </td>
                 <td>{{ formatMinutes(viewer.watched_seconds) }}</td>
                 <td>
-                  <GlassBadge v-if="viewer.completed_at" tone="success">
+                  <UiBadge v-if="viewer.completed_at" tone="success">
                     {{ formatDateTime(viewer.completed_at) }}
-                  </GlassBadge>
+                  </UiBadge>
                   <span v-else class="muted">—</span>
                 </td>
                 <td>{{ formatDateTime(viewer.last_heartbeat_at) }}</td>
@@ -280,17 +280,17 @@ async function confirmRegenerate(): Promise<void> {
           Nadie ha reproducido el video todavía
           {{ training.youtube_video_id ? '' : '(aún no hay video publicado)' }}.
         </p>
-      </GlassCard>
+      </UiCard>
 
-      <GlassCard class="table-card">
+      <UiCard class="table-card">
         <header class="exam-header">
           <div>
             <h3>
               Examen
-              <GlassBadge v-if="exam && !exam.is_published" tone="warning">
+              <UiBadge v-if="exam && !exam.is_published" tone="warning">
                 Sin publicar
-              </GlassBadge>
-              <GlassBadge v-else-if="exam" tone="success">Publicado</GlassBadge>
+              </UiBadge>
+              <UiBadge v-else-if="exam" tone="success">Publicado</UiBadge>
             </h3>
             <p v-if="exam" class="muted">
               {{ exam.questions.length }}
@@ -306,30 +306,30 @@ async function confirmRegenerate(): Promise<void> {
           <RouterLink
             :to="{ name: 'admin-training-edit', params: { id: training.id } }"
           >
-            <GlassButton variant="ghost">
+            <UiButton variant="ghost">
               {{ exam ? 'Editar examen' : 'Crear examen' }}
-            </GlassButton>
+            </UiButton>
           </RouterLink>
         </header>
 
         <template v-if="exam">
           <div class="stats-row exam-stats">
-            <GlassCard class="stat">
+            <UiCard class="stat">
               <strong>{{ examinees.length }}</strong>
               <span>Lo presentaron</span>
-            </GlassCard>
-            <GlassCard class="stat">
+            </UiCard>
+            <UiCard class="stat">
               <strong>{{ examPassedCount }}</strong>
               <span>Aprobaron</span>
-            </GlassCard>
-            <GlassCard class="stat">
+            </UiCard>
+            <UiCard class="stat">
               <strong>{{ formatPercent(examAveragePercent) }}</strong>
               <span>Calificación promedio</span>
-            </GlassCard>
-            <GlassCard class="stat">
+            </UiCard>
+            <UiCard class="stat">
               <strong>{{ formatPercent(examPassRate) }}</strong>
               <span>Tasa de aprobación</span>
-            </GlassCard>
+            </UiCard>
           </div>
 
           <div v-if="examinees.length" class="table-wrap">
@@ -367,9 +367,9 @@ async function confirmRegenerate(): Promise<void> {
                     </div>
                   </td>
                   <td>
-                    <GlassBadge :tone="row.passed ? 'success' : 'danger'">
+                    <UiBadge :tone="row.passed ? 'success' : 'danger'">
                       {{ row.passed ? 'Aprobado' : 'No aprobado' }}
-                    </GlassBadge>
+                    </UiBadge>
                   </td>
                   <td>{{ formatDateTime(row.lastSubmittedAt) }}</td>
                 </tr>
@@ -429,9 +429,9 @@ async function confirmRegenerate(): Promise<void> {
             respuestas.
           </span>
         </div>
-      </GlassCard>
+      </UiCard>
 
-      <GlassModal
+      <UiModal
         :open="showRegenerateModal"
         title="Regenerar código QR"
         @close="showRegenerateModal = false"
@@ -442,18 +442,18 @@ async function confirmRegenerate(): Promise<void> {
           asistencia ya registrada no se pierde. ¿Continuar?
         </p>
         <template #footer>
-          <GlassButton variant="ghost" @click="showRegenerateModal = false">
+          <UiButton variant="ghost" @click="showRegenerateModal = false">
             Cancelar
-          </GlassButton>
-          <GlassButton
+          </UiButton>
+          <UiButton
             variant="danger"
             :loading="regenerating"
             @click="confirmRegenerate"
           >
             Regenerar
-          </GlassButton>
+          </UiButton>
         </template>
-      </GlassModal>
+      </UiModal>
     </template>
   </div>
 </template>
@@ -466,19 +466,28 @@ async function confirmRegenerate(): Promise<void> {
   margin-bottom: 1rem;
 }
 
+/* Indicador: cifra grande y etiqueta corta, marcados por una línea azul
+   a la izquierda. */
 .stat {
-  text-align: center;
-  padding: 0.9rem;
+  padding: 0.9rem 1rem;
+  border-left: var(--accent-width) solid var(--clarvi-blue);
 }
 
 .stat strong {
   display: block;
-  font-size: 1.5rem;
+  font-size: 1.6rem;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
   color: var(--clarvi-navy);
 }
 
 .stat span {
-  font-size: 0.8rem;
+  display: block;
+  margin-top: 0.25rem;
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-label);
   color: var(--text-muted);
 }
 
@@ -498,6 +507,7 @@ async function confirmRegenerate(): Promise<void> {
 .video-frame {
   position: relative;
   aspect-ratio: 16 / 9;
+  border: var(--rule);
   border-radius: var(--radius-md);
   overflow: hidden;
   background: #000;
@@ -527,10 +537,11 @@ async function confirmRegenerate(): Promise<void> {
 }
 
 .percent-label {
-  font-size: 0.82rem;
-  font-weight: 600;
+  font-size: 0.8rem;
+  font-weight: 700;
   color: var(--clarvi-navy);
   min-width: 38px;
+  font-variant-numeric: tabular-nums;
 }
 
 .exam-header {
@@ -557,9 +568,16 @@ async function confirmRegenerate(): Promise<void> {
   margin-top: 0.8rem;
 }
 
+/* Sub-encabezado: misma micro-etiqueta sobre línea que .section-title. */
 .subsection {
-  margin: 1.4rem 0 0.15rem;
-  font-size: 0.95rem;
+  margin: 1.6rem 0 0.5rem;
+  padding-bottom: 0.35rem;
+  border-bottom: var(--rule);
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-label);
+  color: var(--clarvi-navy);
 }
 
 .subsection-note {

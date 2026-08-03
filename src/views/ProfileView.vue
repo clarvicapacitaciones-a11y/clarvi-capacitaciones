@@ -2,11 +2,11 @@
 // Perfil propio: datos personales y cambio de contraseña.
 
 import { computed, onMounted, ref } from 'vue'
-import GlassCard from '@/components/glass/GlassCard.vue'
-import GlassBadge from '@/components/glass/GlassBadge.vue'
-import GlassButton from '@/components/glass/GlassButton.vue'
-import GlassInput from '@/components/glass/GlassInput.vue'
-import GlassSelect from '@/components/glass/GlassSelect.vue'
+import UiCard from '@/components/ui/UiCard.vue'
+import UiBadge from '@/components/ui/UiBadge.vue'
+import UiButton from '@/components/ui/UiButton.vue'
+import UiInput from '@/components/ui/UiInput.vue'
+import UiSelect from '@/components/ui/UiSelect.vue'
 import { updateProfile } from '@/services/profiles.service'
 import { useAuthStore } from '@/stores/auth.store'
 import { useCatalogsStore } from '@/stores/catalogs.store'
@@ -108,7 +108,7 @@ async function savePassword(): Promise<void> {
       <h1>Mi perfil</h1>
     </header>
 
-    <GlassCard v-if="auth.profile" class="profile-card">
+    <UiCard v-if="auth.profile" class="profile-card">
       <div class="account-row">
         <div>
           <p class="account-id">{{ accountLabel }}</p>
@@ -117,14 +117,14 @@ async function savePassword(): Promise<void> {
             {{ auth.profile.auth_method === 'email' ? 'correo' : 'usuario' }}
           </p>
         </div>
-        <GlassBadge tone="info">{{ ROLE_LABELS[auth.profile.role] }}</GlassBadge>
+        <UiBadge tone="info">{{ ROLE_LABELS[auth.profile.role] }}</UiBadge>
       </div>
 
       <form class="form-grid" @submit.prevent="saveProfile">
-        <GlassInput v-model="fullName" label="Nombre completo" required />
+        <UiInput v-model="fullName" label="Nombre completo" required />
         <div class="form-row">
-          <GlassSelect v-model="areaId" label="Área" :options="areaOptions" />
-          <GlassSelect
+          <UiSelect v-model="areaId" label="Área" :options="areaOptions" />
+          <UiSelect
             v-model="sucursalId"
             label="Sucursal"
             :options="sucursalOptions"
@@ -133,14 +133,14 @@ async function savePassword(): Promise<void> {
         <p v-if="profileError" class="form-error">{{ profileError }}</p>
         <p v-if="profileMessage" class="form-success">{{ profileMessage }}</p>
         <div>
-          <GlassButton type="submit" :loading="savingProfile">
+          <UiButton type="submit" :loading="savingProfile">
             Guardar cambios
-          </GlassButton>
+          </UiButton>
         </div>
       </form>
-    </GlassCard>
+    </UiCard>
 
-    <GlassCard class="profile-card">
+    <UiCard class="profile-card">
       <h3>Cambiar contraseña</h3>
       <p v-if="auth.profile?.auth_method === 'username'" class="muted">
         Tu cuenta no tiene correo: si olvidas tu contraseña, un administrador
@@ -148,14 +148,14 @@ async function savePassword(): Promise<void> {
       </p>
       <form class="form-grid" @submit.prevent="savePassword">
         <div class="form-row">
-          <GlassInput
+          <UiInput
             v-model="newPassword"
             label="Nueva contraseña"
             type="password"
             autocomplete="new-password"
             required
           />
-          <GlassInput
+          <UiInput
             v-model="confirmPassword"
             label="Confirmar contraseña"
             type="password"
@@ -166,12 +166,12 @@ async function savePassword(): Promise<void> {
         <p v-if="passwordError" class="form-error">{{ passwordError }}</p>
         <p v-if="passwordMessage" class="form-success">{{ passwordMessage }}</p>
         <div>
-          <GlassButton type="submit" :loading="savingPassword">
+          <UiButton type="submit" :loading="savingPassword">
             Actualizar contraseña
-          </GlassButton>
+          </UiButton>
         </div>
       </form>
-    </GlassCard>
+    </UiCard>
   </div>
 </template>
 
@@ -191,7 +191,7 @@ async function savePassword(): Promise<void> {
   gap: 1rem;
   margin-bottom: 1rem;
   padding-bottom: 0.9rem;
-  border-bottom: 1px solid rgba(var(--clarvi-navy-rgb), 0.08);
+  border-bottom: var(--rule);
 }
 
 .account-id {
