@@ -5,10 +5,18 @@ import { computed, onMounted, ref } from 'vue'
 import TrainingCard from '@/components/trainings/TrainingCard.vue'
 import { listMyTrainingStatuses } from '@/services/trainings.service'
 import { useAuthStore } from '@/stores/auth.store'
+import { useCatalogsStore } from '@/stores/catalogs.store'
 import type { TrainingStatus, TrainingStatusRow } from '@/types/domain'
 import { STATUS_LABELS } from '@/types/domain'
 
 const auth = useAuthStore()
+const catalogs = useCatalogsStore()
+
+/** El dashboard trae solo las capacitaciones del área del usuario más las
+ *  generales; decirlo evita que alguien crea que le falta alguna. */
+const areaName = computed(() =>
+  auth.profile?.area_id ? catalogs.areaName(auth.profile.area_id) : null,
+)
 const rows = ref<TrainingStatusRow[]>([])
 const loading = ref(true)
 const error = ref('')
@@ -32,7 +40,11 @@ const tabs: TrainingStatus[] = ['pending', 'in_progress', 'completed']
 onMounted(async () => {
   try {
     if (auth.userId) {
-      rows.value = await listMyTrainingStatuses(auth.userId)
+      const [statuses] = await Promise.all([
+        listMyTrainingStatuses(auth.userId),
+        catalogs.fetchCatalogs(),
+      ])
+      rows.value = statuses
     }
   } catch (err) {
     error.value =
@@ -48,7 +60,12 @@ onMounted(async () => {
     <header class="page-header">
       <div>
         <h1>Hola, {{ auth.profile?.full_name?.split(' ')[0] }}</h1>
-        <p class="muted">Estas son tus capacitaciones</p>
+        <p class="muted">
+          <template v-if="areaName">
+            Capacitaciones de {{ areaName }} y las de todo el personal
+          </template>
+          <template v-else>Estas son tus capacitaciones</template>
+        </p>
       </div>
     </header>
 

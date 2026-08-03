@@ -23,10 +23,12 @@ import {
 } from '@/services/exams.service'
 import {
   getTraining,
+  getTrainingAreas,
   listAttendance,
   listViewers,
   regenerateQrToken,
 } from '@/services/trainings.service'
+import { useCatalogsStore } from '@/stores/catalogs.store'
 import type {
   AttendanceWithProfile,
   Training,
@@ -40,8 +42,10 @@ import {
 } from '@/types/exams'
 
 const route = useRoute()
+const catalogs = useCatalogsStore()
 
 const training = ref<Training | null>(null)
+const areaNames = ref<string[]>([])
 const attendance = ref<AttendanceWithProfile[]>([])
 // shallowRef: el tipo Json recursivo de watched_ranges desborda la
 // inferencia profunda de UnwrapRef en un ref normal.
@@ -87,16 +91,20 @@ const examPassRate = computed(() =>
 onMounted(async () => {
   const id = String(route.params.id)
   try {
-    const [trainingRow, attendanceRows, viewerRows, examDraft] = await Promise.all([
-      getTraining(id),
-      listAttendance(id),
-      listViewers(id),
-      getExamForEdit(id),
-    ])
+    const [trainingRow, attendanceRows, viewerRows, examDraft, areaIds] =
+      await Promise.all([
+        getTraining(id),
+        listAttendance(id),
+        listViewers(id),
+        getExamForEdit(id),
+        getTrainingAreas(id),
+        catalogs.fetchCatalogs(),
+      ])
     training.value = trainingRow
     attendance.value = attendanceRows
     viewers.value = viewerRows
     exam.value = examDraft
+    areaNames.value = areaIds.map((areaId) => catalogs.areaName(areaId))
 
     if (examDraft?.id) {
       const attempts = await listExamAttempts(examDraft.id)
@@ -135,6 +143,14 @@ async function confirmRegenerate(): Promise<void> {
         <div>
           <h1>{{ training.title }}</h1>
           <p class="muted">{{ formatDate(training.session_date) }}</p>
+          <div class="area-tags">
+            <GlassBadge v-if="!areaNames.length" tone="neutral">
+              Todo el personal
+            </GlassBadge>
+            <GlassBadge v-for="nombre in areaNames" :key="nombre" tone="info">
+              {{ nombre }}
+            </GlassBadge>
+          </div>
         </div>
         <RouterLink
           :to="{ name: 'admin-training-edit', params: { id: training.id } }"
@@ -531,6 +547,13 @@ async function confirmRegenerate(): Promise<void> {
   font-weight: 600;
   color: var(--clarvi-navy);
   min-width: 38px;
+}
+
+.area-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+  margin-top: 0.45rem;
 }
 
 .exam-header {

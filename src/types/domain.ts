@@ -26,6 +26,7 @@ export interface ProfileWithCatalogs extends Profile {
 export interface TrainingWithCounts extends Training {
   attendance: { count: number }[]
   watch_progress: { count: number }[]
+  training_areas: { area_id: string }[]
 }
 
 export interface AttendanceWithProfile extends Attendance {

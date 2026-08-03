@@ -33,7 +33,7 @@ src/
   assets/styles/       # tokens de marca (#00205c, #009bdd) + sistema glass
   components/
     glass/             # GlassCard, GlassButton, GlassInput, GlassSelect, GlassBadge, GlassModal
-    trainings/         # YoutubePlayer (con tracking), TrainingCard, QrCodeDisplay
+    trainings/         # YoutubePlayer (con tracking), TrainingCard, QrCodeDisplay, AreaSelector
     exams/             # constructor del examen (editors/) y aplicación (runners/)
     layout/            # AppHeader, AuthLayout
   composables/
@@ -52,7 +52,7 @@ docs/                  # documentación detallada (ver abajo)
 |---|---|
 | [docs/01-arquitectura.md](docs/01-arquitectura.md) | Visión general, decisiones de diseño |
 | [docs/02-base-de-datos.md](docs/02-base-de-datos.md) | Esquema, RLS, triggers y funciones |
-| [docs/03-flujos.md](docs/03-flujos.md) | Registro/login, QR, tracking de video, exámenes |
+| [docs/03-flujos.md](docs/03-flujos.md) | Registro/login, QR, áreas, tracking de video, exámenes |
 | [docs/04-administracion.md](docs/04-administracion.md) | Guía del panel admin y roles |
 | [docs/05-despliegue.md](docs/05-despliegue.md) | Infraestructura, variables, operación |
 
@@ -66,9 +66,9 @@ docs/                  # documentación detallada (ver abajo)
 
 ## Flujo de una capacitación
 
-1. El admin crea la capacitación (título, fecha, temario) → la plataforma genera su **QR de asistencia**.
+1. El admin crea la capacitación (título, fecha, temario) y marca **a qué áreas aplica** — sin marcar ninguna es para todo el personal → la plataforma genera su **QR de asistencia**.
 2. En la sesión presencial se proyecta/imprime el QR; cada asistente lo escanea e inicia sesión → queda registrada su asistencia con área y sucursal.
 3. Después de la sesión, el admin agrega el link del video de YouTube (no listado).
-4. Quien no asistió la ve en su dashboard como **pendiente**; al reproducirla, la plataforma mide su avance real (los saltos no cuentan) y al llegar al 90% la marca **completada**.
+4. Quien no asistió y **pertenece a alguna de esas áreas** la ve en su dashboard como **pendiente**; al reproducirla, la plataforma mide su avance real (los saltos no cuentan) y al llegar al 90% la marca **completada**.
 5. Opcionalmente el admin arma un **examen** (opción múltiple, selección múltiple, verdadero/falso, relacionar conceptos, ordenar pasos y completar frases) y lo publica; el usuario lo contesta una pregunta por pantalla y lo califica el servidor.
 6. El admin ve en la ficha de la capacitación: asistentes, quiénes vieron el video, % de avance, tiempo visto, fecha de completado y los resultados del examen por persona.

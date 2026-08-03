@@ -417,6 +417,43 @@ export type Database = {
         }
         Relationships: []
       }
+      training_areas: {
+        Row: {
+          area_id: string
+          training_id: string
+        }
+        Insert: {
+          area_id: string
+          training_id: string
+        }
+        Update: {
+          area_id?: string
+          training_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "training_areas_area_id_fkey"
+            columns: ["area_id"]
+            isOneToOne: false
+            referencedRelation: "areas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "training_areas_training_id_fkey"
+            columns: ["training_id"]
+            isOneToOne: false
+            referencedRelation: "trainings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "training_areas_training_id_fkey"
+            columns: ["training_id"]
+            isOneToOne: false
+            referencedRelation: "user_training_status"
+            referencedColumns: ["training_id"]
+          },
+        ]
+      }
       trainings: {
         Row: {
           created_at: string
@@ -615,6 +652,10 @@ export type Database = {
       save_exam: {
         Args: { p_exam: Json; p_questions: Json; p_training_id: string }
         Returns: string
+      }
+      set_training_areas: {
+        Args: { p_area_ids: string[]; p_training_id: string }
+        Returns: undefined
       }
       shuffle_jsonb_array: { Args: { p_items: Json }; Returns: Json }
       start_exam_attempt: { Args: { p_training_id: string }; Returns: Json }

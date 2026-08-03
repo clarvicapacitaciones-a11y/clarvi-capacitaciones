@@ -42,6 +42,33 @@ cambiarla desde Mi perfil requiere sesión activa).
 4. "Regenerar código" en la ficha admin crea un token nuevo: el QR viejo deja
    de funcionar y la asistencia previa se conserva.
 
+## Clasificación por área
+
+Cada capacitación se marca con las áreas a las que aplica (sección **Áreas a
+las que aplica** del formulario). Es N:M: "manejo de cloro gas" puede ser de
+Operaciones y de Mantenimiento a la vez.
+
+**Sin áreas marcadas = para todo el personal.** Es el valor por omisión a
+propósito: vale más que alguien vea una capacitación de más a que no le llegue
+la que sí le tocaba. Las capacitaciones que ya existían quedaron así, de modo
+que nadie perdió nada al activarse esta función.
+
+El dashboard de cada persona muestra únicamente las capacitaciones de su área
+más las generales, y lo dice en el subtítulo ("Capacitaciones de Operaciones y
+las de todo el personal") para que nadie crea que le falta alguna.
+
+El filtro vive en la vista `user_training_status`, no en RLS. La tabla
+`trainings` sigue siendo legible por cualquier usuario autenticado, y eso es
+deliberado: si alguien de otra área asiste a la sesión presencial y escanea el
+QR, el check-in tiene que funcionar. Su asistencia queda registrada y el admin
+la ve, aunque la capacitación no aparezca en el dashboard de esa persona.
+
+**El filtro es estricto**: quien cambia de área deja de ver las capacitaciones
+del área anterior, incluso las que ya había completado. El registro no se
+borra — sigue en la base y en la ficha admin —, pero desaparece de su
+dashboard. Si en algún momento conviene que la gente conserve su historial a la
+vista, es un cambio de una línea en el `where` de la vista.
+
 ## Medición de visualización (el corazón de la plataforma)
 
 Implementada en `src/composables/useWatchTracking.ts` +

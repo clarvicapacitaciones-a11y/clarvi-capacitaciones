@@ -12,13 +12,24 @@ tiene tres pestañas: Capacitaciones, Usuarios y Catálogos.
    y sube después de la sesión. Acepta cualquier formato de link
    (`youtu.be/…`, `youtube.com/watch?v=…`, `live/…`, `shorts/…`) y muestra
    vista previa al pegarlo.
-4. Más abajo, la sección **Examen** (opcional): ver más adelante.
-5. Al guardar se genera automáticamente el **QR de asistencia**.
+4. **Áreas a las que aplica**: marca las áreas que deben verla. Si no marcas
+   ninguna queda como **Todo el personal**, que es lo correcto para inducción,
+   código de conducta y similares. Una capacitación puede aplicar a varias.
+5. Más abajo, la sección **Examen** (opcional): ver más adelante.
+6. Al guardar se genera automáticamente el **QR de asistencia**.
 
 > Sugerencia: crea la capacitación **antes** de la sesión presencial para
 > proyectar el QR ese día; agrega el video después con **Editar**.
 
+> Ojo con las áreas: cada persona ve en su dashboard solo las capacitaciones de
+> su área más las generales. Si alguien cambia de área, deja de ver las de la
+> anterior aunque ya las hubiera completado (el registro no se pierde: sigue
+> apareciendo en la ficha de la capacitación). Y si alguien de otra área asiste
+> a la sesión y escanea el QR, su asistencia se registra igual, pero la
+> capacitación no le aparecerá en el dashboard.
+
 ### Ficha de una capacitación
+- **Áreas**: a quiénes aplica, junto al título.
 - **Métricas**: asistentes presenciales, personas que han visto el video,
   completadas y avance promedio.
 - **QR**: descargar PNG (para imprimir), copiar link, regenerar (invalida el

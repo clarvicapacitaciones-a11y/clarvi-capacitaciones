@@ -12,8 +12,10 @@ import {
   deleteTraining,
   listAllTrainings,
 } from '@/services/trainings.service'
+import { useCatalogsStore } from '@/stores/catalogs.store'
 import type { TrainingWithCounts } from '@/types/domain'
 
+const catalogs = useCatalogsStore()
 const trainings = ref<TrainingWithCounts[]>([])
 const completedCounts = ref<Record<string, number>>({})
 const loading = ref(true)
@@ -28,6 +30,7 @@ async function load(): Promise<void> {
     const [list, counts] = await Promise.all([
       listAllTrainings(),
       completedCountsByTraining(),
+      catalogs.fetchCatalogs(),
     ])
     trainings.value = list
     completedCounts.value = counts
@@ -43,6 +46,11 @@ onMounted(load)
 
 function countOf(row: { count: number }[] | undefined): number {
   return row?.[0]?.count ?? 0
+}
+
+/** Nombres de las áreas de la capacitación; vacío = para todo el personal. */
+function areaNames(training: TrainingWithCounts): string[] {
+  return training.training_areas.map((row) => catalogs.areaName(row.area_id))
 }
 
 async function confirmDelete(): Promise<void> {
@@ -81,6 +89,7 @@ async function confirmDelete(): Promise<void> {
           <thead>
             <tr>
               <th>Título</th>
+              <th>Áreas</th>
               <th>Fecha sesión</th>
               <th>Video</th>
               <th>Asistentes</th>
@@ -98,6 +107,18 @@ async function confirmDelete(): Promise<void> {
                 >
                   {{ training.title }}
                 </RouterLink>
+              </td>
+              <td>
+                <div v-if="areaNames(training).length" class="area-tags">
+                  <GlassBadge
+                    v-for="nombre in areaNames(training)"
+                    :key="nombre"
+                    tone="info"
+                  >
+                    {{ nombre }}
+                  </GlassBadge>
+                </div>
+                <span v-else class="muted">Todo el personal</span>
               </td>
               <td>{{ formatDate(training.session_date) }}</td>
               <td>
@@ -167,5 +188,12 @@ async function confirmDelete(): Promise<void> {
   gap: 0.4rem;
   justify-content: flex-end;
   white-space: nowrap;
+}
+
+.area-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+  max-width: 220px;
 }
 </style>

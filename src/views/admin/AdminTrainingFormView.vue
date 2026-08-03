@@ -6,6 +6,7 @@
 import { computed, onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import ExamBuilder from '@/components/exams/ExamBuilder.vue'
+import AreaSelector from '@/components/trainings/AreaSelector.vue'
 import GlassButton from '@/components/glass/GlassButton.vue'
 import GlassCard from '@/components/glass/GlassCard.vue'
 import GlassInput from '@/components/glass/GlassInput.vue'
@@ -14,6 +15,8 @@ import { getExamForEdit, saveExam } from '@/services/exams.service'
 import {
   createTraining,
   getTraining,
+  getTrainingAreas,
+  setTrainingAreas,
   updateTraining,
 } from '@/services/trainings.service'
 import { useAuthStore } from '@/stores/auth.store'
@@ -31,6 +34,7 @@ const title = ref('')
 const description = ref('')
 const sessionDate = ref('')
 const youtubeUrl = ref('')
+const areaIds = ref<string[]>([])
 const error = ref('')
 const loading = ref(false)
 const loadingExisting = ref(false)
@@ -62,10 +66,12 @@ onMounted(async () => {
   if (!editingId.value) return
   loadingExisting.value = true
   try {
-    const [training, examDraft] = await Promise.all([
+    const [training, examDraft, areas] = await Promise.all([
       getTraining(editingId.value),
       getExamForEdit(editingId.value),
+      getTrainingAreas(editingId.value),
     ])
+    areaIds.value = areas
     if (training) {
       title.value = training.title
       description.value = training.description ?? ''
@@ -109,6 +115,7 @@ async function handleSubmit(): Promise<void> {
       id = created.id
       createdId.value = id
     }
+    await setTrainingAreas(id, areaIds.value)
     if (shouldSaveExam.value) {
       await saveExam(id, exam.value)
     }
@@ -146,6 +153,8 @@ async function handleSubmit(): Promise<void> {
             placeholder="Temas cubiertos, instructor, notas…"
           />
         </label>
+
+        <AreaSelector v-model="areaIds" />
 
         <div class="form-row">
           <GlassInput

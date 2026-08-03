@@ -103,10 +103,35 @@ export async function trainingTitleForToken(
 export async function listAllTrainings(): Promise<TrainingWithCounts[]> {
   const { data, error } = await supabase
     .from('trainings')
-    .select('*, attendance(count), watch_progress(count)')
+    .select('*, attendance(count), watch_progress(count), training_areas(area_id)')
     .order('created_at', { ascending: false })
   if (error) throw new Error(error.message)
   return data as TrainingWithCounts[]
+}
+
+// ── Clasificación por área ─────────────────────────────────────────────────
+// Sin áreas = para todo el personal. Con áreas, solo la ve quien pertenece a
+// alguna de ellas (lo aplica la vista user_training_status).
+
+export async function getTrainingAreas(trainingId: string): Promise<string[]> {
+  const { data, error } = await supabase
+    .from('training_areas')
+    .select('area_id')
+    .eq('training_id', trainingId)
+  if (error) throw new Error(error.message)
+  return data.map((row) => row.area_id)
+}
+
+/** Reemplaza el conjunto completo de áreas en una sola transacción. */
+export async function setTrainingAreas(
+  trainingId: string,
+  areaIds: string[],
+): Promise<void> {
+  const { error } = await supabase.rpc('set_training_areas', {
+    p_training_id: trainingId,
+    p_area_ids: areaIds,
+  })
+  if (error) throw new Error(error.message)
 }
 
 /** Total de completadas por capacitación (agregado en el cliente). */

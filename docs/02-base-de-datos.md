@@ -34,6 +34,15 @@ Una fila por usuario, creada automáticamente al registrarse (trigger
 | `session_date` | fecha de la sesión presencial |
 | `duration_seconds` | opcional; la duración real la reporta el reproductor |
 
+### `training_areas` (a qué áreas aplica cada capacitación)
+Relación N:M `(training_id, area_id)`, porque una capacitación suele aplicar a
+varias áreas. **Una capacitación sin filas aquí es para todo el personal**, así
+que las que ya existían siguen viéndose igual sin reclasificarlas.
+
+El filtro lo aplica la vista `user_training_status`, no RLS: `trainings` sigue
+siendo legible por cualquier usuario autenticado, porque el check-in por QR
+necesita resolver el token de alguien de otra área que asistió a la sesión.
+
 ### `attendance` (asistencia presencial vía QR)
 `unique (training_id, user_id)` — un check-in por persona por capacitación.
 `area_id`/`sucursal_id` se **congelan al momento del escaneo**: si la persona
@@ -104,6 +113,15 @@ Cruza capacitaciones × perfiles con progreso, asistencia y examen; deriva
 video si ya tiene examen publicado. Es `security_invoker`: cada usuario solo ve
 sus propias filas; admin/owner ven todas. Alimenta el dashboard.
 
+**Filtra por área**: solo emite la fila si la capacitación no tiene áreas (es
+para todos) o si alguna coincide con la del perfil. Un perfil sin área ve
+únicamente las generales.
+
+El filtro es **estricto**: quien cambia de área deja de ver en su dashboard las
+capacitaciones del área anterior aunque ya las haya visto o presentado. El
+registro no se pierde — sigue en `watch_progress`, `attendance` y
+`exam_attempts`, y el admin lo ve completo en la ficha de la capacitación.
+
 ## Reglas de acceso (RLS)
 
 | Tabla | usuario | administrador / owner |
@@ -113,6 +131,7 @@ sus propias filas; admin/owner ven todas. Alimenta el dashboard.
 | `trainings` | lee todas | todo |
 | `attendance` | lee/inserta solo la suya | lee todas |
 | `watch_progress` | lee/escribe solo la suya | lee todas |
+| `training_areas` | lee todas (la clasificación no es secreta) | todo |
 | `exams` | lee solo los publicados | todo |
 | `exam_questions` | **sin acceso** (traen la respuesta correcta) | todo |
 | `exam_attempts` | lee los suyos | lee todos |
@@ -163,6 +182,11 @@ sesión, sin exponer el resto de la tabla (ni el ID del video).
 ### `current_user_role()`
 Helper `SECURITY DEFINER` que usan las políticas RLS para leer el rol propio
 sin recursión. Para anon devuelve `null`.
+
+### `set_training_areas(training_id, area_ids)` *(admin)*
+Reemplaza el conjunto completo de áreas de una capacitación en una sola
+transacción, para que no quede un instante sin clasificar (que la volvería
+"para todos"). `SECURITY INVOKER`: autoriza la política de admin.
 
 ### `save_exam(training_id, exam, questions)` *(admin)*
 `SECURITY INVOKER`: quien autoriza son las políticas de `exams` /
