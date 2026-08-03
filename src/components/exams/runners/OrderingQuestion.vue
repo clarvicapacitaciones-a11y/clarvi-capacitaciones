@@ -100,15 +100,15 @@ watch(
 }
 
 .step-number {
-  width: 1.7rem;
-  height: 1.7rem;
+  width: 1.6rem;
+  height: 1.6rem;
   display: grid;
   place-items: center;
   border-radius: var(--radius-full);
-  background: var(--clarvi-navy);
-  color: var(--text-inverse);
-  font-weight: 700;
-  font-size: 0.8rem;
+  background: var(--navy-050);
+  color: var(--clarvi-navy);
+  font-weight: 500;
+  font-size: 0.82rem;
   flex-shrink: 0;
 }
 

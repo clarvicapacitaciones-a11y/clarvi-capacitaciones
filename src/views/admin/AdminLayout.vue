@@ -20,35 +20,32 @@
 </template>
 
 <style scoped>
-/* Sub-navegación por línea inferior: la sección activa se marca con un
-   filete navy sobre la línea de la barra. */
+/* Sub-navegación en píldoras, del mismo lenguaje que las pestañas. */
 .admin-nav {
-  display: flex;
+  display: inline-flex;
+  gap: 0.25rem;
   margin-bottom: 1.75rem;
-  border-bottom: var(--rule);
+  padding: 0.25rem;
+  border-radius: var(--radius-full);
+  background: var(--bg-subtle);
   flex-wrap: wrap;
 }
 
 .admin-tab {
-  padding: 0.6rem 1rem 0.6rem 0;
-  margin-right: 1.5rem;
-  font-weight: 700;
-  font-size: 0.75rem;
-  text-transform: uppercase;
-  letter-spacing: var(--tracking-label);
+  padding: 0.5rem 1.05rem;
+  border-radius: var(--radius-full);
+  font-weight: 500;
+  font-size: 0.86rem;
   color: var(--text-muted);
-  border-bottom: 2px solid transparent;
-  margin-bottom: -1px;
-  transition: color var(--transition-fast), border-color var(--transition-fast);
+  transition: background-color var(--transition-fast), color var(--transition-fast);
 }
 
 .admin-tab:hover {
-  color: var(--clarvi-navy);
-  border-bottom-color: var(--line-mid);
+  color: var(--text-strong);
 }
 
 .admin-tab.router-link-active {
-  color: var(--clarvi-navy);
-  border-bottom-color: var(--clarvi-navy);
+  background: var(--clarvi-navy);
+  color: var(--text-inverse);
 }
 </style>

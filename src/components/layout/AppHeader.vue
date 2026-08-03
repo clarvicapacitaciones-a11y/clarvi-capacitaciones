@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth.store'
 import { ROLE_LABELS } from '@/types/domain'
@@ -7,6 +7,12 @@ import { ROLE_LABELS } from '@/types/domain'
 const auth = useAuthStore()
 const router = useRouter()
 const menuOpen = ref(false)
+
+/** Iniciales para el avatar del menú de cuenta. */
+const initials = computed(() => {
+  const parts = (auth.profile?.full_name ?? '').trim().split(/\s+/).slice(0, 2)
+  return parts.map((part) => part.charAt(0).toUpperCase()).join('') || '·'
+})
 
 async function handleLogout(): Promise<void> {
   menuOpen.value = false
@@ -26,25 +32,24 @@ async function handleLogout(): Promise<void> {
         </span>
       </RouterLink>
 
-      <nav class="nav">
+      <!-- La navegación solo existe para quien administra: un usuario normal
+           únicamente ve sus capacitaciones, así que el menú sería ruido. -->
+      <nav v-if="auth.isAdmin" class="nav">
         <RouterLink :to="{ name: 'dashboard' }" class="nav-link">
           Mis capacitaciones
         </RouterLink>
-        <RouterLink
-          v-if="auth.isAdmin"
-          :to="{ name: 'admin-trainings' }"
-          class="nav-link"
-        >
+        <RouterLink :to="{ name: 'admin-trainings' }" class="nav-link">
           Administración
         </RouterLink>
       </nav>
 
       <div v-if="auth.profile" class="user-menu">
         <button class="user-chip" @click="menuOpen = !menuOpen">
+          <span class="user-avatar" aria-hidden="true">{{ initials }}</span>
           <span class="user-name">{{ auth.profile.full_name }}</span>
-          <span class="user-role">{{ ROLE_LABELS[auth.profile.role] }}</span>
         </button>
         <div v-if="menuOpen" class="user-dropdown" @click="menuOpen = false">
+          <p class="dropdown-role">{{ ROLE_LABELS[auth.profile.role] }}</p>
           <RouterLink :to="{ name: 'perfil' }" class="dropdown-item">
             Mi perfil
           </RouterLink>
@@ -58,194 +63,196 @@ async function handleLogout(): Promise<void> {
 </template>
 
 <style scoped>
-/* Barra plana: fondo sólido, filete azul de marca arriba y una línea
-   de 1px abajo. Las divisiones internas también son líneas. */
+/* Barra sólida (nada de transparencias) separada por una línea suave.
+   Todo alineado a la izquierda: marca, navegación y, al extremo, la cuenta. */
 .app-header {
   position: sticky;
   top: 0;
   z-index: 40;
   background: var(--bg-surface);
-  border-top: var(--accent-width) solid var(--clarvi-blue);
   border-bottom: var(--rule);
 }
 
 .app-header-inner {
   max-width: 1100px;
   margin: 0 auto;
-  padding: 0 1.25rem;
+  padding: 0.75rem 1.25rem;
   display: flex;
-  align-items: stretch;
-  gap: 1.5rem;
+  align-items: center;
+  gap: 1.75rem;
 }
 
 .brand {
   display: flex;
   align-items: center;
   gap: 0.6rem;
-  padding: 0.7rem 1.5rem 0.7rem 0;
-  border-right: var(--rule);
 }
 
 .brand-icon {
-  width: 32px;
-  height: 32px;
+  width: 30px;
+  height: 30px;
+  border-radius: var(--radius-sm);
 }
 
 .brand-text {
   display: flex;
   flex-direction: column;
-  line-height: 1.15;
+  line-height: 1.2;
 }
 
 .brand-text strong {
   color: var(--clarvi-navy);
   font-size: 0.95rem;
-  letter-spacing: 0.14em;
+  font-weight: 600;
+  letter-spacing: 0.02em;
 }
 
 .brand-text small {
   color: var(--text-muted);
-  font-size: 0.66rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: var(--tracking-label);
+  font-size: 0.74rem;
+  font-weight: 400;
 }
 
 .nav {
   display: flex;
-  align-items: stretch;
+  align-items: center;
+  gap: 0.25rem;
   flex: 1;
 }
 
-/* La pestaña activa se marca con una línea inferior; el borde siempre
-   ocupa su lugar (transparente) para que nada se mueva al cambiar. */
+/* Sección activa: píldora tenue, sin subrayados ni negritas de más. */
 .nav-link {
-  display: inline-flex;
-  align-items: center;
-  padding: 0 1rem;
+  padding: 0.45rem 0.85rem;
+  border-radius: var(--radius-full);
   color: var(--text-muted);
-  font-weight: 700;
-  font-size: 0.75rem;
-  text-transform: uppercase;
-  letter-spacing: var(--tracking-label);
-  border-bottom: 2px solid transparent;
-  transition: color var(--transition-fast), border-color var(--transition-fast);
+  font-size: 0.88rem;
+  font-weight: 500;
+  transition: background-color var(--transition-fast), color var(--transition-fast);
 }
 
 .nav-link:hover {
-  color: var(--clarvi-navy);
-  border-bottom-color: var(--line-mid);
+  background: var(--bg-subtle);
+  color: var(--text-strong);
 }
 
 .nav-link.router-link-active {
+  background: var(--navy-050);
   color: var(--clarvi-navy);
-  border-bottom-color: var(--clarvi-navy);
 }
 
 .user-menu {
   position: relative;
   display: flex;
   align-items: center;
+  margin-left: auto;
 }
 
 .user-chip {
   display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  border: var(--rule);
-  border-radius: var(--radius-md);
-  background: var(--bg-surface);
-  padding: 0.3rem 0.7rem;
+  align-items: center;
+  gap: 0.55rem;
+  border: none;
+  border-radius: var(--radius-full);
+  background: transparent;
+  padding: 0.35rem 0.5rem;
   cursor: pointer;
   font: inherit;
-  transition: border-color var(--transition-fast);
+  transition: background-color var(--transition-fast);
 }
 
 .user-chip:hover {
-  border-color: var(--clarvi-navy);
+  background: var(--bg-subtle);
+}
+
+.user-avatar {
+  display: grid;
+  place-items: center;
+  width: 2rem;
+  height: 2rem;
+  border-radius: var(--radius-full);
+  background: var(--navy-050);
+  color: var(--clarvi-navy);
+  font-size: 0.8rem;
+  font-weight: 600;
+  flex-shrink: 0;
 }
 
 .user-name {
-  font-weight: 600;
   color: var(--text-strong);
-  font-size: 0.85rem;
+  font-size: 0.88rem;
+  font-weight: 500;
   max-width: 180px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-.user-role {
-  font-size: 0.64rem;
-  color: var(--text-muted);
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: var(--tracking-label);
-}
-
 .user-dropdown {
   position: absolute;
   right: 0;
-  top: calc(100% - 0.3rem);
-  min-width: 180px;
+  top: calc(100% + 0.4rem);
+  min-width: 190px;
   display: flex;
   flex-direction: column;
+  padding: 0.35rem;
   background: var(--bg-surface);
-  border: var(--rule-strong);
+  border: var(--rule);
   border-radius: var(--radius-md);
+  overflow: hidden;
+}
+
+.dropdown-role {
+  padding: 0.5rem 0.7rem 0.6rem;
+  border-bottom: var(--rule);
+  margin-bottom: 0.35rem;
+  font-size: 0.78rem;
+  color: var(--text-muted);
 }
 
 .dropdown-item {
   text-align: left;
-  padding: 0.6rem 0.9rem;
+  padding: 0.55rem 0.7rem;
+  border: none;
+  border-radius: var(--radius-sm);
   font: inherit;
-  font-size: 0.85rem;
-  font-weight: 600;
+  font-size: 0.88rem;
+  font-weight: 400;
   color: var(--text-body);
   background: none;
-  border: none;
-  border-bottom: var(--rule);
   cursor: pointer;
   transition: background-color var(--transition-fast), color var(--transition-fast);
 }
 
-.dropdown-item:last-child {
-  border-bottom: none;
-}
-
 .dropdown-item:hover {
-  background: var(--clarvi-navy);
-  color: var(--text-inverse);
+  background: var(--bg-subtle);
+  color: var(--text-strong);
 }
 
 @media (max-width: 640px) {
   .app-header-inner {
-    flex-wrap: wrap;
-    gap: 0.5rem;
-    padding: 0 1rem;
+    gap: 0.75rem;
+    padding: 0.65rem 1rem;
   }
 
-  .brand {
-    border-right: none;
-    padding-right: 0;
+  .brand-text small {
+    display: none;
   }
 
   .nav {
     order: 3;
     width: 100%;
+    flex: none;
+    overflow-x: auto;
+    padding-top: 0.3rem;
     border-top: var(--rule);
   }
 
-  .nav-link {
-    padding: 0.7rem 0.9rem;
+  .app-header-inner {
+    flex-wrap: wrap;
   }
 
-  .nav-link:first-child {
-    padding-left: 0;
-  }
-
-  .user-menu {
-    margin-left: auto;
+  .user-name {
+    max-width: 120px;
   }
 }
 </style>

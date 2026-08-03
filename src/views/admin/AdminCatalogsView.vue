@@ -224,7 +224,7 @@ async function toggleActive(row: Area | Sucursal): Promise<void> {
 
 .catalog-name {
   flex: 1;
-  font-weight: 600;
+  font-weight: 500;
   color: var(--text-strong);
 }
 

@@ -354,12 +354,10 @@ function backToTraining(): void {
 }
 
 .counter {
-  font-size: 0.72rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: var(--tracking-label);
-  color: var(--clarvi-navy);
+  font-size: 0.85rem;
+  color: var(--text-muted);
   white-space: nowrap;
+  font-variant-numeric: tabular-nums;
 }
 
 .runner-progress {
@@ -387,12 +385,12 @@ function backToTraining(): void {
   flex: 1;
 }
 
-/* Índice de preguntas: cuadros que solo cambian de color según su estado. */
+/* Índice de preguntas: puntos que solo cambian de color según su estado. */
 .dot {
-  width: 0.75rem;
-  height: 0.75rem;
+  width: 0.6rem;
+  height: 0.6rem;
   padding: 0;
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius-full);
   border: 1px solid var(--line-mid);
   background: var(--bg-surface);
   cursor: pointer;
@@ -447,22 +445,21 @@ function backToTraining(): void {
   margin-top: 1rem;
 }
 
-/* Resultado: cifra grande enmarcada por líneas, sin adornos. */
+/* Resultado: la cifra manda, el resto se queda tranquilo. */
 .result-head {
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 0.3rem;
   text-align: center;
-  padding: 1.25rem 0;
-  border-top: var(--rule-strong);
-  border-bottom: var(--rule-strong);
+  padding: 1.5rem 0;
 }
 
 .result-score {
   font-size: 3rem;
+  font-weight: 600;
   line-height: 1;
-  letter-spacing: -0.02em;
+  letter-spacing: -0.03em;
   color: var(--clarvi-navy);
 }
 

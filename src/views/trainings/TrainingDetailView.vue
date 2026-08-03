@@ -7,7 +7,8 @@ import UiButton from '@/components/ui/UiButton.vue'
 import UiCard from '@/components/ui/UiCard.vue'
 import UiBadge from '@/components/ui/UiBadge.vue'
 import YoutubePlayer from '@/components/trainings/YoutubePlayer.vue'
-import { formatDate, formatMinutes } from '@/composables/useFormat'
+import { formatDate } from '@/composables/useFormat'
+import { coverImageUrl } from '@/composables/useTrainingCover'
 import { getExamStatus } from '@/services/exams.service'
 import {
   getMyAttendance,
@@ -103,6 +104,17 @@ const examButtonLabel = computed(() => {
   return (exam.value?.attempts_used ?? 0) > 0 ? 'Repetir examen' : 'Aplicar examen'
 })
 
+/** Vuelve al dashboard (o a la pantalla anterior si se llegó desde la app). */
+function goBack(): void {
+  if (window.history.state?.back) router.back()
+  else void router.push({ name: 'dashboard' })
+}
+
+/** Portada para la ficha cuando todavía no hay video que mostrar. */
+const cover = computed(() =>
+  coverImageUrl(training.value?.cover_image_url, training.value?.youtube_video_id),
+)
+
 function goToExam(): void {
   void router.push({ name: 'exam-runner', params: { id: String(route.params.id) } })
 }
@@ -114,6 +126,8 @@ function goToExam(): void {
     <p v-else-if="error" class="form-error">{{ error }}</p>
 
     <template v-else-if="training">
+      <button class="back-link" @click="goBack">← Mis capacitaciones</button>
+
       <header class="page-header">
         <div>
           <h1>{{ training.title }}</h1>
@@ -121,12 +135,10 @@ function goToExam(): void {
         </div>
         <div class="header-badges">
           <UiBadge v-if="attendance" tone="success">
-            Asististe presencialmente ✓
+            Asististe presencialmente
           </UiBadge>
-          <UiBadge v-if="isCompleted" tone="success">Completada ✓</UiBadge>
-          <UiBadge v-if="exam?.passed" tone="success">
-            Examen aprobado ✓
-          </UiBadge>
+          <UiBadge v-if="isCompleted" tone="success">Completada</UiBadge>
+          <UiBadge v-if="exam?.passed" tone="success">Examen aprobado</UiBadge>
         </div>
       </header>
 
@@ -141,32 +153,25 @@ function goToExam(): void {
           @progress="onProgress"
         />
 
-        <UiCard class="progress-card">
-          <div class="progress-info">
-            <div>
-              <strong>{{ Math.round(livePercent) }}%</strong>
-              <span class="muted"> visto</span>
-            </div>
-            <span class="muted">{{ formatMinutes(liveSeconds) }} de video</span>
-          </div>
+        <div class="watch-progress">
           <div class="progress-bar" :class="{ 'is-complete': isCompleted }">
             <span :style="{ width: `${Math.min(100, livePercent)}%` }" />
           </div>
-          <p class="muted progress-note">
-            Tu avance se guarda automáticamente. Al llegar al 90% la
-            capacitación se marca como completada.
-          </p>
-        </UiCard>
+          <span class="watch-percent">{{ Math.round(livePercent) }}%</span>
+        </div>
       </template>
 
-      <UiCard v-else class="progress-card">
+      <template v-else>
+        <div v-if="cover" class="detail-cover">
+          <img :src="cover" alt="" />
+        </div>
         <div class="empty-state">
           <strong>El video aún no está disponible</strong>
           <span>
             Cuando el equipo suba la grabación de esta sesión podrás verla aquí.
           </span>
         </div>
-      </UiCard>
+      </template>
 
       <UiCard v-if="exam?.has_exam" class="exam-card">
         <div class="exam-info">
@@ -214,21 +219,39 @@ function goToExam(): void {
   margin-top: 1rem;
 }
 
-.progress-info {
+.detail-cover {
+  aspect-ratio: 16 / 9;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  margin-bottom: 1rem;
+  background: var(--navy-050);
+}
+
+.detail-cover img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+/* Avance del video: barra fina y el porcentaje, nada más. */
+.watch-progress {
   display: flex;
-  justify-content: space-between;
-  align-items: baseline;
-  margin-bottom: 0.5rem;
+  align-items: center;
+  gap: 0.75rem;
+  margin-top: 0.9rem;
 }
 
-.progress-info strong {
-  font-size: 1.4rem;
-  color: var(--clarvi-navy);
+.watch-progress .progress-bar {
+  flex: 1;
 }
 
-.progress-note {
-  margin: 0.6rem 0 0;
-  font-size: 0.8rem;
+.watch-percent {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+  min-width: 2.5rem;
+  text-align: right;
 }
 
 .exam-card {
@@ -249,10 +272,10 @@ function goToExam(): void {
 }
 
 .exam-best {
-  font-size: 0.9rem;
-  font-weight: 600;
+  font-size: 0.88rem;
+  font-weight: 500;
   color: var(--clarvi-blue-ink);
-  margin-top: 0.2rem;
+  margin-top: 0.3rem;
 }
 
 .exam-block {

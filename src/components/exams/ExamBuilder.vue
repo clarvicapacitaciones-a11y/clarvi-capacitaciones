@@ -176,8 +176,8 @@ function moveQuestion(index: number, delta: number): void {
   align-items: center;
   gap: 0.45rem;
   font-size: 0.88rem;
-  font-weight: 600;
-  color: var(--clarvi-navy);
+  font-weight: 500;
+  color: var(--text-body);
   cursor: pointer;
 }
 
@@ -201,8 +201,7 @@ function moveQuestion(index: number, delta: number): void {
 }
 
 .switch {
-  font-weight: 500;
-  color: var(--text-body);
+  font-weight: 400;
 }
 
 .field-block {

@@ -45,7 +45,6 @@ const emit = defineEmits<{ close: [] }>()
   max-height: 90vh;
   overflow-y: auto;
   background: var(--bg-surface);
-  border: var(--rule-strong);
   border-radius: var(--radius-lg);
 }
 
@@ -54,42 +53,45 @@ const emit = defineEmits<{ close: [] }>()
   align-items: center;
   justify-content: space-between;
   gap: 0.75rem;
-  padding: 0.9rem 1.25rem;
-  border-bottom: var(--rule);
+  padding: 1.1rem 1.35rem 0.75rem;
 }
 
 .modal-header h3 {
   margin: 0;
-  font-size: 0.85rem;
-  text-transform: uppercase;
-  letter-spacing: var(--tracking-label);
-  color: var(--clarvi-navy);
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: var(--text-strong);
 }
 
 .modal-close {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.9rem;
+  height: 1.9rem;
   border: none;
+  border-radius: var(--radius-full);
   background: none;
-  font-size: 1.4rem;
+  font-size: 1.3rem;
   line-height: 1;
   color: var(--text-muted);
   cursor: pointer;
-  padding: 0.1rem 0.4rem;
-  transition: color var(--transition-fast);
+  transition: background-color var(--transition-fast), color var(--transition-fast);
 }
 
 .modal-close:hover {
-  color: var(--clarvi-navy);
+  background: var(--bg-subtle);
+  color: var(--text-strong);
 }
 
 .modal-body {
-  padding: 1.1rem 1.25rem;
+  padding: 0 1.35rem 0.5rem;
 }
 
 .modal-footer {
   display: flex;
   justify-content: flex-end;
   gap: 0.6rem;
-  padding: 0.9rem 1.25rem;
-  border-top: var(--rule);
+  padding: 0.85rem 1.35rem 1.35rem;
 }
 </style>

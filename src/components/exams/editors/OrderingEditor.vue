@@ -111,9 +111,9 @@ function move(index: number, delta: number): void {
 
 .step-number {
   width: 1.5rem;
-  font-weight: 700;
+  font-weight: 500;
   font-size: 0.85rem;
-  color: var(--clarvi-blue-ink);
+  color: var(--text-muted);
   flex-shrink: 0;
 }
 

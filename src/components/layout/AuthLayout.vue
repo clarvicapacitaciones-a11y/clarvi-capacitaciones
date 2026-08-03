@@ -23,42 +23,39 @@ defineProps<{ subtitle?: string }>()
   padding: 1.5rem 1rem;
 }
 
-/* Tarjeta plana con el filete azul de marca arriba. */
+/* Tarjeta blanca de esquinas suaves sobre el fondo de la página. */
 .auth-card {
   width: min(430px, 100%);
   background: var(--bg-surface);
   border: var(--rule);
-  border-top: var(--accent-width) solid var(--clarvi-blue);
-  border-radius: var(--radius-lg);
-  padding: 2rem 1.75rem;
+  border-radius: var(--radius-xl);
+  padding: 2.25rem 2rem;
 }
 
 .auth-brand {
   text-align: center;
   margin-bottom: 1.75rem;
-  padding-bottom: 1.25rem;
-  border-bottom: var(--rule);
 }
 
 .auth-logo {
-  width: 48px;
-  height: 48px;
-  margin-bottom: 0.6rem;
+  width: 44px;
+  height: 44px;
+  border-radius: var(--radius-md);
+  margin-bottom: 0.75rem;
 }
 
 .auth-brand h1 {
   margin: 0;
-  letter-spacing: 0.2em;
+  letter-spacing: 0.08em;
   color: var(--clarvi-navy);
-  font-size: 1.5rem;
+  font-size: 1.35rem;
+  font-weight: 600;
 }
 
 .auth-subtitle {
   margin: 0.35rem 0 0;
   color: var(--text-muted);
-  font-weight: 700;
-  font-size: 0.7rem;
-  text-transform: uppercase;
-  letter-spacing: var(--tracking-label);
+  font-weight: 400;
+  font-size: 0.88rem;
 }
 </style>

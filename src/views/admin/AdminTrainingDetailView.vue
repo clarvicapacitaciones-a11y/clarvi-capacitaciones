@@ -131,6 +131,10 @@ async function confirmRegenerate(): Promise<void> {
     <p v-else-if="error" class="form-error">{{ error }}</p>
 
     <template v-else-if="training">
+      <RouterLink :to="{ name: 'admin-trainings' }" class="back-link">
+        ← Capacitaciones
+      </RouterLink>
+
       <header class="page-header">
         <div>
           <h1>{{ training.title }}</h1>
@@ -466,28 +470,24 @@ async function confirmRegenerate(): Promise<void> {
   margin-bottom: 1rem;
 }
 
-/* Indicador: cifra grande y etiqueta corta, marcados por una línea azul
-   a la izquierda. */
+/* Indicador: la cifra pesa, la etiqueta se queda discreta. */
 .stat {
-  padding: 0.9rem 1rem;
-  border-left: var(--accent-width) solid var(--clarvi-blue);
+  padding: 1.1rem 1.2rem;
 }
 
 .stat strong {
   display: block;
-  font-size: 1.6rem;
+  font-size: 1.7rem;
+  font-weight: 600;
   line-height: 1.1;
-  letter-spacing: -0.02em;
-  color: var(--clarvi-navy);
+  letter-spacing: -0.03em;
+  color: var(--text-strong);
 }
 
 .stat span {
   display: block;
-  margin-top: 0.25rem;
-  font-size: 0.68rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: var(--tracking-label);
+  margin-top: 0.15rem;
+  font-size: 0.82rem;
   color: var(--text-muted);
 }
 
@@ -507,7 +507,6 @@ async function confirmRegenerate(): Promise<void> {
 .video-frame {
   position: relative;
   aspect-ratio: 16 / 9;
-  border: var(--rule);
   border-radius: var(--radius-md);
   overflow: hidden;
   background: #000;
@@ -537,9 +536,8 @@ async function confirmRegenerate(): Promise<void> {
 }
 
 .percent-label {
-  font-size: 0.8rem;
-  font-weight: 700;
-  color: var(--clarvi-navy);
+  font-size: 0.82rem;
+  color: var(--text-muted);
   min-width: 38px;
   font-variant-numeric: tabular-nums;
 }
@@ -568,16 +566,11 @@ async function confirmRegenerate(): Promise<void> {
   margin-top: 0.8rem;
 }
 
-/* Sub-encabezado: misma micro-etiqueta sobre línea que .section-title. */
 .subsection {
-  margin: 1.6rem 0 0.5rem;
-  padding-bottom: 0.35rem;
-  border-bottom: var(--rule);
-  font-size: 0.72rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: var(--tracking-label);
-  color: var(--clarvi-navy);
+  margin: 1.75rem 0 0.4rem;
+  font-size: 0.98rem;
+  font-weight: 600;
+  color: var(--text-strong);
 }
 
 .subsection-note {

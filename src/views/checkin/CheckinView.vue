@@ -144,9 +144,9 @@ onMounted(async () => {
 }
 
 .training-name {
-  font-size: 1.15rem;
-  font-weight: 700;
-  color: var(--clarvi-navy);
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--text-strong);
   margin: 0;
 }
 
@@ -157,17 +157,16 @@ onMounted(async () => {
   margin: 0;
 }
 
-/* Marca de resultado: cuadro de color plano con contorno del mismo tono. */
+/* Marca de resultado: círculo de color plano. */
 .result-icon {
-  width: 60px;
-  height: 60px;
+  width: 62px;
+  height: 62px;
   margin: 0 auto;
   display: grid;
   place-items: center;
-  border: 1px solid currentColor;
-  border-radius: var(--radius-md);
-  font-size: 1.8rem;
-  font-weight: 700;
+  border-radius: var(--radius-full);
+  font-size: 1.7rem;
+  font-weight: 500;
 }
 
 .result-icon.is-success {
@@ -187,9 +186,8 @@ onMounted(async () => {
 
 .detail-box {
   background: var(--bg-subtle);
-  border-left: var(--accent-width) solid var(--clarvi-blue);
   border-radius: var(--radius-md);
-  padding: 0.8rem;
+  padding: 0.9rem 1rem;
   text-align: left;
 }
 

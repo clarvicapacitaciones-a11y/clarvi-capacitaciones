@@ -154,8 +154,8 @@ async function confirmDelete(): Promise<void> {
 
 <style scoped>
 .row-title {
-  font-weight: 600;
-  color: var(--clarvi-navy);
+  font-weight: 500;
+  color: var(--text-strong);
 }
 
 .row-title:hover {

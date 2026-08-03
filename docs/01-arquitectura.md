@@ -18,9 +18,13 @@ asistencia presencial se registra en papel. Esta plataforma cierra ambos huecos.
    puede tener bugs sin comprometer datos.
 3. **Funciones claras y simples.** Cada servicio/composable hace una cosa;
    los componentes `Ui*` y `assets/styles` son la única fuente de estilos.
-4. **Interfaz plana.** Color sólido, líneas de 1px y esquinas rectas: sin
-   degradados, glass, blur ni sombras. Lo único que se anima es el color, así
-   que la UI se lee igual en una laptop vieja de planta que en un celular.
+4. **Interfaz plana y moderna.** Color sólido, esquinas redondeadas y aire:
+   sin degradados, glass, blur ni sombras. La jerarquía se hace con tamaño,
+   peso y color (no poniendo todo en negritas ni en mayúsculas) y lo único
+   que se anima es el color, así que la UI se lee igual en una laptop vieja
+   de planta que en un celular.
+5. **Cada quien ve lo que necesita.** El menú de navegación solo aparece para
+   administradores; un usuario normal entra directo a sus capacitaciones.
 
 ## Componentes
 

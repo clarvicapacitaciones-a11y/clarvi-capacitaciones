@@ -24,9 +24,9 @@ import UiButton from '@/components/ui/UiButton.vue'
 }
 
 .code {
-  font-size: 3.5rem;
-  font-weight: 800;
-  letter-spacing: -0.03em;
+  font-size: 3.25rem;
+  font-weight: 600;
+  letter-spacing: -0.04em;
   color: var(--line-mid);
   margin: 0;
 }

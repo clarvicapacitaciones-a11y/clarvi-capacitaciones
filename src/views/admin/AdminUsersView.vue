@@ -295,9 +295,8 @@ function roleTone(role: UserRole): 'info' | 'warning' | 'neutral' {
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  font-size: 0.92rem;
-  font-weight: 600;
-  color: var(--clarvi-navy);
+  font-size: 0.9rem;
+  color: var(--text-body);
   cursor: pointer;
 }
 

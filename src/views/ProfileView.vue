@@ -195,8 +195,8 @@ async function savePassword(): Promise<void> {
 }
 
 .account-id {
-  font-weight: 700;
-  color: var(--clarvi-navy);
+  font-weight: 500;
+  color: var(--text-strong);
   margin: 0;
 }
 </style>

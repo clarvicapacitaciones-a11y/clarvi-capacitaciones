@@ -84,7 +84,6 @@ onBeforeUnmount(() => {
   width: 100%;
   aspect-ratio: 16 / 9;
   border-radius: var(--radius-lg);
-  border: var(--rule-strong);
   overflow: hidden;
   background: #000;
 }

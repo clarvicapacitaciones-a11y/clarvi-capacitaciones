@@ -78,14 +78,13 @@ function letterFor(index: number): string {
   gap: 1rem;
 }
 
-/* Panel de referencia: fondo plano y línea de marca a la izquierda. */
+/* Panel de referencia: bloque tenue de esquinas suaves. */
 .right-list {
   list-style: none;
   margin: 0;
-  padding: 0.85rem 1rem;
+  padding: 0.9rem 1.1rem;
   border-radius: var(--radius-md);
   background: var(--bg-subtle);
-  border-left: var(--accent-width) solid var(--clarvi-blue);
   display: flex;
   flex-direction: column;
   gap: 0.4rem;
@@ -99,7 +98,7 @@ function letterFor(index: number): string {
 }
 
 .letter {
-  font-weight: 700;
+  font-weight: 500;
   color: var(--clarvi-blue-ink);
   flex-shrink: 0;
 }

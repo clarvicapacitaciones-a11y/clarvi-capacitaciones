@@ -26,21 +26,20 @@ withDefaults(
 </template>
 
 <style scoped>
-/* Botón plano: rectángulo, una línea de 1px y color sólido.
-   El hover invierte el color; no hay movimiento ni sombra. */
+/* Botón plano con esquinas redondeadas. Texto en altas y bajas: el peso y
+   el color hacen la jerarquía, no las mayúsculas. */
 .ui-btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
-  padding: 0.62rem 1.15rem;
+  padding: 0.65rem 1.2rem;
   border: 1px solid transparent;
   border-radius: var(--radius-md);
   font: inherit;
-  font-size: 0.78rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: var(--tracking-label);
+  font-size: 0.9rem;
+  font-weight: 500;
+  line-height: 1.2;
   cursor: pointer;
   transition:
     background-color var(--transition-fast),
@@ -55,30 +54,30 @@ withDefaults(
 }
 
 .is-primary:not(:disabled):hover {
-  background: var(--clarvi-blue);
-  border-color: var(--clarvi-blue);
+  background: var(--clarvi-navy-soft);
+  border-color: var(--clarvi-navy-soft);
 }
 
 .is-ghost {
   background: var(--bg-surface);
-  border-color: var(--clarvi-navy);
-  color: var(--clarvi-navy);
+  border-color: var(--line);
+  color: var(--text-strong);
 }
 
 .is-ghost:not(:disabled):hover {
-  background: var(--clarvi-navy);
-  color: var(--text-inverse);
+  background: var(--bg-subtle);
+  border-color: var(--line-mid);
 }
 
 .is-danger {
   background: var(--bg-surface);
-  border-color: var(--color-danger);
+  border-color: var(--line);
   color: var(--color-danger);
 }
 
 .is-danger:not(:disabled):hover {
-  background: var(--color-danger);
-  color: var(--text-inverse);
+  background: var(--color-danger-bg);
+  border-color: var(--color-danger-bg);
 }
 
 /* Deshabilitado explícito y plano (sin opacidad), después de las variantes
@@ -94,16 +93,17 @@ withDefaults(
   width: 100%;
 }
 
-/* Indicador de carga: tres barras que solo cambian de color, sin giro. */
+/* Indicador de carga: tres puntos que solo cambian de color, sin giro. */
 .loader {
   display: inline-flex;
   align-items: center;
-  gap: 0.2em;
+  gap: 0.22em;
 }
 
 .loader i {
-  width: 0.32em;
-  height: 0.32em;
+  width: 0.3em;
+  height: 0.3em;
+  border-radius: var(--radius-full);
   background: currentColor;
   animation: blink 0.9s steps(1, end) infinite;
 }

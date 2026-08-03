@@ -135,17 +135,15 @@ const points = computed({
 </template>
 
 <style scoped>
-/* Bloque de pregunta: caja plana delimitada por línea, con el filete
-   navy que la separa del resto del constructor. */
+/* Bloque de pregunta: caja de esquinas suaves sobre el fondo tenue. */
 .question-editor {
   display: flex;
   flex-direction: column;
-  gap: 0.7rem;
-  padding: 0.9rem 1rem;
+  gap: 0.75rem;
+  padding: 1.1rem;
   border-radius: var(--radius-md);
   border: var(--rule);
-  border-left: var(--accent-width) solid var(--clarvi-navy);
-  background: var(--bg-surface);
+  background: var(--bg-subtle);
 }
 
 .question-header {
@@ -156,11 +154,9 @@ const points = computed({
 }
 
 .question-number {
-  font-weight: 700;
-  font-size: 0.7rem;
-  text-transform: uppercase;
-  letter-spacing: var(--tracking-label);
-  color: var(--clarvi-navy);
+  font-weight: 500;
+  font-size: 0.85rem;
+  color: var(--text-muted);
 }
 
 .header-actions {

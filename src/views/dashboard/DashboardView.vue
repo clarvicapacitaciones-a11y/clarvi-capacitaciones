@@ -91,8 +91,8 @@ onMounted(async () => {
 /* El control segmentado vive en base.css (.tabs/.tab); aquí solo el
    contador de cada pestaña. */
 .count {
-  font-size: 0.72rem;
-  font-weight: 700;
+  font-size: 0.78rem;
+  font-variant-numeric: tabular-nums;
   transition: color var(--transition-fast);
 }
 
@@ -106,7 +106,7 @@ onMounted(async () => {
 
 .cards-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-  gap: 1rem;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 1.1rem;
 }
 </style>

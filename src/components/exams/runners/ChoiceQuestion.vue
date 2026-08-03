@@ -70,7 +70,7 @@ function select(optionId: string): void {
       :aria-pressed="isSelected(option.id)"
       @click="select(option.id)"
     >
-      <span class="option-mark" aria-hidden="true" />
+      <span class="option-mark" :class="{ 'is-multi': isMulti }" aria-hidden="true" />
       <span class="option-text">{{ option.text }}</span>
     </button>
   </div>
@@ -95,7 +95,7 @@ function select(optionId: string): void {
   width: 100%;
   text-align: left;
   font: inherit;
-  font-size: 1rem;
+  font-size: 0.95rem;
   color: var(--text-body);
   padding: 0.85rem 1rem;
   border-radius: var(--radius-md);
@@ -116,19 +116,26 @@ function select(optionId: string): void {
   border-color: var(--clarvi-navy);
   background: var(--color-info-bg);
   color: var(--clarvi-navy);
-  font-weight: 600;
+  font-weight: 500;
 }
 
-/* Marca cuadrada: vacía = sin elegir, sólida = elegida. */
+/* Marca: vacía = sin elegir, sólida = elegida. */
 .option-mark {
-  width: 1rem;
-  height: 1rem;
+  width: 1.05rem;
+  height: 1.05rem;
   border: 2px solid var(--line-mid);
+  border-radius: var(--radius-full);
   background: var(--bg-surface);
   flex-shrink: 0;
   transition:
     border-color var(--transition-fast),
     background-color var(--transition-fast);
+}
+
+/* En selección múltiple la marca es cuadrada (con las esquinas suaves del
+   sistema) para distinguirla de la de respuesta única. */
+.option-mark.is-multi {
+  border-radius: 5px;
 }
 
 .option.is-selected .option-mark {

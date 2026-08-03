@@ -33,6 +33,13 @@ Una fila por usuario, creada automáticamente al registrarse (trigger
 | `qr_token` | uuid **distinto del id**, es lo que codifica el QR; regenerable |
 | `session_date` | fecha de la sesión presencial |
 | `duration_seconds` | opcional; la duración real la reporta el reproductor |
+| `cover_image_url` | portada de la tarjeta; `null` = se usa la miniatura de YouTube |
+
+### Bucket `training-covers` (portadas)
+Bucket público de Storage para las portadas que sube el admin. Lectura
+abierta (la imagen se muestra en el dashboard de todos), escritura solo para
+`administrador` y `owner` vía políticas sobre `storage.objects`. Límite de
+5 MB y solo `image/jpeg`, `image/png`, `image/webp` y `image/avif`.
 
 ### `attendance` (asistencia presencial vía QR)
 `unique (training_id, user_id)` — un check-in por persona por capacitación.

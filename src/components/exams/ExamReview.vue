@@ -142,7 +142,7 @@ function describe(
 
 /* La línea izquierda dice de un vistazo si la respuesta fue correcta. */
 .review-item {
-  padding: 0.9rem 1rem;
+  padding: 1rem 1.1rem;
   border-radius: var(--radius-md);
   border: var(--rule);
   border-left: var(--accent-width) solid var(--color-danger);
@@ -164,16 +164,14 @@ function describe(
 }
 
 .review-number {
-  font-size: 0.7rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: var(--tracking-label);
-  color: var(--clarvi-navy);
+  font-size: 0.82rem;
+  font-weight: 500;
+  color: var(--text-muted);
 }
 
 .review-prompt {
   margin: 0;
-  font-weight: 600;
+  font-weight: 500;
   color: var(--text-strong);
 }
 
@@ -184,10 +182,8 @@ function describe(
 }
 
 .answer-label {
-  font-size: 0.68rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: var(--tracking-label);
+  font-size: 0.8rem;
+  font-weight: 400;
   color: var(--text-muted);
 }
 

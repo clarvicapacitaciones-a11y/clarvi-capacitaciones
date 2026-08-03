@@ -14,25 +14,21 @@ withDefaults(
 </template>
 
 <style scoped>
-/* Etiqueta plana: rectángulo con contorno del propio color del estado
-   y fondo sólido tenue. */
+/* Etiqueta en píldora: fondo tenue del estado y texto en altas y bajas. */
 .ui-badge {
   display: inline-flex;
   align-items: center;
   gap: 0.3rem;
-  padding: 0.16rem 0.5rem;
-  border: 1px solid currentColor;
+  padding: 0.22rem 0.65rem;
   border-radius: var(--radius-full);
-  font-size: 0.68rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: var(--tracking-label);
+  font-size: 0.78rem;
+  font-weight: 500;
+  line-height: 1.35;
   white-space: nowrap;
 }
 
 .is-neutral {
   background: var(--bg-subtle);
-  border-color: var(--line-mid);
   color: var(--text-muted);
 }
 
