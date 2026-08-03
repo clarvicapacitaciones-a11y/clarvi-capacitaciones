@@ -109,6 +109,236 @@ export type Database = {
           },
         ]
       }
+      exam_attempt_answers: {
+        Row: {
+          attempt_id: string
+          id: string
+          is_correct: boolean
+          points_awarded: number
+          question_id: string | null
+          question_snapshot: Json
+          response: Json
+        }
+        Insert: {
+          attempt_id: string
+          id?: string
+          is_correct?: boolean
+          points_awarded?: number
+          question_id?: string | null
+          question_snapshot: Json
+          response?: Json
+        }
+        Update: {
+          attempt_id?: string
+          id?: string
+          is_correct?: boolean
+          points_awarded?: number
+          question_id?: string | null
+          question_snapshot?: Json
+          response?: Json
+        }
+        Relationships: [
+          {
+            foreignKeyName: "exam_attempt_answers_attempt_id_fkey"
+            columns: ["attempt_id"]
+            isOneToOne: false
+            referencedRelation: "exam_attempts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "exam_attempt_answers_question_id_fkey"
+            columns: ["question_id"]
+            isOneToOne: false
+            referencedRelation: "exam_questions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      exam_attempts: {
+        Row: {
+          attempt_number: number
+          exam_id: string
+          id: string
+          max_score: number | null
+          passed: boolean | null
+          score: number | null
+          score_percent: number | null
+          started_at: string
+          submitted_at: string | null
+          user_id: string
+        }
+        Insert: {
+          attempt_number: number
+          exam_id: string
+          id?: string
+          max_score?: number | null
+          passed?: boolean | null
+          score?: number | null
+          score_percent?: number | null
+          started_at?: string
+          submitted_at?: string | null
+          user_id: string
+        }
+        Update: {
+          attempt_number?: number
+          exam_id?: string
+          id?: string
+          max_score?: number | null
+          passed?: boolean | null
+          score?: number | null
+          score_percent?: number | null
+          started_at?: string
+          submitted_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "exam_attempts_exam_id_fkey"
+            columns: ["exam_id"]
+            isOneToOne: false
+            referencedRelation: "exams"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "exam_attempts_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "exam_attempts_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "user_training_status"
+            referencedColumns: ["user_id"]
+          },
+        ]
+      }
+      exam_questions: {
+        Row: {
+          answer_key: Json
+          content: Json
+          created_at: string
+          exam_id: string
+          explanation: string | null
+          id: string
+          points: number
+          position: number
+          prompt: string
+          type: Database["public"]["Enums"]["question_type"]
+          updated_at: string
+        }
+        Insert: {
+          answer_key?: Json
+          content?: Json
+          created_at?: string
+          exam_id: string
+          explanation?: string | null
+          id?: string
+          points?: number
+          position: number
+          prompt: string
+          type: Database["public"]["Enums"]["question_type"]
+          updated_at?: string
+        }
+        Update: {
+          answer_key?: Json
+          content?: Json
+          created_at?: string
+          exam_id?: string
+          explanation?: string | null
+          id?: string
+          points?: number
+          position?: number
+          prompt?: string
+          type?: Database["public"]["Enums"]["question_type"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "exam_questions_exam_id_fkey"
+            columns: ["exam_id"]
+            isOneToOne: false
+            referencedRelation: "exams"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      exams: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          id: string
+          instructions: string | null
+          is_published: boolean
+          max_attempts: number | null
+          passing_percent: number
+          requires_video_completed: boolean
+          shuffle_questions: boolean
+          title: string | null
+          training_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          instructions?: string | null
+          is_published?: boolean
+          max_attempts?: number | null
+          passing_percent?: number
+          requires_video_completed?: boolean
+          shuffle_questions?: boolean
+          title?: string | null
+          training_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          instructions?: string | null
+          is_published?: boolean
+          max_attempts?: number | null
+          passing_percent?: number
+          requires_video_completed?: boolean
+          shuffle_questions?: boolean
+          title?: string | null
+          training_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "exams_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "exams_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "user_training_status"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "exams_training_id_fkey"
+            columns: ["training_id"]
+            isOneToOne: true
+            referencedRelation: "trainings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "exams_training_id_fkey"
+            columns: ["training_id"]
+            isOneToOne: true
+            referencedRelation: "user_training_status"
+            referencedColumns: ["training_id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           area_id: string | null
@@ -322,6 +552,9 @@ export type Database = {
           attended_in_person: boolean | null
           completed_at: string | null
           description: string | null
+          exam_best_percent: number | null
+          exam_passed: boolean | null
+          has_exam: boolean | null
           last_heartbeat_at: string | null
           last_position_seconds: number | null
           session_date: string | null
@@ -338,6 +571,14 @@ export type Database = {
       }
     }
     Functions: {
+      assert_question_shape: {
+        Args: {
+          p_answer_key: Json
+          p_content: Json
+          p_type: Database["public"]["Enums"]["question_type"]
+        }
+        Returns: undefined
+      }
       checkin_via_qr: {
         Args: { p_token: string }
         Returns: {
@@ -348,6 +589,38 @@ export type Database = {
       current_user_role: {
         Args: never
         Returns: Database["public"]["Enums"]["user_role"]
+      }
+      exam_status_for_training: {
+        Args: { p_training_id: string }
+        Returns: Json
+      }
+      grade_answer: {
+        Args: {
+          p_answer_key: Json
+          p_content: Json
+          p_response: Json
+          p_type: Database["public"]["Enums"]["question_type"]
+        }
+        Returns: number
+      }
+      normalize_text: { Args: { p_value: string }; Returns: string }
+      public_question_content: {
+        Args: {
+          p_content: Json
+          p_shuffle: boolean
+          p_type: Database["public"]["Enums"]["question_type"]
+        }
+        Returns: Json
+      }
+      save_exam: {
+        Args: { p_exam: Json; p_questions: Json; p_training_id: string }
+        Returns: string
+      }
+      shuffle_jsonb_array: { Args: { p_items: Json }; Returns: Json }
+      start_exam_attempt: { Args: { p_training_id: string }; Returns: Json }
+      submit_exam_attempt: {
+        Args: { p_answers: Json; p_attempt_id: string }
+        Returns: Json
       }
       training_title_for_token: { Args: { p_token: string }; Returns: string }
       upsert_watch_progress: {
@@ -362,6 +635,13 @@ export type Database = {
     }
     Enums: {
       auth_method_type: "email" | "username"
+      question_type:
+        | "multiple_choice"
+        | "multiple_select"
+        | "true_false"
+        | "matching"
+        | "ordering"
+        | "fill_blank"
       user_role: "owner" | "administrador" | "usuario"
     }
     CompositeTypes: {
@@ -491,6 +771,14 @@ export const Constants = {
   public: {
     Enums: {
       auth_method_type: ["email", "username"],
+      question_type: [
+        "multiple_choice",
+        "multiple_select",
+        "true_false",
+        "matching",
+        "ordering",
+        "fill_blank",
+      ],
       user_role: ["owner", "administrador", "usuario"],
     },
   },

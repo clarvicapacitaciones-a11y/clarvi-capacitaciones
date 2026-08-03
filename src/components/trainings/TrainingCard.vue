@@ -19,6 +19,10 @@ defineProps<{ row: TrainingStatusRow }>()
         <GlassBadge v-if="row.attended_in_person" tone="success">
           Asististe ✓
         </GlassBadge>
+        <GlassBadge v-if="row.exam_passed" tone="success">Examen ✓</GlassBadge>
+        <GlassBadge v-else-if="row.has_exam" tone="warning">
+          Examen pendiente
+        </GlassBadge>
       </div>
       <h3 class="card-title">{{ row.title }}</h3>
       <p class="card-date">{{ formatDate(row.session_date) }}</p>
