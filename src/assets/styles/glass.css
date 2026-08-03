@@ -93,6 +93,62 @@
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
 }
 
+/* Campos sueltos (textarea, listas de opciones): los componentes Glass*
+   cubren input y select, esto es para lo que se arma a mano. */
+.field-label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--clarvi-navy);
+}
+
+.field-textarea,
+.field-input {
+  font: inherit;
+  padding: 0.6rem 0.8rem;
+  border-radius: var(--radius-md);
+  border: 1px solid rgba(var(--clarvi-navy-rgb), 0.18);
+  background: rgba(255, 255, 255, 0.72);
+  color: var(--text-strong);
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.field-textarea {
+  resize: vertical;
+}
+
+.field-textarea:focus,
+.field-input:focus {
+  outline: none;
+  border-color: var(--clarvi-blue);
+  box-shadow: 0 0 0 3px rgba(var(--clarvi-blue-rgb), 0.18);
+}
+
+/* Botón discreto de fila: quitar, subir, bajar. */
+.row-action {
+  border: 1px solid rgba(var(--clarvi-navy-rgb), 0.14);
+  background: rgba(255, 255, 255, 0.6);
+  color: var(--text-muted);
+  font: inherit;
+  font-size: 0.95rem;
+  line-height: 1;
+  width: 1.9rem;
+  height: 1.9rem;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background var(--transition-fast), color var(--transition-fast);
+}
+
+.row-action:hover:not(:disabled) {
+  background: rgba(var(--clarvi-blue-rgb), 0.12);
+  color: var(--clarvi-navy);
+}
+
+.row-action:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
 .form-error {
   background: var(--color-danger-bg);
   color: var(--color-danger);

@@ -47,10 +47,16 @@ asistencia presencial se registra en papel. Esta plataforma cierra ambos huecos.
 | `completed_at` se fija una sola vez (trigger) al llegar a 90% | El historial de cumplimiento no se degrada si alguien re-mira parcialmente el video después. |
 | Áreas y sucursales son catálogos administrables | Datos consistentes para reportes (nada de "RH" vs "Recursos Humanos" escritos a mano). |
 | Asistencia (QR) y visualización (video) son tablas separadas | Son hechos distintos: alguien pudo asistir y no ver el video, ver el video sin haber asistido, ambas o ninguna. La ficha admin muestra las dos listas. |
+| La respuesta correcta de un examen nunca sale del servidor hacia un usuario | `exam_questions` guarda `answer_key` y solo es legible por admin/owner; el usuario recibe las preguntas saneadas por RPC. Sin esto, bastaría abrir la pestaña de red del navegador para ver las respuestas. |
+| El examen lo califica Postgres, no el navegador | El cliente solo manda lo que eligió. `exam_attempts` no acepta escrituras directas, así que no hay forma de insertarse una calificación. |
+| Cada respuesta contestada guarda el `question_snapshot` de su pregunta | El admin puede corregir o borrar preguntas después sin alterar el historial de quienes ya presentaron. Mismo criterio que congelar área/sucursal al escanear el QR. |
+| El contenido del examen (`content`/`answer_key`) es `jsonb` y no tablas por tipo | Seis tipos de pregunta con formas muy distintas. Un trigger de validación (`assert_question_shape`) da la garantía que darían las columnas, sin seis tablas ni migraciones nuevas por cada tipo que se agregue. |
 
 ## Trabajo futuro (fuera de alcance actual)
 
-- Exámenes dentro de la plataforma, generados a partir de transcribir el audio
-  de las capacitaciones y las diapositivas del instructor. El esquema actual no
-  reserva tablas para esto; se agregará como módulo nuevo cuando se aborde.
+- Preguntas de respuesta abierta: necesitan una bandeja de calificación manual
+  para el admin, así que el examen dejaría de dar resultado inmediato.
+- Generar exámenes automáticamente a partir de la transcripción del audio de la
+  capacitación y las diapositivas del instructor.
+- Banco de preguntas compartido entre capacitaciones.
 - SMTP propio para recuperación de contraseña por correo.

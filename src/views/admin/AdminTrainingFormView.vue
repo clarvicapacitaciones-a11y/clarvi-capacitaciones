@@ -5,16 +5,19 @@
 
 import { computed, onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import ExamBuilder from '@/components/exams/ExamBuilder.vue'
 import GlassButton from '@/components/glass/GlassButton.vue'
 import GlassCard from '@/components/glass/GlassCard.vue'
 import GlassInput from '@/components/glass/GlassInput.vue'
 import { parseYoutubeId } from '@/composables/useYoutubePlayer'
+import { getExamForEdit, saveExam } from '@/services/exams.service'
 import {
   createTraining,
   getTraining,
   updateTraining,
 } from '@/services/trainings.service'
 import { useAuthStore } from '@/stores/auth.store'
+import { emptyExamDraft, type ExamDraft } from '@/types/exams'
 
 const route = useRoute()
 const router = useRouter()
@@ -32,6 +35,24 @@ const error = ref('')
 const loading = ref(false)
 const loadingExisting = ref(false)
 
+const exam = ref<ExamDraft>(emptyExamDraft())
+const examExisted = ref(false)
+
+// Si al crear falla el guardado del examen (p. ej. una pregunta incompleta),
+// la capacitación ya quedó creada. Se recuerda su id para que reintentar
+// actualice esa misma capacitación en vez de crear otra.
+const createdId = ref<string | null>(null)
+
+// Solo se llama a save_exam si hay algo que guardar. Si la capacitación ya
+// tenía examen sí se llama aunque quede vacío: puede ser que el admin haya
+// borrado todas las preguntas.
+const shouldSaveExam = computed(
+  () =>
+    examExisted.value ||
+    exam.value.questions.length > 0 ||
+    exam.value.is_published,
+)
+
 const parsedVideoId = computed(() => parseYoutubeId(youtubeUrl.value))
 const videoUrlInvalid = computed(
   () => youtubeUrl.value.trim() !== '' && parsedVideoId.value === null,
@@ -41,7 +62,10 @@ onMounted(async () => {
   if (!editingId.value) return
   loadingExisting.value = true
   try {
-    const training = await getTraining(editingId.value)
+    const [training, examDraft] = await Promise.all([
+      getTraining(editingId.value),
+      getExamForEdit(editingId.value),
+    ])
     if (training) {
       title.value = training.title
       description.value = training.description ?? ''
@@ -50,6 +74,12 @@ onMounted(async () => {
         ? `https://youtu.be/${training.youtube_video_id}`
         : ''
     }
+    if (examDraft) {
+      exam.value = examDraft
+      examExisted.value = true
+    }
+  } catch (err) {
+    error.value = err instanceof Error ? err.message : 'No se pudo cargar'
   } finally {
     loadingExisting.value = false
   }
@@ -70,12 +100,17 @@ async function handleSubmit(): Promise<void> {
       session_date: sessionDate.value || null,
       youtube_video_id: parsedVideoId.value,
     }
-    let id = editingId.value
+    let id = editingId.value ?? createdId.value
     if (id) {
       await updateTraining(id, input)
     } else {
+      // El examen cuelga de la capacitación: primero se crea ella, que da el id.
       const created = await createTraining(input, auth.userId)
       id = created.id
+      createdId.value = id
+    }
+    if (shouldSaveExam.value) {
+      await saveExam(id, exam.value)
     }
     await router.push({ name: 'admin-training-detail', params: { id } })
   } catch (err) {
@@ -102,7 +137,7 @@ async function handleSubmit(): Promise<void> {
           required
         />
 
-        <label class="glass-field">
+        <label class="field-block">
           <span class="field-label">Descripción / temario</span>
           <textarea
             v-model="description"
@@ -142,6 +177,10 @@ async function handleSubmit(): Promise<void> {
           </div>
         </div>
 
+        <hr class="section-divider" />
+
+        <ExamBuilder v-model="exam" />
+
         <p v-if="error" class="form-error">{{ error }}</p>
 
         <div class="form-actions">
@@ -161,37 +200,23 @@ async function handleSubmit(): Promise<void> {
 </template>
 
 <style scoped>
+/* Más ancho que un formulario normal: el constructor del examen necesita
+   espacio para las opciones y las parejas. */
 .form-page {
-  max-width: 640px;
+  max-width: 860px;
 }
 
-.glass-field {
+.field-block {
   display: flex;
   flex-direction: column;
   gap: 0.35rem;
 }
 
-.field-label {
-  font-size: 0.85rem;
-  font-weight: 600;
-  color: var(--clarvi-navy);
-}
-
-.field-textarea {
-  font: inherit;
-  padding: 0.6rem 0.8rem;
-  border-radius: var(--radius-md);
-  border: 1px solid rgba(var(--clarvi-navy-rgb), 0.18);
-  background: rgba(255, 255, 255, 0.72);
-  color: var(--text-strong);
-  resize: vertical;
-  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
-}
-
-.field-textarea:focus {
-  outline: none;
-  border-color: var(--clarvi-blue);
-  box-shadow: 0 0 0 3px rgba(var(--clarvi-blue-rgb), 0.18);
+.section-divider {
+  border: none;
+  border-top: 1px solid rgba(var(--clarvi-navy-rgb), 0.12);
+  margin: 0.5rem 0;
+  width: 100%;
 }
 
 .preview {

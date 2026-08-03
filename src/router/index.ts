@@ -38,6 +38,11 @@ const router = createRouter({
       component: () => import('@/views/trainings/TrainingDetailView.vue'),
     },
     {
+      path: '/capacitaciones/:id/examen',
+      name: 'exam-runner',
+      component: () => import('@/views/exams/ExamRunnerView.vue'),
+    },
+    {
       path: '/perfil',
       name: 'perfil',
       component: () => import('@/views/ProfileView.vue'),

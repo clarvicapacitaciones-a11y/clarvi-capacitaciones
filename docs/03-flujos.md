@@ -86,3 +86,69 @@ Implementada en `src/composables/useWatchTracking.ts` +
   La pestaña en segundo plano NO cuenta.
 - El tope anti-salto permite hasta 2.5× tiempo real para no penalizar la
   reproducción a 2x.
+
+## Exámenes
+
+### El admin arma el examen
+
+Dentro del formulario de la capacitación (`Nueva` y `Editar`) hay una sección
+**Examen**: ajustes arriba (publicar, calificación mínima, intentos, requiere
+video, revolver) y debajo las preguntas, que se agregan una por una eligiendo
+su tipo. Guardar la capacitación guarda también el examen (RPC `save_exam`).
+
+Seis tipos, todos de calificación automática:
+
+| Tipo | Cómo lo captura el admin | Cómo lo contesta el usuario |
+|---|---|---|
+| Opción múltiple | opciones + marcar la correcta | elige una |
+| Selección múltiple | opciones + marcar varias correctas | marca las que quiera |
+| Verdadero o falso | solo indica cuál es | elige una |
+| Relacionar conceptos | parejas (+ distractores opcionales) | un desplegable por concepto |
+| Ordenar pasos | los pasos **en el orden correcto** | los acomoda con ↑ / ↓ |
+| Completar la frase | frase con `{{1}}`, `{{2}}` + respuestas aceptadas | escribe en los huecos |
+
+El examen **nace despublicado**: mientras se arma nadie lo ve. Editarlo después
+de que hubo intentos no daña el historial, porque cada respuesta guardó su
+propio `question_snapshot`.
+
+### El usuario lo aplica
+
+En la página de la capacitación aparece la tarjeta del examen con el botón
+**Aplicar examen** (o *Repetir* / *Continuar*), la calificación mínima y los
+intentos restantes. Si está bloqueado dice por qué (falta terminar el video, o
+ya no hay intentos).
+
+El examen se muestra **una pregunta por pantalla**, con barra de avance,
+*Anterior* / *Siguiente* y puntos para saltar a cualquier pregunta (los
+contestados se ven rellenos). Las respuestas viven en memoria hasta entregar;
+al pulsar *Entregar* se avisa cuántas quedaron sin contestar.
+
+Al entregar, el servidor califica y devuelve el resultado con el **repaso**:
+qué contestó, cuál era la respuesta correcta y la explicación del instructor.
+
+> Con intentos ilimitados, ese repaso revela las respuestas después del primer
+> intento. Si eso importa para una capacitación, fija `max_attempts`.
+
+### El admin mide
+
+La ficha de la capacitación tiene una tarjeta **Examen** con:
+
+- cuántos lo presentaron, cuántos aprobaron, calificación promedio y tasa de
+  aprobación;
+- la tabla de **quién lo presentó**: nombre, área, sucursal, número de intentos,
+  mejor calificación, aprobado/no aprobado y fecha del último intento;
+- **dificultad por pregunta**, ordenada de menor a mayor acierto, para ver qué
+  temas no quedaron claros.
+
+### Anti-trampa
+
+Mismo principio que la medición de video: la regla vive en la base de datos.
+
+- `exam_questions` (que guarda `answer_key`) **no es legible por un usuario**;
+  las preguntas llegan saneadas desde `start_exam_attempt`.
+- La calificación la calcula Postgres en `submit_exam_attempt`; el cliente solo
+  manda lo que eligió.
+- `exam_attempts` y `exam_attempt_answers` no aceptan escrituras desde el
+  cliente: no hay forma de insertarse una calificación.
+- Recargar la página reanuda el intento abierto en vez de gastar otro, y un
+  intento ya entregado no se puede volver a entregar.

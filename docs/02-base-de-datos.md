@@ -52,11 +52,57 @@ cambia de área después, el reporte histórico no cambia.
 | `session_count` | +1 cuando pasan >30 min entre heartbeats (sesiones distintas) |
 | `last_position_seconds` | para "continuar donde te quedaste" |
 
+### `exams` (examen de la capacitación)
+`training_id` **unique**: un examen por capacitación, se borra con ella.
+
+| Columna | Notas |
+|---|---|
+| `is_published` | nace en `false`; mientras esté así el examen no existe para los usuarios |
+| `passing_percent` | calificación mínima para aprobar (default 80) |
+| `max_attempts` | `null` = intentos ilimitados |
+| `requires_video_completed` | si es `true`, exige ≥90% visto antes de aplicar |
+| `shuffle_questions` | revuelve preguntas y opciones por intento |
+
+### `exam_questions`
+Una fila por pregunta, ordenada por `position` (unique por examen,
+`deferrable` para poder reordenar dentro de una transacción).
+
+`type` es el enum `question_type`: `multiple_choice`, `multiple_select`,
+`true_false`, `matching`, `ordering`, `fill_blank`.
+
+`content` es lo que se le muestra al usuario y `answer_key` la respuesta
+correcta. Su forma depende del tipo y la valida `assert_question_shape`:
+
+| tipo | `content` | `answer_key` |
+|---|---|---|
+| `multiple_choice` | `{options:[{id,text}]}` | `{option_id}` |
+| `multiple_select` | `{options:[{id,text}]}` | `{option_ids:[…]}` |
+| `true_false` | `{}` | `{value: true\|false}` |
+| `matching` | `{left:[{id,text}], right:[{id,text}]}` | `{pairs:{left_id: right_id}}` |
+| `ordering` | `{items:[{id,text}]}` **en el orden correcto** | `{order:[id,…]}` |
+| `fill_blank` | `{text:"… {{1}} …", blanks:[{id}], word_bank?}` | `{blanks:{"1":[aceptadas…]}}` |
+
+**`answer_key` nunca llega al navegador de un usuario**: la tabla solo es
+legible por admin/owner y el usuario recibe las preguntas saneadas por RPC.
+
+### `exam_attempts`
+Un renglón por intento. Se crea al abrir el examen y se cierra al entregar; uno
+sin `submitted_at` es un intento abierto, que se **reanuda** en vez de
+duplicarse (recargar la página no quema un intento). `score_percent` es columna
+generada, como `watch_percent`.
+
+### `exam_attempt_answers`
+La respuesta de cada pregunta con su calificación. `question_snapshot` congela
+enunciado, opciones y respuesta correcta del momento en que se contestó: si el
+admin edita o borra la pregunta después, **el reporte histórico no cambia**
+(mismo criterio que congelar área/sucursal en `attendance`).
+
 ### Vista `user_training_status`
-Cruza capacitaciones (solo las que ya tienen video) × perfiles con progreso y
-asistencia; deriva `status`: `pending` (sin fila de progreso), `in_progress`
-(fila sin `completed_at`), `completed`. Es `security_invoker`: cada usuario
-solo ve sus propias filas; admin/owner ven todas. Alimenta el dashboard.
+Cruza capacitaciones × perfiles con progreso, asistencia y examen; deriva
+`status`: `pending` (sin fila de progreso), `in_progress` (fila sin
+`completed_at`), `completed`. Incluye la capacitación que todavía no tiene
+video si ya tiene examen publicado. Es `security_invoker`: cada usuario solo ve
+sus propias filas; admin/owner ven todas. Alimenta el dashboard.
 
 ## Reglas de acceso (RLS)
 
@@ -67,6 +113,14 @@ solo ve sus propias filas; admin/owner ven todas. Alimenta el dashboard.
 | `trainings` | lee todas | todo |
 | `attendance` | lee/inserta solo la suya | lee todas |
 | `watch_progress` | lee/escribe solo la suya | lee todas |
+| `exams` | lee solo los publicados | todo |
+| `exam_questions` | **sin acceso** (traen la respuesta correcta) | todo |
+| `exam_attempts` | lee los suyos | lee todos |
+| `exam_attempt_answers` | lee las suyas | lee todas |
+
+`exam_attempts` y `exam_attempt_answers` no tienen políticas de escritura: las
+únicas escrituras vienen de los RPC `security definer`, así nadie puede
+fabricarse una calificación desde el cliente.
 
 Reglas finas que las políticas no cubren van en el trigger
 `guard_profile_changes` (BEFORE UPDATE en profiles):
@@ -109,6 +163,41 @@ sesión, sin exponer el resto de la tabla (ni el ID del video).
 ### `current_user_role()`
 Helper `SECURITY DEFINER` que usan las políticas RLS para leer el rol propio
 sin recursión. Para anon devuelve `null`.
+
+### `save_exam(training_id, exam, questions)` *(admin)*
+`SECURITY INVOKER`: quien autoriza son las políticas de `exams` /
+`exam_questions`. Hace upsert del examen y **reconcilia** las preguntas por id
+(actualiza las que llegan, inserta las nuevas, borra las que faltan) en una
+sola transacción, en vez de recrearlas. Valida cada pregunta con
+`assert_question_shape` y aborta con un mensaje en español si el examen está
+mal armado ("Marca cuál es la opción correcta", etc.).
+
+### `exam_status_for_training(training_id)`
+Alimenta el botón "Aplicar examen": conteo de preguntas, mínimo para aprobar,
+intentos usados, mejor calificación, si ya aprobó, y `can_attempt` con su
+`block_reason` (`not_published` | `video_incomplete` | `no_attempts_left`).
+**No incluye preguntas.** Para un usuario normal un examen despublicado o vacío
+simplemente responde `has_exam: false`.
+
+### `start_exam_attempt(training_id)`
+Abre el examen (o reanuda el intento sin entregar) y devuelve las preguntas
+**saneadas**: sin `answer_key` y con las opciones revueltas. `ordering` y la
+columna derecha de `matching` se revuelven **siempre**, porque en `content`
+están en el orden correcto.
+
+### `submit_exam_attempt(attempt_id, answers)`
+Califica en el servidor con `grade_answer`, guarda cada respuesta con su
+snapshot y cierra el intento. Devuelve calificación, aprobado/reprobado y el
+repaso pregunta por pregunta. Rechaza el intento ajeno y el ya entregado.
+
+### `grade_answer(type, content, answer_key, response)` *(interna)*
+Fracción acertada de 0 a 1. Todo-o-nada en opción múltiple y verdadero/falso;
+**crédito proporcional** en los demás: pares acertados en `matching`, pasos en
+su posición en `ordering`, huecos correctos en `fill_blank`, y
+`(aciertos − errores) / total` con piso en 0 en `multiple_select`. Las
+respuestas de texto se comparan con `normalize_text` (sin acentos, sin
+mayúsculas, sin espacios de más), así "  SOLUCION   QUIMICA " acierta
+"solución química".
 
 ## Cuenta owner inicial
 
