@@ -31,9 +31,8 @@ tiene que aprobar un **líder** (o un admin/owner).
 1. La persona se registra por usuario. Se le abre sesión, pero el guard del
    router solo la deja ver `/pendiente`: una pantalla que explica que falta la
    aprobación, con un botón para volver a consultar y otro para salir.
-2. Los líderes que cubren esa área o sucursal reciben un **aviso en la
-   campana** del encabezado (si no hay ninguno, lo reciben administradores y
-   owner). En Administración → **Solicitudes** ven la fila con nombre, usuario,
+2. Los líderes de esa área reciben un **aviso en la campana** del encabezado
+   (si el área no tiene líder, lo reciben administradores y owner). En Administración → **Solicitudes** ven la fila con nombre, usuario,
    área, sucursal y fecha, y **Aprueban** o **Rechazan** (con motivo opcional).
    La pestaña trae el número de pendientes al lado del nombre.
 3. Aprobada, la persona entra normal (el botón "Ya me aprobaron" o un login
@@ -48,7 +47,7 @@ un trigger le impide abrir un intento de examen. `checkin_via_qr` responde
 Quién resolvió la solicitud y cuándo lo sella el trigger
 `guard_profile_changes`; el cliente solo manda el estado nuevo. Una solicitud
 ya resuelta no se puede volver a resolver, nadie puede aprobar su propia fila y
-un líder solo alcanza a quien comparte **su área o su sucursal**.
+un líder solo alcanza a quien se registró en **su área**.
 
 ## Avisos dentro de la plataforma
 

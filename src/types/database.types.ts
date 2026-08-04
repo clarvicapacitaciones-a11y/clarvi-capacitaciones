@@ -733,10 +733,7 @@ export type Database = {
         }
         Returns: number
       }
-      lider_cubre: {
-        Args: { p_area_id: string; p_sucursal_id: string }
-        Returns: boolean
-      }
+      lider_cubre: { Args: { p_area_id: string }; Returns: boolean }
       normalize_text: { Args: { p_value: string }; Returns: string }
       public_question_content: {
         Args: {

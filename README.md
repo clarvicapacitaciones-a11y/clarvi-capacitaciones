@@ -97,9 +97,9 @@ tiene video, se usa la miniatura de YouTube (`maxresdefault`, con respaldo a
 - **Administrador** — crear/editar/eliminar capacitaciones, ver resultados por
   usuario y por capacitación, administrar usuarios (área, sucursal, activar/
   desactivar), catálogos y resolver solicitudes de registro.
-- **Líder** — solo la pestaña **Solicitudes**, y solo de **su área o su
-  sucursal**: aprueba o rechaza a quien se registró sin correo corporativo. No
-  administra capacitaciones ni usuarios.
+- **Líder** — solo la pestaña **Solicitudes**, y solo de **su área** (en
+  todas las sucursales): aprueba o rechaza a quien se registró sin correo
+  corporativo. No administra capacitaciones ni usuarios.
 - **Colaborador** — ver capacitaciones, registrar asistencia con QR, aplicar exámenes y consultar su propio avance.
 
 ## Aprobación de registros

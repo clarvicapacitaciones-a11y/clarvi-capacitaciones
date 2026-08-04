@@ -95,10 +95,12 @@ La bandeja de altas por **nombre de usuario**, que son las que nadie verificó
 (quien se registra con `@clarvi.com` entra directo). La ven el líder, el
 administrador y el owner; la pestaña muestra cuántas hay pendientes.
 
-Un **líder solo ve y resuelve a quien comparte su área o su sucursal** (basta
-una de las dos). Administradores y owner ven todas. Cuando llega una solicitud
-que ningún líder cubre, el aviso se manda a administradores y owner para que no
-se quede esperando a nadie.
+Un **líder solo ve y resuelve a quien se registró en su área**, sin importar
+la sucursal: quien lidera Comercial aprueba a los de Comercial estén en Norte,
+Sur o Matriz. Compartir sucursal no da alcance sobre las demás áreas de esa
+sucursal. Administradores y owner ven todas. Si un área no tiene líder, el
+aviso se manda a administradores y owner para que no se quede esperando a
+nadie.
 
 - **Aprobar** — la persona entra a la plataforma como colaboradora.
 - **Rechazar** — la cuenta queda bloqueada, con un motivo opcional que queda

@@ -129,9 +129,9 @@ cambie únicamente `read_at`.
 
 Quién recibe qué:
 
-- **Nuevo registro pendiente** → los líderes que cubren esa área o sucursal. Si
-  no hay ninguno, el aviso va a administradores y owner para que la solicitud
-  no se quede esperando a nadie.
+- **Nuevo registro pendiente** → los líderes de esa área (de cualquier
+  sucursal). Si el área no tiene líder, el aviso va a administradores y owner
+  para que la solicitud no se quede esperando a nadie.
 - **Solicitud resuelta** → se marcan como leídos los avisos de esa solicitud
   para los demás aprobadores, y quien se registró recibe "Tu registro fue
   aprobado".
@@ -182,9 +182,9 @@ sus propias filas; admin/owner ven todas. Alimenta el dashboard.
 
 Fuera de aprobar registros, un **líder es un colaborador**: ve y aplica sus
 propias capacitaciones, nada más. Y su cola de solicitudes está acotada a **su
-área o su sucursal** (`lider_cubre()`): basta que coincida una de las dos, para
-que funcione igual con líderes de departamento (varias sucursales) que con
-líderes de planta (varias áreas).
+área** (`lider_cubre()`), en todas las sucursales: quien lidera Comercial
+aprueba a los de Comercial estén donde estén, y compartir sucursal no da
+alcance sobre las demás áreas de esa sucursal.
 
 Una cuenta **pendiente de aprobación** no pasa de la puerta: `trainings` solo
 es legible con `current_user_is_approved()`, y las escrituras de `attendance` y
@@ -208,8 +208,8 @@ Reglas finas que las políticas no cubren van en el trigger
   sella `approved_by`/`approved_at` — el cliente no puede fingir quién aprobó.
 - Un líder **solo** puede aprobar o rechazar: si el mismo UPDATE toca nombre,
   área, sucursal, rol o `is_active`, se rechaza.
-- Un líder solo resuelve registros de su área o sucursal (`lider_cubre()`,
-  comprobado también en la política de `update`).
+- Un líder solo resuelve registros de su área (`lider_cubre()`, comprobado
+  también en la política de `update`).
 
 ## Triggers sobre `auth.users`
 
@@ -254,9 +254,9 @@ está `aprobado`. Para anon (y para una cuenta pendiente o rechazada) devuelve
 `false`.
 
 ### `lider_cubre(area_id, sucursal_id)`
-`true` si quien consulta comparte **área o sucursal** con los valores dados.
-Es el alcance del líder: lo usan las políticas de `profiles` y el trigger que
-resuelve solicitudes.
+`true` si quien consulta pertenece a esa **área**. Es el alcance del líder
+(su área completa, en todas las sucursales): lo usan las políticas de
+`profiles` y el trigger que resuelve solicitudes.
 
 ### `grant_certificate_if_earned(training_id, user_id)`
 Emite el diploma si ya se cumplió el requisito (examen aprobado, o video

@@ -80,9 +80,10 @@ as $$
   from unnest(coalesce(p_users, '{}'::uuid[])) as u;
 $$;
 
--- Nuevo registro pendiente → se avisa a los líderes que cubren esa área o
--- sucursal. Si no hay ninguno, el aviso va a administradores y owner para que
--- la solicitud no se quede esperando a nadie.
+-- Nuevo registro pendiente → se avisa a los líderes de esa área (de cualquier
+-- sucursal: el alcance del líder es su área). Si esa área no tiene líder, el
+-- aviso va a administradores y owner para que la solicitud no se quede
+-- esperando a nadie.
 create or replace function public.notify_new_approval_request()
 returns trigger
 language plpgsql security definer set search_path = ''
@@ -99,10 +100,8 @@ begin
   where p.role::text = 'lider'
     and p.is_active
     and p.approval_status = 'aprobado'
-    and (
-      (p.area_id is not null and p.area_id = new.area_id)
-      or (p.sucursal_id is not null and p.sucursal_id = new.sucursal_id)
-    );
+    and p.area_id is not null
+    and p.area_id = new.area_id;
 
   if v_recipients is null then
     select array_agg(p.id) into v_recipients

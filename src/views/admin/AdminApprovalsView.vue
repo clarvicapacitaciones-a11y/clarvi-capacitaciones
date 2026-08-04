@@ -81,7 +81,7 @@ async function confirmReject(): Promise<void> {
           aquí: apruébalo solo si de verdad trabaja en CLARVI.
         </p>
         <p v-if="auth.isLider" class="muted">
-          Ves únicamente a quien comparte tu área o tu sucursal.
+          Ves únicamente a quien se registró en tu área, sea de la sucursal que sea.
         </p>
       </div>
     </header>

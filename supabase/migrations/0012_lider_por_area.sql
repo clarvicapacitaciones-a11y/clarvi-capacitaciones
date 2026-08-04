@@ -1,31 +1,30 @@
 -- Alcance del líder: solo resuelve solicitudes de su gente.
 --
--- Un líder cubre a quien comparte su **área o su sucursal** (cualquiera de
--- las dos basta: hay líderes de departamento que abarcan varias sucursales y
--- líderes de planta que abarcan varias áreas). Administradores y owner siguen
--- viendo todas las solicitudes.
+-- El líder manda sobre **su área, en todas las sucursales**: quien lidera
+-- Comercial aprueba a los de Comercial estén en Norte, Sur o Matriz. La
+-- sucursal no da alcance por sí sola — compartir edificio no es mandar sobre
+-- las demás áreas de ese edificio. Administradores y owner siguen viendo todas
+-- las solicitudes.
 --
 -- Como en la 0011, la comparación con el rol 'lider' va contra ::text para no
 -- depender de que el valor del enum esté confirmado.
 
-create or replace function public.lider_cubre(p_area_id uuid, p_sucursal_id uuid)
+create or replace function public.lider_cubre(p_area_id uuid)
 returns boolean
 language sql stable security definer set search_path = ''
 as $$
   select exists (
     select 1 from public.profiles me
     where me.id = auth.uid()
-      and (
-        (me.area_id is not null and me.area_id = p_area_id)
-        or (me.sucursal_id is not null and me.sucursal_id = p_sucursal_id)
-      )
+      and me.area_id is not null
+      and me.area_id = p_area_id
   );
 $$;
 
-comment on function public.lider_cubre(uuid, uuid) is
-  'Verdadero si quien consulta comparte area o sucursal con los valores dados.';
+comment on function public.lider_cubre(uuid) is
+  'Verdadero si quien consulta pertenece a esa area (el alcance del lider).';
 
--- ── RLS: la cola del líder se acota a su área/sucursal ───────────────────
+-- ── RLS: la cola del líder se acota a su área ────────────────────────────
 
 drop policy "leer perfil propio, admin o solicitudes" on public.profiles;
 
@@ -36,7 +35,7 @@ using (
   or public.current_user_role() in ('administrador', 'owner')
   or (
     public.current_user_role()::text = 'lider'
-    and public.lider_cubre(area_id, sucursal_id)
+    and public.lider_cubre(area_id)
     and (approval_status <> 'aprobado' or approved_by = auth.uid())
   )
 );
@@ -51,7 +50,7 @@ using (
   or (
     public.current_user_role()::text = 'lider'
     and approval_status = 'pendiente'
-    and public.lider_cubre(area_id, sucursal_id)
+    and public.lider_cubre(area_id)
   )
 )
 with check (
@@ -59,7 +58,7 @@ with check (
   or public.current_user_role() in ('administrador', 'owner')
   or (
     public.current_user_role()::text = 'lider'
-    and public.lider_cubre(area_id, sucursal_id)
+    and public.lider_cubre(area_id)
   )
 );
 
@@ -101,8 +100,8 @@ begin
       raise exception 'Estado de aprobacion invalido';
     end if;
     if v_actor_role = 'lider'
-      and not public.lider_cubre(old.area_id, old.sucursal_id) then
-      raise exception 'Solo puedes resolver registros de tu area o sucursal';
+      and not public.lider_cubre(old.area_id) then
+      raise exception 'Solo puedes resolver registros de tu area';
     end if;
     new.approved_by := v_actor;
     new.approved_at := now();
