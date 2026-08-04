@@ -37,7 +37,16 @@ export const useAuthStore = defineStore('auth', () => {
     () => role.value === 'administrador' || role.value === 'owner',
   )
   const isOwner = computed(() => role.value === 'owner')
+  const isLider = computed(() => role.value === 'lider')
+  /** Quién resuelve solicitudes de registro (y ve la pestaña Solicitudes). */
+  const canApprove = computed(() => isAdmin.value || isLider.value)
   const accessToken = computed(() => session.value?.access_token ?? null)
+
+  // Estado de aprobación: las cuentas creadas por nombre de usuario nacen
+  // pendientes y no pueden usar la plataforma hasta que un líder las apruebe.
+  const approvalStatus = computed(() => profile.value?.approval_status ?? null)
+  const isPendingApproval = computed(() => approvalStatus.value === 'pendiente')
+  const isRejected = computed(() => approvalStatus.value === 'rechazado')
 
   async function fetchProfile(): Promise<void> {
     if (!userId.value) {
@@ -91,6 +100,10 @@ export const useAuthStore = defineStore('auth', () => {
   /**
    * Alta de cuenta vía la Edge Function `register`, que crea el usuario ya
    * confirmado (con o sin correo real) y después inicia sesión.
+   *
+   * El alta por nombre de usuario nace **pendiente de aprobación**: la sesión
+   * se abre igual, pero el guard del router solo la deja ver la pantalla de
+   * espera hasta que un líder la apruebe.
    */
   async function register(payload: RegisterPayload): Promise<void> {
     const { error } = await supabase.functions.invoke('register', {
@@ -134,6 +147,11 @@ export const useAuthStore = defineStore('auth', () => {
     role,
     isAdmin,
     isOwner,
+    isLider,
+    canApprove,
+    approvalStatus,
+    isPendingApproval,
+    isRejected,
     accessToken,
     init,
     fetchProfile,

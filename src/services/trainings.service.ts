@@ -71,6 +71,7 @@ export type CheckinStatus =
   | 'already_checked_in'
   | 'invalid_token'
   | 'not_authenticated'
+  | 'not_approved'
 
 export async function checkinViaQr(
   token: string,

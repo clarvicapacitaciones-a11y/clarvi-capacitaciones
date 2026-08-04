@@ -1,7 +1,12 @@
-// Gestión de perfiles: la propia cuenta y la administración del roster.
+// Gestión de perfiles: la propia cuenta, la administración del roster y la
+// cola de solicitudes de registro.
 
-import { supabase } from '@/services/supabase'
-import type { ProfileWithCatalogs, UserRole } from '@/types/domain'
+import { requireActiveSession, supabase } from '@/services/supabase'
+import type {
+  ApprovalRequest,
+  ProfileWithCatalogs,
+  UserRole,
+} from '@/types/domain'
 
 export async function listUsers(): Promise<ProfileWithCatalogs[]> {
   const { data, error } = await supabase
@@ -40,5 +45,57 @@ export async function setUserActive(
     .from('profiles')
     .update({ is_active: isActive })
     .eq('id', id)
+  if (error) throw new Error(error.message)
+}
+
+// ── Solicitudes de registro ────────────────────────────────────────────────
+
+/**
+ * Las solicitudes sin resolver, las rechazadas y las que resolvió quien
+ * consulta. Es exactamente lo que la RLS le deja ver a un líder; para admin y
+ * owner acota la consulta a lo mismo (el roster completo vive en Usuarios).
+ */
+export async function listApprovalRequests(
+  viewerId: string,
+): Promise<ApprovalRequest[]> {
+  const { data, error } = await supabase
+    .from('profiles')
+    .select(
+      '*, areas(nombre), sucursales(nombre), approver:profiles!profiles_approved_by_fkey(full_name)',
+    )
+    .or(`approval_status.neq.aprobado,approved_by.eq.${viewerId}`)
+    .order('created_at', { ascending: true })
+  if (error) throw new Error(error.message)
+  return data as unknown as ApprovalRequest[]
+}
+
+export async function countPendingApprovals(): Promise<number> {
+  const { count, error } = await supabase
+    .from('profiles')
+    .select('id', { count: 'exact', head: true })
+    .eq('approval_status', 'pendiente')
+  if (error) throw new Error(error.message)
+  return count ?? 0
+}
+
+/**
+ * Aprueba o rechaza una solicitud. Quién la resolvió y cuándo lo sella el
+ * trigger `guard_profile_changes`, no el cliente.
+ */
+export async function resolveApproval(
+  id: string,
+  approved: boolean,
+  reason = '',
+): Promise<void> {
+  await requireActiveSession()
+  const { error } = await supabase
+    .from('profiles')
+    .update({
+      approval_status: approved ? 'aprobado' : 'rechazado',
+      rejection_reason: approved ? null : reason.trim() || null,
+    })
+    .eq('id', id)
+    .select()
+    .single()
   if (error) throw new Error(error.message)
 }

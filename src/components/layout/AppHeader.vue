@@ -14,6 +14,11 @@ const initials = computed(() => {
   return parts.map((part) => part.charAt(0).toUpperCase()).join('') || '·'
 })
 
+/** El líder solo tiene Solicitudes; el admin entra por Capacitaciones. */
+const adminHome = computed(() => ({
+  name: auth.isAdmin ? 'admin-trainings' : 'admin-approvals',
+}))
+
 async function handleLogout(): Promise<void> {
   menuOpen.value = false
   await auth.logout()
@@ -32,14 +37,15 @@ async function handleLogout(): Promise<void> {
         </span>
       </RouterLink>
 
-      <!-- La navegación solo existe para quien administra: un usuario normal
-           únicamente ve sus capacitaciones, así que el menú sería ruido. -->
-      <nav v-if="auth.isAdmin" class="nav">
+      <!-- La navegación solo existe para quien administra o aprueba registros:
+           un colaborador únicamente ve sus capacitaciones, así que el menú
+           sería ruido. -->
+      <nav v-if="auth.canApprove" class="nav">
         <RouterLink :to="{ name: 'dashboard' }" class="nav-link">
           Mis capacitaciones
         </RouterLink>
-        <RouterLink :to="{ name: 'admin-trainings' }" class="nav-link">
-          Administración
+        <RouterLink :to="adminHome" class="nav-link">
+          {{ auth.isAdmin ? 'Administración' : 'Solicitudes' }}
         </RouterLink>
       </nav>
 

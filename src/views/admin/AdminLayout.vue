@@ -1,17 +1,51 @@
 <script setup lang="ts">
 // Contenedor de la sección de administración con su sub-navegación.
+//
+// El líder entra a esta misma sección pero solo ve Solicitudes: no administra
+// capacitaciones, usuarios ni catálogos.
+
+import { onMounted } from 'vue'
+import { useApprovalsStore } from '@/stores/approvals.store'
+import { useAuthStore } from '@/stores/auth.store'
+
+const auth = useAuthStore()
+const approvals = useApprovalsStore()
+
+// El contador vive en el store: al resolver una solicitud, la pestaña se
+// actualiza sin recargar.
+onMounted(() => {
+  void approvals.fetchRequests().catch(() => {
+    /* el error real se muestra dentro de la pestaña de solicitudes */
+  })
+})
 </script>
 
 <template>
   <div class="page">
     <nav class="admin-nav">
-      <RouterLink :to="{ name: 'admin-trainings' }" class="admin-tab">
-        Capacitaciones
+      <template v-if="auth.isAdmin">
+        <RouterLink :to="{ name: 'admin-trainings' }" class="admin-tab">
+          Capacitaciones
+        </RouterLink>
+        <RouterLink :to="{ name: 'admin-users' }" class="admin-tab">
+          Usuarios
+        </RouterLink>
+      </template>
+      <RouterLink
+        v-if="auth.canApprove"
+        :to="{ name: 'admin-approvals' }"
+        class="admin-tab"
+      >
+        Solicitudes
+        <span v-if="approvals.pendingCount > 0" class="tab-count">
+          {{ approvals.pendingCount }}
+        </span>
       </RouterLink>
-      <RouterLink :to="{ name: 'admin-users' }" class="admin-tab">
-        Usuarios
-      </RouterLink>
-      <RouterLink :to="{ name: 'admin-catalogs' }" class="admin-tab">
+      <RouterLink
+        v-if="auth.isAdmin"
+        :to="{ name: 'admin-catalogs' }"
+        class="admin-tab"
+      >
         Catálogos
       </RouterLink>
     </nav>
@@ -47,5 +81,17 @@
 .admin-tab.router-link-active {
   background: var(--clarvi-navy);
   color: var(--text-inverse);
+}
+
+/* Pendientes por revisar: número al lado del nombre de la pestaña. */
+.tab-count {
+  display: inline-block;
+  margin-left: 0.4rem;
+  padding: 0 0.4rem;
+  border-radius: var(--radius-full);
+  background: var(--color-warning-bg);
+  color: var(--color-warning);
+  font-size: 0.76rem;
+  font-variant-numeric: tabular-nums;
 }
 </style>

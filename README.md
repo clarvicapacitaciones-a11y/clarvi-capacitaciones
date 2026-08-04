@@ -62,7 +62,8 @@ redondeadas sobre un fondo gris muy claro, sin profundidad simulada.
 - Lo único que se anima es el color (`color`, `background-color`,
   `border-color`); no hay movimiento, escalas ni sombras animadas.
 - La barra de navegación es sólida (sin transparencias) y solo muestra el menú
-  a quien administra: un usuario normal únicamente ve sus capacitaciones.
+  a quien administra o aprueba registros: un colaborador únicamente ve sus
+  capacitaciones.
 
 Todo esto vive en `src/assets/styles/tokens.css` (variables) y `base.css`
 (clases compartidas). Los componentes consumen esas variables; no se escriben
@@ -91,8 +92,20 @@ tiene video, se usa la miniatura de YouTube (`maxresdefault`, con respaldo a
 - **Owner** — todo lo del administrador + asignar roles (incluido crear más administradores).
 - **Administrador** — crear/editar/eliminar capacitaciones, ver resultados por
   usuario y por capacitación, administrar usuarios (área, sucursal, activar/
-  desactivar) y catálogos.
-- **Usuario** — ver capacitaciones, registrar asistencia con QR, aplicar exámenes y consultar su propio avance.
+  desactivar), catálogos y resolver solicitudes de registro.
+- **Líder** — solo la pestaña **Solicitudes**: aprueba o rechaza a quien se
+  registró sin correo corporativo. No administra capacitaciones ni usuarios.
+- **Colaborador** — ver capacitaciones, registrar asistencia con QR, aplicar exámenes y consultar su propio avance.
+
+## Aprobación de registros
+
+Quien tiene correo `@clarvi.com` se registra y entra: el dominio ya lo
+identifica. Quien no tiene correo se registra **por nombre de usuario**, y ahí
+no hay nada que verifique quién es, así que su cuenta nace **pendiente** y
+espera en una pantalla de aviso hasta que un líder (o un admin/owner) la
+apruebe desde Administración → Solicitudes. Mientras siga pendiente no ve
+capacitaciones, no registra asistencia ni aplica exámenes — lo aplica la RLS,
+no solo el frontend.
 
 ## Flujo de una capacitación
 

@@ -1,7 +1,8 @@
 # Guía de administración
 
-La sección **Administración** (visible solo para administradores y el owner)
-tiene tres pestañas: Capacitaciones, Usuarios y Catálogos.
+La sección **Administración** tiene cuatro pestañas: Capacitaciones, Usuarios,
+Solicitudes y Catálogos. Administrador y owner las ven todas; el **líder** solo
+ve Solicitudes.
 
 ## Capacitaciones
 
@@ -77,13 +78,38 @@ mejor quita el link del video.
 - **Editar** permite corregir nombre, área y sucursal, y activar/desactivar la
   cuenta. Una cuenta desactivada no puede usar la plataforma (al intentar
   entrar se le cierra la sesión con aviso).
-- **Roles** (solo visibles para el owner): asignar `usuario`,
+- **Roles** (solo visibles para el owner): asignar `colaborador`, `lider`,
   `administrador` u `owner`. Reglas aplicadas por la base de datos:
   - Solo el owner cambia roles.
   - El owner no puede quitarse el rol a sí mismo (evita quedarse sin owner).
   - Un administrador no puede editar la fila de un owner.
 - El nombre de usuario y el correo no se pueden cambiar (el inicio de sesión
   depende de ellos).
+- La columna **Estado** muestra `Pendiente` o `Rechazado` cuando la cuenta
+  todavía no pasó el filtro de aprobación; esas cuentas no entran aunque
+  aparezcan activas.
+
+## Solicitudes
+
+La bandeja de altas por **nombre de usuario**, que son las que nadie verificó
+(quien se registra con `@clarvi.com` entra directo). La ven el líder, el
+administrador y el owner; la pestaña muestra cuántas hay pendientes.
+
+- **Aprobar** — la persona entra a la plataforma como colaboradora.
+- **Rechazar** — la cuenta queda bloqueada, con un motivo opcional que queda
+  registrado. Al intentar entrar se le cierra la sesión con el aviso.
+
+Debajo queda el historial de lo ya resuelto: quién lo resolvió, cuándo y con
+qué motivo. Reglas de la base de datos:
+
+- Una solicitud se resuelve **una sola vez**; para revertir un rechazo hay que
+  dar de alta la cuenta otra vez.
+- Nadie puede aprobar su propio registro.
+- El líder **solo** aprueba o rechaza: no edita nombres, áreas, roles ni
+  desactiva cuentas.
+
+> Mientras no haya SMTP configurado no hay aviso automático: conviene que quien
+> se registra le avise a su líder, y que el líder revise la pestaña.
 
 ## Catálogos
 
