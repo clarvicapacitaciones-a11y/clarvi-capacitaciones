@@ -54,9 +54,3 @@ export const ROLE_LABELS: Record<UserRole, string> = {
   usuario: 'Usuario',
 }
 
-/** Etiquetas de las pestañas del dashboard (agrupan capacitaciones, en plural). */
-export const STATUS_LABELS: Record<TrainingStatus, string> = {
-  pending: 'Pendientes',
-  in_progress: 'En curso',
-  completed: 'Completadas',
-}
