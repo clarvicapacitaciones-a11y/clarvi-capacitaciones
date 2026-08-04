@@ -2,9 +2,9 @@
 import { computed, onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import AuthLayout from '@/components/layout/AuthLayout.vue'
-import GlassButton from '@/components/glass/GlassButton.vue'
-import GlassInput from '@/components/glass/GlassInput.vue'
-import GlassSelect from '@/components/glass/GlassSelect.vue'
+import UiButton from '@/components/ui/UiButton.vue'
+import UiInput from '@/components/ui/UiInput.vue'
+import UiSelect from '@/components/ui/UiSelect.vue'
 import { useAuthStore } from '@/stores/auth.store'
 import { useCatalogsStore } from '@/stores/catalogs.store'
 
@@ -69,7 +69,7 @@ async function handleSubmit(): Promise<void> {
 
 <template>
   <AuthLayout subtitle="Crea tu cuenta">
-    <div class="tabs">
+    <div class="tabs is-block">
       <button
         class="tab"
         :class="{ 'is-active': tab === 'email' }"
@@ -87,7 +87,7 @@ async function handleSubmit(): Promise<void> {
     </div>
 
     <form class="form-grid" @submit.prevent="handleSubmit">
-      <GlassInput
+      <UiInput
         v-model="fullName"
         label="Nombre completo"
         placeholder="Nombre y apellidos"
@@ -95,7 +95,7 @@ async function handleSubmit(): Promise<void> {
         required
       />
 
-      <GlassInput
+      <UiInput
         v-if="tab === 'email'"
         v-model="email"
         label="Correo corporativo"
@@ -105,7 +105,7 @@ async function handleSubmit(): Promise<void> {
         hint="Debe ser tu correo @clarvi.com"
         required
       />
-      <GlassInput
+      <UiInput
         v-else
         v-model="username"
         label="Nombre de usuario"
@@ -116,13 +116,13 @@ async function handleSubmit(): Promise<void> {
       />
 
       <div class="form-row">
-        <GlassSelect
+        <UiSelect
           v-model="areaId"
           label="Área"
           :options="areaOptions"
           required
         />
-        <GlassSelect
+        <UiSelect
           v-model="sucursalId"
           label="Sucursal"
           :options="sucursalOptions"
@@ -131,7 +131,7 @@ async function handleSubmit(): Promise<void> {
       </div>
 
       <div class="form-row">
-        <GlassInput
+        <UiInput
           v-model="password"
           label="Contraseña"
           type="password"
@@ -139,7 +139,7 @@ async function handleSubmit(): Promise<void> {
           hint="Mínimo 8 caracteres"
           required
         />
-        <GlassInput
+        <UiInput
           v-model="passwordConfirm"
           label="Confirmar contraseña"
           type="password"
@@ -150,9 +150,9 @@ async function handleSubmit(): Promise<void> {
 
       <p v-if="error" class="form-error">{{ error }}</p>
 
-      <GlassButton type="submit" block :loading="loading">
+      <UiButton type="submit" block :loading="loading">
         Crear cuenta
-      </GlassButton>
+      </UiButton>
     </form>
 
     <p class="switch-link">
@@ -165,35 +165,6 @@ async function handleSubmit(): Promise<void> {
 </template>
 
 <style scoped>
-.tabs {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 0.4rem;
-  margin-bottom: 1.25rem;
-  background: rgba(var(--clarvi-navy-rgb), 0.06);
-  border-radius: var(--radius-md);
-  padding: 0.3rem;
-}
-
-.tab {
-  border: none;
-  background: none;
-  font: inherit;
-  font-weight: 600;
-  font-size: 0.9rem;
-  padding: 0.5rem;
-  border-radius: var(--radius-sm);
-  color: var(--text-muted);
-  cursor: pointer;
-  transition: background var(--transition-fast), color var(--transition-fast);
-}
-
-.tab.is-active {
-  background: #fff;
-  color: var(--clarvi-navy);
-  box-shadow: 0 2px 8px rgba(var(--clarvi-navy-rgb), 0.12);
-}
-
 .switch-link {
   text-align: center;
   margin: 1.25rem 0 0;

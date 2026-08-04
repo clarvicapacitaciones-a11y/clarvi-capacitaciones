@@ -2,7 +2,7 @@
 // Repaso del examen entregado: qué contestó la persona, qué era lo correcto y
 // la explicación del instructor.
 
-import GlassBadge from '@/components/glass/GlassBadge.vue'
+import UiBadge from '@/components/ui/UiBadge.vue'
 import {
   isFillBlankContent,
   isMatchingContent,
@@ -93,9 +93,9 @@ function describe(
     >
       <header class="review-head">
         <span class="review-number">Pregunta {{ index + 1 }}</span>
-        <GlassBadge :tone="item.is_correct ? 'success' : 'danger'">
+        <UiBadge :tone="item.is_correct ? 'success' : 'danger'">
           {{ item.points_awarded }} / {{ item.points }}
-        </GlassBadge>
+        </UiBadge>
       </header>
 
       <p class="review-prompt">{{ item.prompt }}</p>
@@ -140,12 +140,13 @@ function describe(
   gap: 0.8rem;
 }
 
+/* La línea izquierda dice de un vistazo si la respuesta fue correcta. */
 .review-item {
-  padding: 0.9rem 1rem;
+  padding: 1rem 1.1rem;
   border-radius: var(--radius-md);
-  border: 1px solid rgba(var(--clarvi-navy-rgb), 0.12);
-  border-left: 3px solid var(--color-danger);
-  background: rgba(255, 255, 255, 0.5);
+  border: var(--rule);
+  border-left: var(--accent-width) solid var(--color-danger);
+  background: var(--bg-surface);
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
@@ -163,14 +164,14 @@ function describe(
 }
 
 .review-number {
-  font-size: 0.8rem;
-  font-weight: 700;
-  color: var(--clarvi-navy);
+  font-size: 0.82rem;
+  font-weight: 500;
+  color: var(--text-muted);
 }
 
 .review-prompt {
   margin: 0;
-  font-weight: 600;
+  font-weight: 500;
   color: var(--text-strong);
 }
 
@@ -181,8 +182,8 @@ function describe(
 }
 
 .answer-label {
-  font-size: 0.78rem;
-  font-weight: 600;
+  font-size: 0.8rem;
+  font-weight: 400;
   color: var(--text-muted);
 }
 

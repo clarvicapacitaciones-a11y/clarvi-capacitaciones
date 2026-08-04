@@ -3,7 +3,7 @@
 // siempre los baraja antes de mostrárselos al usuario.
 
 import { computed } from 'vue'
-import GlassButton from '@/components/glass/GlassButton.vue'
+import UiButton from '@/components/ui/UiButton.vue'
 import {
   newItemId,
   type ExamItem,
@@ -85,7 +85,7 @@ function move(index: number, delta: number): void {
       </button>
     </div>
 
-    <GlassButton variant="ghost" @click="addStep">Agregar paso</GlassButton>
+    <UiButton variant="ghost" @click="addStep">Agregar paso</UiButton>
   </div>
 </template>
 
@@ -111,9 +111,9 @@ function move(index: number, delta: number): void {
 
 .step-number {
   width: 1.5rem;
-  font-weight: 700;
+  font-weight: 500;
   font-size: 0.85rem;
-  color: var(--clarvi-blue);
+  color: var(--text-muted);
   flex-shrink: 0;
 }
 

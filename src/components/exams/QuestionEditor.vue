@@ -3,7 +3,7 @@
 // corresponde a su tipo.
 
 import { computed } from 'vue'
-import GlassSelect from '@/components/glass/GlassSelect.vue'
+import UiSelect from '@/components/ui/UiSelect.vue'
 import ChoiceEditor from '@/components/exams/editors/ChoiceEditor.vue'
 import FillBlankEditor from '@/components/exams/editors/FillBlankEditor.vue'
 import MatchingEditor from '@/components/exams/editors/MatchingEditor.vue'
@@ -101,7 +101,7 @@ const points = computed({
     </header>
 
     <div class="form-row">
-      <GlassSelect v-model="selectedType" label="Tipo" :options="typeOptions" />
+      <UiSelect v-model="selectedType" label="Tipo" :options="typeOptions" />
       <label class="field-block">
         <span class="field-label">Puntos</span>
         <input v-model="points" class="field-input" type="number" min="0.5" step="0.5" />
@@ -135,14 +135,15 @@ const points = computed({
 </template>
 
 <style scoped>
+/* Bloque de pregunta: caja de esquinas suaves sobre el fondo tenue. */
 .question-editor {
   display: flex;
   flex-direction: column;
-  gap: 0.7rem;
-  padding: 0.9rem 1rem;
+  gap: 0.75rem;
+  padding: 1.1rem;
   border-radius: var(--radius-md);
-  border: 1px solid rgba(var(--clarvi-navy-rgb), 0.12);
-  background: rgba(255, 255, 255, 0.45);
+  border: var(--rule);
+  background: var(--bg-subtle);
 }
 
 .question-header {
@@ -153,9 +154,9 @@ const points = computed({
 }
 
 .question-number {
-  font-weight: 700;
+  font-weight: 500;
   font-size: 0.85rem;
-  color: var(--clarvi-navy);
+  color: var(--text-muted);
 }
 
 .header-actions {
@@ -164,8 +165,9 @@ const points = computed({
 }
 
 .row-action.is-danger:hover {
-  background: var(--color-danger-bg);
-  color: var(--color-danger);
+  background: var(--color-danger);
+  border-color: var(--color-danger);
+  color: var(--text-inverse);
 }
 
 .field-block {

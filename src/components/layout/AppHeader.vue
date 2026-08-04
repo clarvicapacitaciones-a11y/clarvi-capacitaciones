@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth.store'
 import { ROLE_LABELS } from '@/types/domain'
@@ -7,6 +7,12 @@ import { ROLE_LABELS } from '@/types/domain'
 const auth = useAuthStore()
 const router = useRouter()
 const menuOpen = ref(false)
+
+/** Iniciales para el avatar del menú de cuenta. */
+const initials = computed(() => {
+  const parts = (auth.profile?.full_name ?? '').trim().split(/\s+/).slice(0, 2)
+  return parts.map((part) => part.charAt(0).toUpperCase()).join('') || '·'
+})
 
 async function handleLogout(): Promise<void> {
   menuOpen.value = false
@@ -26,25 +32,24 @@ async function handleLogout(): Promise<void> {
         </span>
       </RouterLink>
 
-      <nav class="nav">
+      <!-- La navegación solo existe para quien administra: un usuario normal
+           únicamente ve sus capacitaciones, así que el menú sería ruido. -->
+      <nav v-if="auth.isAdmin" class="nav">
         <RouterLink :to="{ name: 'dashboard' }" class="nav-link">
           Mis capacitaciones
         </RouterLink>
-        <RouterLink
-          v-if="auth.isAdmin"
-          :to="{ name: 'admin-trainings' }"
-          class="nav-link"
-        >
+        <RouterLink :to="{ name: 'admin-trainings' }" class="nav-link">
           Administración
         </RouterLink>
       </nav>
 
       <div v-if="auth.profile" class="user-menu">
         <button class="user-chip" @click="menuOpen = !menuOpen">
+          <span class="user-avatar" aria-hidden="true">{{ initials }}</span>
           <span class="user-name">{{ auth.profile.full_name }}</span>
-          <span class="user-role">{{ ROLE_LABELS[auth.profile.role] }}</span>
         </button>
         <div v-if="menuOpen" class="user-dropdown" @click="menuOpen = false">
+          <p class="dropdown-role">{{ ROLE_LABELS[auth.profile.role] }}</p>
           <RouterLink :to="{ name: 'perfil' }" class="dropdown-item">
             Mi perfil
           </RouterLink>
@@ -58,162 +63,196 @@ async function handleLogout(): Promise<void> {
 </template>
 
 <style scoped>
+/* Barra sólida (nada de transparencias) separada por una línea suave.
+   Todo alineado a la izquierda: marca, navegación y, al extremo, la cuenta. */
 .app-header {
   position: sticky;
   top: 0;
   z-index: 40;
-  background: rgba(255, 255, 255, 0.65);
-  border-bottom: 1px solid rgba(var(--clarvi-navy-rgb), 0.08);
-  backdrop-filter: blur(var(--glass-blur));
-  -webkit-backdrop-filter: blur(var(--glass-blur));
+  background: var(--bg-surface);
+  border-bottom: var(--rule);
 }
 
 .app-header-inner {
   max-width: 1100px;
   margin: 0 auto;
-  padding: 0.6rem 1.25rem;
+  padding: 0.75rem 1.25rem;
   display: flex;
   align-items: center;
-  gap: 1.5rem;
+  gap: 1.75rem;
 }
 
 .brand {
   display: flex;
   align-items: center;
-  gap: 0.55rem;
+  gap: 0.6rem;
 }
 
 .brand-icon {
-  width: 34px;
-  height: 34px;
+  width: 30px;
+  height: 30px;
+  border-radius: var(--radius-sm);
 }
 
 .brand-text {
   display: flex;
   flex-direction: column;
-  line-height: 1.1;
+  line-height: 1.2;
 }
 
 .brand-text strong {
   color: var(--clarvi-navy);
-  letter-spacing: 0.06em;
+  font-size: 0.95rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
 }
 
 .brand-text small {
-  color: var(--clarvi-blue);
-  font-size: 0.72rem;
-  font-weight: 600;
+  color: var(--text-muted);
+  font-size: 0.74rem;
+  font-weight: 400;
 }
 
 .nav {
   display: flex;
-  gap: 0.35rem;
+  align-items: center;
+  gap: 0.25rem;
   flex: 1;
 }
 
+/* Sección activa: píldora tenue, sin subrayados ni negritas de más. */
 .nav-link {
   padding: 0.45rem 0.85rem;
-  border-radius: var(--radius-md);
-  color: var(--text-body);
-  font-weight: 600;
-  font-size: 0.92rem;
-  transition: background var(--transition-fast), color var(--transition-fast);
+  border-radius: var(--radius-full);
+  color: var(--text-muted);
+  font-size: 0.88rem;
+  font-weight: 500;
+  transition: background-color var(--transition-fast), color var(--transition-fast);
 }
 
 .nav-link:hover {
-  background: rgba(var(--clarvi-blue-rgb), 0.1);
-  color: var(--clarvi-navy);
+  background: var(--bg-subtle);
+  color: var(--text-strong);
 }
 
 .nav-link.router-link-active {
-  background: rgba(var(--clarvi-blue-rgb), 0.14);
+  background: var(--navy-050);
   color: var(--clarvi-navy);
 }
 
 .user-menu {
   position: relative;
+  display: flex;
+  align-items: center;
+  margin-left: auto;
 }
 
 .user-chip {
   display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  border: 1px solid rgba(var(--clarvi-navy-rgb), 0.12);
-  background: rgba(255, 255, 255, 0.6);
-  border-radius: var(--radius-md);
-  padding: 0.35rem 0.75rem;
+  align-items: center;
+  gap: 0.55rem;
+  border: none;
+  border-radius: var(--radius-full);
+  background: transparent;
+  padding: 0.35rem 0.5rem;
   cursor: pointer;
   font: inherit;
-  transition: border-color var(--transition-fast), background var(--transition-fast);
+  transition: background-color var(--transition-fast);
 }
 
 .user-chip:hover {
-  border-color: rgba(var(--clarvi-blue-rgb), 0.5);
-  background: rgba(255, 255, 255, 0.85);
+  background: var(--bg-subtle);
+}
+
+.user-avatar {
+  display: grid;
+  place-items: center;
+  width: 2rem;
+  height: 2rem;
+  border-radius: var(--radius-full);
+  background: var(--navy-050);
+  color: var(--clarvi-navy);
+  font-size: 0.8rem;
+  font-weight: 600;
+  flex-shrink: 0;
 }
 
 .user-name {
-  font-weight: 600;
   color: var(--text-strong);
   font-size: 0.88rem;
+  font-weight: 500;
   max-width: 180px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-.user-role {
-  font-size: 0.72rem;
-  color: var(--clarvi-blue);
-  font-weight: 600;
-}
-
 .user-dropdown {
   position: absolute;
   right: 0;
-  top: calc(100% + 6px);
-  min-width: 170px;
+  top: calc(100% + 0.4rem);
+  min-width: 190px;
   display: flex;
   flex-direction: column;
-  background: rgba(255, 255, 255, 0.95);
-  border: var(--glass-border);
+  padding: 0.35rem;
+  background: var(--bg-surface);
+  border: var(--rule);
   border-radius: var(--radius-md);
-  box-shadow: var(--glass-shadow-hover);
-  backdrop-filter: blur(var(--glass-blur));
   overflow: hidden;
+}
+
+.dropdown-role {
+  padding: 0.5rem 0.7rem 0.6rem;
+  border-bottom: var(--rule);
+  margin-bottom: 0.35rem;
+  font-size: 0.78rem;
+  color: var(--text-muted);
 }
 
 .dropdown-item {
   text-align: left;
-  padding: 0.6rem 0.9rem;
+  padding: 0.55rem 0.7rem;
+  border: none;
+  border-radius: var(--radius-sm);
   font: inherit;
-  font-size: 0.9rem;
-  font-weight: 500;
+  font-size: 0.88rem;
+  font-weight: 400;
   color: var(--text-body);
   background: none;
-  border: none;
   cursor: pointer;
-  transition: background var(--transition-fast);
+  transition: background-color var(--transition-fast), color var(--transition-fast);
 }
 
 .dropdown-item:hover {
-  background: rgba(var(--clarvi-blue-rgb), 0.1);
-  color: var(--clarvi-navy);
+  background: var(--bg-subtle);
+  color: var(--text-strong);
 }
 
 @media (max-width: 640px) {
   .app-header-inner {
-    flex-wrap: wrap;
-    gap: 0.5rem;
+    gap: 0.75rem;
+    padding: 0.65rem 1rem;
+  }
+
+  .brand-text small {
+    display: none;
   }
 
   .nav {
     order: 3;
     width: 100%;
+    flex: none;
+    overflow-x: auto;
+    padding-top: 0.3rem;
+    border-top: var(--rule);
   }
 
-  .user-menu {
-    margin-left: auto;
+  .app-header-inner {
+    flex-wrap: wrap;
+  }
+
+  .user-name {
+    max-width: 120px;
   }
 }
 </style>

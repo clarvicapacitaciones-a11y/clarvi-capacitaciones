@@ -95,46 +95,52 @@ function select(optionId: string): void {
   width: 100%;
   text-align: left;
   font: inherit;
-  font-size: 1rem;
+  font-size: 0.95rem;
   color: var(--text-body);
   padding: 0.85rem 1rem;
   border-radius: var(--radius-md);
-  border: 1px solid rgba(var(--clarvi-navy-rgb), 0.14);
-  background: rgba(255, 255, 255, 0.6);
+  border: var(--rule);
+  background: var(--bg-surface);
   cursor: pointer;
   transition:
     border-color var(--transition-fast),
-    background var(--transition-fast);
+    background-color var(--transition-fast),
+    color var(--transition-fast);
 }
 
-.option:hover {
-  border-color: rgba(var(--clarvi-blue-rgb), 0.5);
+.option:hover:not(.is-selected) {
+  border-color: var(--clarvi-navy);
 }
 
 .option.is-selected {
-  border-color: var(--clarvi-blue);
+  border-color: var(--clarvi-navy);
   background: var(--color-info-bg);
   color: var(--clarvi-navy);
-  font-weight: 600;
+  font-weight: 500;
 }
 
+/* Marca: vacía = sin elegir, sólida = elegida. */
 .option-mark {
-  width: 1.1rem;
-  height: 1.1rem;
+  width: 1.05rem;
+  height: 1.05rem;
+  border: 2px solid var(--line-mid);
   border-radius: var(--radius-full);
-  border: 2px solid rgba(var(--clarvi-navy-rgb), 0.25);
+  background: var(--bg-surface);
   flex-shrink: 0;
-  transition: border-color var(--transition-fast), background var(--transition-fast);
+  transition:
+    border-color var(--transition-fast),
+    background-color var(--transition-fast);
 }
 
+/* En selección múltiple la marca es cuadrada (con las esquinas suaves del
+   sistema) para distinguirla de la de respuesta única. */
 .option-mark.is-multi {
-  border-radius: var(--radius-sm);
+  border-radius: 5px;
 }
 
 .option.is-selected .option-mark {
-  border-color: var(--clarvi-blue);
-  background: var(--clarvi-blue);
-  box-shadow: inset 0 0 0 3px #fff;
+  border-color: var(--clarvi-navy);
+  background: var(--clarvi-navy);
 }
 
 .option-text {

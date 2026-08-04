@@ -130,6 +130,7 @@ export interface TrainingInput {
   description: string | null
   session_date: string | null
   youtube_video_id: string | null
+  cover_image_url: string | null
 }
 
 export async function createTraining(
@@ -151,6 +152,35 @@ export async function updateTraining(
 ): Promise<void> {
   const { error } = await supabase.from('trainings').update(patch).eq('id', id)
   if (error) throw new Error(error.message)
+}
+
+/** Bucket público de portadas; solo admins pueden escribir (RLS de storage). */
+const COVERS_BUCKET = 'training-covers'
+const MAX_COVER_BYTES = 5 * 1024 * 1024
+
+/**
+ * Sube la portada elegida por el admin y devuelve su URL pública.
+ *
+ * El nombre lleva un sufijo aleatorio para que reemplazar la imagen de una
+ * capacitación no quede servida desde la caché del navegador con la anterior.
+ */
+export async function uploadCoverImage(file: File): Promise<string> {
+  if (!file.type.startsWith('image/')) {
+    throw new Error('El archivo debe ser una imagen (JPG, PNG o WebP).')
+  }
+  if (file.size > MAX_COVER_BYTES) {
+    throw new Error('La imagen no debe pesar más de 5 MB.')
+  }
+  const extension = file.name.split('.').pop()?.toLowerCase() ?? 'jpg'
+  const path = `${crypto.randomUUID()}.${extension}`
+
+  const { error } = await supabase.storage
+    .from(COVERS_BUCKET)
+    .upload(path, file, { cacheControl: '31536000', upsert: false })
+  if (error) throw new Error(error.message)
+
+  const { data } = supabase.storage.from(COVERS_BUCKET).getPublicUrl(path)
+  return data.publicUrl
 }
 
 export async function deleteTraining(id: string): Promise<void> {

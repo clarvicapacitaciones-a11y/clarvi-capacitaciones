@@ -4,9 +4,9 @@
 // formulario, este componente solo edita el borrador.
 
 import { computed, ref } from 'vue'
-import GlassButton from '@/components/glass/GlassButton.vue'
-import GlassInput from '@/components/glass/GlassInput.vue'
-import GlassSelect from '@/components/glass/GlassSelect.vue'
+import UiButton from '@/components/ui/UiButton.vue'
+import UiInput from '@/components/ui/UiInput.vue'
+import UiSelect from '@/components/ui/UiSelect.vue'
 import QuestionEditor from '@/components/exams/QuestionEditor.vue'
 import {
   emptyQuestion,
@@ -78,12 +78,12 @@ function moveQuestion(index: number, delta: number): void {
     </p>
 
     <div class="form-row">
-      <GlassInput
+      <UiInput
         v-model="draft.title"
         label="Título del examen (opcional)"
         placeholder="Evaluación de la capacitación"
       />
-      <GlassInput
+      <UiInput
         v-model="passingPercent"
         label="Calificación mínima para aprobar (%)"
         type="number"
@@ -91,7 +91,7 @@ function moveQuestion(index: number, delta: number): void {
     </div>
 
     <div class="form-row">
-      <GlassInput
+      <UiInput
         v-model="draft.max_attempts"
         label="Intentos permitidos"
         type="number"
@@ -137,12 +137,12 @@ function moveQuestion(index: number, delta: number): void {
     </div>
 
     <div class="add-row">
-      <GlassSelect
+      <UiSelect
         v-model="newQuestionType"
         label="Tipo de pregunta nueva"
         :options="typeOptions"
       />
-      <GlassButton variant="ghost" @click="addQuestion">Agregar pregunta</GlassButton>
+      <UiButton variant="ghost" @click="addQuestion">Agregar pregunta</UiButton>
     </div>
   </section>
 </template>
@@ -176,8 +176,8 @@ function moveQuestion(index: number, delta: number): void {
   align-items: center;
   gap: 0.45rem;
   font-size: 0.88rem;
-  font-weight: 600;
-  color: var(--clarvi-navy);
+  font-weight: 500;
+  color: var(--text-body);
   cursor: pointer;
 }
 
@@ -201,8 +201,7 @@ function moveQuestion(index: number, delta: number): void {
 }
 
 .switch {
-  font-weight: 500;
-  color: var(--text-body);
+  font-weight: 400;
 }
 
 .field-block {
@@ -224,7 +223,7 @@ function moveQuestion(index: number, delta: number): void {
   flex-wrap: wrap;
 }
 
-.add-row :deep(.glass-field) {
+.add-row :deep(.field) {
   min-width: 220px;
 }
 </style>

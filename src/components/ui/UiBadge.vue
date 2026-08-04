@@ -8,31 +8,33 @@ withDefaults(
 </script>
 
 <template>
-  <span class="glass-badge" :class="`is-${tone}`">
+  <span class="ui-badge" :class="`is-${tone}`">
     <slot />
   </span>
 </template>
 
 <style scoped>
-.glass-badge {
+/* Etiqueta en píldora: fondo tenue del estado y texto en altas y bajas. */
+.ui-badge {
   display: inline-flex;
   align-items: center;
   gap: 0.3rem;
   padding: 0.22rem 0.65rem;
   border-radius: var(--radius-full);
   font-size: 0.78rem;
-  font-weight: 600;
+  font-weight: 500;
+  line-height: 1.35;
   white-space: nowrap;
 }
 
 .is-neutral {
-  background: rgba(var(--clarvi-navy-rgb), 0.08);
+  background: var(--bg-subtle);
   color: var(--text-muted);
 }
 
 .is-info {
   background: var(--color-info-bg);
-  color: var(--clarvi-blue);
+  color: var(--clarvi-blue-ink);
 }
 
 .is-success {

@@ -4,7 +4,7 @@
 // el servidor le baraja siempre la columna derecha.
 
 import { computed } from 'vue'
-import GlassButton from '@/components/glass/GlassButton.vue'
+import UiButton from '@/components/ui/UiButton.vue'
 import {
   newItemId,
   type ExamItem,
@@ -96,7 +96,7 @@ function removeDistractor(id: string): void {
       </button>
     </div>
 
-    <GlassButton variant="ghost" @click="addPair">Agregar pareja</GlassButton>
+    <UiButton variant="ghost" @click="addPair">Agregar pareja</UiButton>
 
     <span class="field-label distractor-label">Distractores (opcional)</span>
     <p class="muted hint">
@@ -121,9 +121,9 @@ function removeDistractor(id: string): void {
       </button>
     </div>
 
-    <GlassButton variant="ghost" @click="addDistractor">
+    <UiButton variant="ghost" @click="addDistractor">
       Agregar distractor
-    </GlassButton>
+    </UiButton>
   </div>
 </template>
 

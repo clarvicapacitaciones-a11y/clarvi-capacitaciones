@@ -9,10 +9,10 @@ import { computed, onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import ExamReview from '@/components/exams/ExamReview.vue'
 import QuestionRunner from '@/components/exams/QuestionRunner.vue'
-import GlassBadge from '@/components/glass/GlassBadge.vue'
-import GlassButton from '@/components/glass/GlassButton.vue'
-import GlassCard from '@/components/glass/GlassCard.vue'
-import GlassModal from '@/components/glass/GlassModal.vue'
+import UiBadge from '@/components/ui/UiBadge.vue'
+import UiButton from '@/components/ui/UiButton.vue'
+import UiCard from '@/components/ui/UiCard.vue'
+import UiModal from '@/components/ui/UiModal.vue'
 import {
   getExamStatus,
   startAttempt,
@@ -156,11 +156,11 @@ function backToTraining(): void {
 
     <!-- ── Resultado ────────────────────────────────────────────────── -->
     <template v-else-if="result">
-      <GlassCard class="result-card">
+      <UiCard class="result-card">
         <div class="result-head">
-          <GlassBadge :tone="result.passed ? 'success' : 'danger'">
+          <UiBadge :tone="result.passed ? 'success' : 'danger'">
             {{ result.passed ? 'Aprobado' : 'No aprobado' }}
-          </GlassBadge>
+          </UiBadge>
           <strong class="result-score">{{ Math.round(result.percent) }}%</strong>
           <p class="muted">
             {{ result.score }} de {{ result.max_score }} puntos · mínimo para
@@ -170,15 +170,15 @@ function backToTraining(): void {
         <div class="progress-bar" :class="{ 'is-complete': result.passed }">
           <span :style="{ width: `${Math.min(100, result.percent)}%` }" />
         </div>
-      </GlassCard>
+      </UiCard>
 
       <h2 class="section-title">Repaso de tus respuestas</h2>
       <ExamReview :review="result.review" />
 
       <div class="result-actions">
-        <GlassButton variant="ghost" @click="backToTraining">
+        <UiButton variant="ghost" @click="backToTraining">
           Volver a la capacitación
-        </GlassButton>
+        </UiButton>
       </div>
     </template>
 
@@ -198,20 +198,20 @@ function backToTraining(): void {
         <span :style="{ width: `${progressPercent}%` }" />
       </div>
 
-      <GlassCard class="question-card">
+      <UiCard class="question-card">
         <QuestionRunner v-model="currentResponse" :question="currentQuestion" />
-      </GlassCard>
+      </UiCard>
 
       <p v-if="error" class="form-error">{{ error }}</p>
 
       <nav class="runner-nav">
-        <GlassButton
+        <UiButton
           variant="ghost"
           :disabled="currentIndex === 0"
           @click="goTo(currentIndex - 1)"
         >
           Anterior
-        </GlassButton>
+        </UiButton>
 
         <div class="dots">
           <button
@@ -229,15 +229,15 @@ function backToTraining(): void {
           />
         </div>
 
-        <GlassButton v-if="!isLastQuestion" @click="goTo(currentIndex + 1)">
+        <UiButton v-if="!isLastQuestion" @click="goTo(currentIndex + 1)">
           Siguiente
-        </GlassButton>
-        <GlassButton v-else @click="showSubmitModal = true">
+        </UiButton>
+        <UiButton v-else @click="showSubmitModal = true">
           Entregar examen
-        </GlassButton>
+        </UiButton>
       </nav>
 
-      <GlassModal
+      <UiModal
         :open="showSubmitModal"
         title="Entregar examen"
         @close="showSubmitModal = false"
@@ -259,12 +259,12 @@ function backToTraining(): void {
           cambiar tus respuestas.
         </p>
         <template #footer>
-          <GlassButton variant="ghost" @click="showSubmitModal = false">
+          <UiButton variant="ghost" @click="showSubmitModal = false">
             Seguir contestando
-          </GlassButton>
-          <GlassButton :loading="submitting" @click="finish">Entregar</GlassButton>
+          </UiButton>
+          <UiButton :loading="submitting" @click="finish">Entregar</UiButton>
         </template>
-      </GlassModal>
+      </UiModal>
     </template>
 
     <!-- ── Portada ──────────────────────────────────────────────────── -->
@@ -276,7 +276,7 @@ function backToTraining(): void {
         </div>
       </header>
 
-      <GlassCard v-if="status?.has_exam" class="intro-card">
+      <UiCard v-if="status?.has_exam" class="intro-card">
         <p v-if="status.instructions" class="instructions">
           {{ status.instructions }}
         </p>
@@ -310,16 +310,16 @@ function backToTraining(): void {
         <p v-if="error" class="form-error">{{ error }}</p>
 
         <div class="intro-actions">
-          <GlassButton variant="ghost" @click="backToTraining">Cancelar</GlassButton>
-          <GlassButton
+          <UiButton variant="ghost" @click="backToTraining">Cancelar</UiButton>
+          <UiButton
             :disabled="!status.can_attempt"
             :loading="starting"
             @click="begin"
           >
             {{ status.open_attempt_id ? 'Continuar examen' : 'Comenzar examen' }}
-          </GlassButton>
+          </UiButton>
         </div>
-      </GlassCard>
+      </UiCard>
 
       <div v-else class="empty-state">
         <strong>Esta capacitación no tiene examen</strong>
@@ -354,10 +354,10 @@ function backToTraining(): void {
 }
 
 .counter {
-  font-size: 0.88rem;
-  font-weight: 600;
-  color: var(--clarvi-navy);
+  font-size: 0.85rem;
+  color: var(--text-muted);
   white-space: nowrap;
+  font-variant-numeric: tabular-nums;
 }
 
 .runner-progress {
@@ -385,26 +385,32 @@ function backToTraining(): void {
   flex: 1;
 }
 
+/* Índice de preguntas: puntos que solo cambian de color según su estado. */
 .dot {
-  width: 0.7rem;
-  height: 0.7rem;
+  width: 0.6rem;
+  height: 0.6rem;
   padding: 0;
   border-radius: var(--radius-full);
-  border: 1px solid rgba(var(--clarvi-navy-rgb), 0.25);
-  background: transparent;
+  border: 1px solid var(--line-mid);
+  background: var(--bg-surface);
   cursor: pointer;
-  transition: background var(--transition-fast), transform var(--transition-fast);
+  transition:
+    background-color var(--transition-fast),
+    border-color var(--transition-fast);
+}
+
+.dot:hover {
+  border-color: var(--clarvi-navy);
 }
 
 .dot.is-answered {
-  background: rgba(var(--clarvi-blue-rgb), 0.55);
-  border-color: transparent;
+  background: var(--clarvi-blue);
+  border-color: var(--clarvi-blue);
 }
 
 .dot.is-current {
   background: var(--clarvi-navy);
-  border-color: transparent;
-  transform: scale(1.25);
+  border-color: var(--clarvi-navy);
 }
 
 .intro-card,
@@ -439,26 +445,25 @@ function backToTraining(): void {
   margin-top: 1rem;
 }
 
+/* Resultado: la cifra manda, el resto se queda tranquilo. */
 .result-head {
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 0.3rem;
   text-align: center;
+  padding: 1.5rem 0;
 }
 
 .result-score {
-  font-size: 2.6rem;
-  line-height: 1.1;
+  font-size: 3rem;
+  font-weight: 600;
+  line-height: 1;
+  letter-spacing: -0.03em;
   color: var(--clarvi-navy);
 }
 
 .result-head p {
   margin: 0;
-}
-
-.section-title {
-  font-size: 1.05rem;
-  margin: 1.25rem 0 0.6rem;
 }
 </style>

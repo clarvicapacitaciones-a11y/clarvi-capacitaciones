@@ -6,7 +6,7 @@
 import { onMounted, ref } from 'vue'
 import { useRoute } from 'vue-router'
 import AuthLayout from '@/components/layout/AuthLayout.vue'
-import GlassButton from '@/components/glass/GlassButton.vue'
+import UiButton from '@/components/ui/UiButton.vue'
 import {
   checkinViaQr,
   getMyAttendance,
@@ -83,12 +83,12 @@ onMounted(async () => {
       </p>
       <div class="actions">
         <RouterLink :to="{ name: 'login', query: { redirect: route.fullPath } }">
-          <GlassButton block>Iniciar sesión</GlassButton>
+          <UiButton block>Iniciar sesión</UiButton>
         </RouterLink>
         <RouterLink
           :to="{ name: 'registro', query: { redirect: route.fullPath } }"
         >
-          <GlassButton variant="ghost" block>Crear cuenta</GlassButton>
+          <UiButton variant="ghost" block>Crear cuenta</UiButton>
         </RouterLink>
       </div>
     </div>
@@ -114,7 +114,7 @@ onMounted(async () => {
         <p v-if="scannedAt" class="muted">{{ formatDateTime(scannedAt) }}</p>
       </div>
       <RouterLink :to="{ name: 'dashboard' }">
-        <GlassButton block>Ir a mis capacitaciones</GlassButton>
+        <UiButton block>Ir a mis capacitaciones</UiButton>
       </RouterLink>
     </div>
 
@@ -144,9 +144,9 @@ onMounted(async () => {
 }
 
 .training-name {
-  font-size: 1.15rem;
-  font-weight: 700;
-  color: var(--clarvi-navy);
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--text-strong);
   margin: 0;
 }
 
@@ -157,15 +157,16 @@ onMounted(async () => {
   margin: 0;
 }
 
+/* Marca de resultado: círculo de color plano. */
 .result-icon {
-  width: 64px;
-  height: 64px;
+  width: 62px;
+  height: 62px;
   margin: 0 auto;
   display: grid;
   place-items: center;
-  border-radius: 50%;
-  font-size: 1.9rem;
-  font-weight: 700;
+  border-radius: var(--radius-full);
+  font-size: 1.7rem;
+  font-weight: 500;
 }
 
 .result-icon.is-success {
@@ -175,7 +176,7 @@ onMounted(async () => {
 
 .result-icon.is-info {
   background: var(--color-info-bg);
-  color: var(--clarvi-blue);
+  color: var(--clarvi-blue-ink);
 }
 
 .result-icon.is-danger {
@@ -184,9 +185,10 @@ onMounted(async () => {
 }
 
 .detail-box {
-  background: rgba(255, 255, 255, 0.6);
+  background: var(--bg-subtle);
   border-radius: var(--radius-md);
-  padding: 0.8rem;
+  padding: 0.9rem 1rem;
+  text-align: left;
 }
 
 .detail-box p {

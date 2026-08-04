@@ -12,8 +12,14 @@ tiene tres pestañas: Capacitaciones, Usuarios y Catálogos.
    y sube después de la sesión. Acepta cualquier formato de link
    (`youtu.be/…`, `youtube.com/watch?v=…`, `live/…`, `shorts/…`) y muestra
    vista previa al pegarlo.
-4. Más abajo, la sección **Examen** (opcional): ver más adelante.
-5. Al guardar se genera automáticamente el **QR de asistencia**.
+4. **Imagen de portada**: es la imagen que se ve en la tarjeta del dashboard.
+   Puedes **subir una imagen** (JPG, PNG o WebP, hasta 5 MB), usar la
+   **miniatura del video de YouTube** con un botón, o pegar la dirección de
+   una imagen. Si la dejas vacía y la capacitación ya tiene video, se usa la
+   miniatura automáticamente; si no hay ni imagen ni video, la tarjeta muestra
+   el logotipo.
+5. Más abajo, la sección **Examen** (opcional): ver más adelante.
+6. Al guardar se genera automáticamente el **QR de asistencia**.
 
 > Sugerencia: crea la capacitación **antes** de la sesión presencial para
 > proyectar el QR ese día; agrega el video después con **Editar**.

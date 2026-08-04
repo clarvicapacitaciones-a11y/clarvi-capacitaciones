@@ -3,12 +3,12 @@
 // (solo para el owner) asignación de roles.
 
 import { computed, onMounted, ref } from 'vue'
-import GlassBadge from '@/components/glass/GlassBadge.vue'
-import GlassButton from '@/components/glass/GlassButton.vue'
-import GlassCard from '@/components/glass/GlassCard.vue'
-import GlassInput from '@/components/glass/GlassInput.vue'
-import GlassModal from '@/components/glass/GlassModal.vue'
-import GlassSelect from '@/components/glass/GlassSelect.vue'
+import UiBadge from '@/components/ui/UiBadge.vue'
+import UiButton from '@/components/ui/UiButton.vue'
+import UiCard from '@/components/ui/UiCard.vue'
+import UiInput from '@/components/ui/UiInput.vue'
+import UiModal from '@/components/ui/UiModal.vue'
+import UiSelect from '@/components/ui/UiSelect.vue'
 import {
   listUsers,
   setUserActive,
@@ -155,38 +155,38 @@ function roleTone(role: UserRole): 'info' | 'warning' | 'neutral' {
       </div>
     </header>
 
-    <GlassCard class="filters-card">
+    <UiCard class="filters-card">
       <div class="filters">
-        <GlassInput
+        <UiInput
           v-model="search"
           label="Buscar"
           placeholder="Nombre, correo o usuario"
         />
-        <GlassSelect
+        <UiSelect
           v-model="filterArea"
           label="Área"
           :options="[{ value: '', label: 'Todas' }, ...areaOptions]"
           placeholder="Todas"
         />
-        <GlassSelect
+        <UiSelect
           v-model="filterSucursal"
           label="Sucursal"
           :options="[{ value: '', label: 'Todas' }, ...sucursalOptions]"
           placeholder="Todas"
         />
-        <GlassSelect
+        <UiSelect
           v-model="filterRole"
           label="Rol"
           :options="[{ value: '', label: 'Todos' }, ...roleOptions]"
           placeholder="Todos"
         />
       </div>
-    </GlassCard>
+    </UiCard>
 
     <p v-if="error" class="form-error">{{ error }}</p>
     <p v-else-if="loading" class="muted">Cargando…</p>
 
-    <GlassCard v-else>
+    <UiCard v-else>
       <div class="table-wrap">
         <table class="data-table">
           <thead>
@@ -207,23 +207,23 @@ function roleTone(role: UserRole): 'info' | 'warning' | 'neutral' {
               <td>{{ user.areas?.nombre ?? '—' }}</td>
               <td>{{ user.sucursales?.nombre ?? '—' }}</td>
               <td>
-                <GlassBadge :tone="roleTone(user.role)">
+                <UiBadge :tone="roleTone(user.role)">
                   {{ ROLE_LABELS[user.role] }}
-                </GlassBadge>
+                </UiBadge>
               </td>
               <td>
-                <GlassBadge :tone="user.is_active ? 'success' : 'danger'">
+                <UiBadge :tone="user.is_active ? 'success' : 'danger'">
                   {{ user.is_active ? 'Activa' : 'Desactivada' }}
-                </GlassBadge>
+                </UiBadge>
               </td>
               <td class="row-actions">
-                <GlassButton
+                <UiButton
                   v-if="canEdit(user)"
                   variant="ghost"
                   @click="openEdit(user)"
                 >
                   Editar
-                </GlassButton>
+                </UiButton>
               </td>
             </tr>
           </tbody>
@@ -232,24 +232,24 @@ function roleTone(role: UserRole): 'info' | 'warning' | 'neutral' {
           Sin resultados con esos filtros.
         </p>
       </div>
-    </GlassCard>
+    </UiCard>
 
-    <GlassModal
+    <UiModal
       :open="editing !== null"
       :title="`Editar a ${editing?.full_name ?? ''}`"
       @close="editing = null"
     >
       <div class="form-grid">
-        <GlassInput v-model="editName" label="Nombre completo" required />
+        <UiInput v-model="editName" label="Nombre completo" required />
         <div class="form-row">
-          <GlassSelect v-model="editArea" label="Área" :options="areaOptions" />
-          <GlassSelect
+          <UiSelect v-model="editArea" label="Área" :options="areaOptions" />
+          <UiSelect
             v-model="editSucursal"
             label="Sucursal"
             :options="sucursalOptions"
           />
         </div>
-        <GlassSelect
+        <UiSelect
           v-if="auth.isOwner && editing?.id !== auth.userId"
           v-model="editRole"
           label="Rol"
@@ -262,12 +262,12 @@ function roleTone(role: UserRole): 'info' | 'warning' | 'neutral' {
         <p v-if="editError" class="form-error">{{ editError }}</p>
       </div>
       <template #footer>
-        <GlassButton variant="ghost" @click="editing = null">
+        <UiButton variant="ghost" @click="editing = null">
           Cancelar
-        </GlassButton>
-        <GlassButton :loading="saving" @click="saveEdit">Guardar</GlassButton>
+        </UiButton>
+        <UiButton :loading="saving" @click="saveEdit">Guardar</UiButton>
       </template>
-    </GlassModal>
+    </UiModal>
   </div>
 </template>
 
@@ -295,9 +295,8 @@ function roleTone(role: UserRole): 'info' | 'warning' | 'neutral' {
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  font-size: 0.92rem;
-  font-weight: 600;
-  color: var(--clarvi-navy);
+  font-size: 0.9rem;
+  color: var(--text-body);
   cursor: pointer;
 }
 

@@ -20,31 +20,32 @@
 </template>
 
 <style scoped>
+/* Sub-navegación en píldoras, del mismo lenguaje que las pestañas. */
 .admin-nav {
-  display: flex;
-  gap: 0.4rem;
-  margin-bottom: 1.5rem;
-  border-bottom: 1px solid rgba(var(--clarvi-navy-rgb), 0.12);
-  padding-bottom: 0;
+  display: inline-flex;
+  gap: 0.25rem;
+  margin-bottom: 1.75rem;
+  padding: 0.25rem;
+  border-radius: var(--radius-full);
+  background: var(--bg-subtle);
   flex-wrap: wrap;
 }
 
 .admin-tab {
-  padding: 0.55rem 1rem;
-  font-weight: 600;
-  font-size: 0.92rem;
+  padding: 0.5rem 1.05rem;
+  border-radius: var(--radius-full);
+  font-weight: 500;
+  font-size: 0.86rem;
   color: var(--text-muted);
-  border-bottom: 2px solid transparent;
-  margin-bottom: -1px;
-  transition: color var(--transition-fast), border-color var(--transition-fast);
+  transition: background-color var(--transition-fast), color var(--transition-fast);
 }
 
 .admin-tab:hover {
-  color: var(--clarvi-navy);
+  color: var(--text-strong);
 }
 
 .admin-tab.router-link-active {
-  color: var(--clarvi-navy);
-  border-bottom-color: var(--clarvi-blue);
+  background: var(--clarvi-navy);
+  color: var(--text-inverse);
 }
 </style>

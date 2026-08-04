@@ -60,11 +60,9 @@ const runnerComponent = computed(() => runners[props.question.type])
 }
 
 .type-tag {
-  font-size: 0.78rem;
-  font-weight: 600;
-  color: var(--clarvi-blue);
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
+  font-size: 0.85rem;
+  font-weight: 400;
+  color: var(--text-muted);
 }
 
 .points {
@@ -74,6 +72,8 @@ const runnerComponent = computed(() => runners[props.question.type])
 .prompt {
   margin: 0;
   font-size: 1.2rem;
+  font-weight: 600;
+  letter-spacing: -0.015em;
   line-height: 1.4;
   color: var(--text-strong);
 }

@@ -3,7 +3,7 @@
 // descarga y copia del link.
 
 import { ref, watch } from 'vue'
-import GlassButton from '@/components/glass/GlassButton.vue'
+import UiButton from '@/components/ui/UiButton.vue'
 import {
   checkinUrlForToken,
   downloadDataUrl,
@@ -45,12 +45,12 @@ async function handleCopy(): Promise<void> {
     <img v-if="dataUrl" :src="dataUrl" alt="Código QR de asistencia" class="qr-img" />
     <p class="qr-url">{{ checkinUrlForToken(token) }}</p>
     <div class="qr-actions">
-      <GlassButton variant="ghost" @click="handleDownload">
+      <UiButton variant="ghost" @click="handleDownload">
         Descargar PNG
-      </GlassButton>
-      <GlassButton variant="ghost" @click="handleCopy">
+      </UiButton>
+      <UiButton variant="ghost" @click="handleCopy">
         {{ copied ? 'Copiado ✓' : 'Copiar link' }}
-      </GlassButton>
+      </UiButton>
     </div>
   </div>
 </template>
@@ -66,7 +66,7 @@ async function handleCopy(): Promise<void> {
 .qr-img {
   width: min(230px, 100%);
   border-radius: var(--radius-md);
-  border: 1px solid rgba(var(--clarvi-navy-rgb), 0.12);
+  border: var(--rule);
   background: #fff;
 }
 

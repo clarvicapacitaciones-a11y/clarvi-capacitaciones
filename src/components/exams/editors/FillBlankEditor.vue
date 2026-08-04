@@ -4,7 +4,7 @@
 // comparación del servidor ignora mayúsculas, acentos y espacios de sobra.
 
 import { computed, watch } from 'vue'
-import GlassButton from '@/components/glass/GlassButton.vue'
+import UiButton from '@/components/ui/UiButton.vue'
 import {
   blankIdsFromText,
   type ExamQuestionDraft,
@@ -84,7 +84,7 @@ watch(
       />
     </label>
 
-    <GlassButton variant="ghost" @click="addBlank">Agregar hueco</GlassButton>
+    <UiButton variant="ghost" @click="addBlank">Agregar hueco</UiButton>
 
     <template v-if="blankIds.length">
       <span class="field-label answers-label">Respuestas aceptadas</span>
@@ -144,11 +144,12 @@ watch(
 }
 
 .blank-tag {
-  font-family: ui-monospace, 'Cascadia Code', Consolas, monospace;
+  font-family: var(--font-mono);
   font-size: 0.82rem;
   font-weight: 600;
-  color: var(--clarvi-blue);
+  color: var(--clarvi-blue-ink);
   background: var(--color-info-bg);
+  border: 1px solid var(--blue-100);
   padding: 0.2rem 0.5rem;
   border-radius: var(--radius-sm);
   flex-shrink: 0;

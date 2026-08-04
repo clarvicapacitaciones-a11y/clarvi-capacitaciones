@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import AuthLayout from '@/components/layout/AuthLayout.vue'
-import GlassButton from '@/components/glass/GlassButton.vue'
+import UiButton from '@/components/ui/UiButton.vue'
 </script>
 
 <template>
@@ -9,7 +9,7 @@ import GlassButton from '@/components/glass/GlassButton.vue'
       <p class="code">404</p>
       <p class="muted">La página que buscas no existe o fue movida.</p>
       <RouterLink :to="{ name: 'dashboard' }">
-        <GlassButton block>Ir al inicio</GlassButton>
+        <UiButton block>Ir al inicio</UiButton>
       </RouterLink>
     </div>
   </AuthLayout>
@@ -24,10 +24,10 @@ import GlassButton from '@/components/glass/GlassButton.vue'
 }
 
 .code {
-  font-size: 3rem;
-  font-weight: 800;
-  color: var(--clarvi-navy);
+  font-size: 3.25rem;
+  font-weight: 600;
+  letter-spacing: -0.04em;
+  color: var(--line-mid);
   margin: 0;
-  opacity: 0.35;
 }
 </style>

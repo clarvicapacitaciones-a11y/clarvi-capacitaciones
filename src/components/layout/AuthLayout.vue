@@ -23,39 +23,39 @@ defineProps<{ subtitle?: string }>()
   padding: 1.5rem 1rem;
 }
 
+/* Tarjeta blanca de esquinas suaves sobre el fondo de la página. */
 .auth-card {
   width: min(430px, 100%);
-  background: var(--glass-bg);
-  border: var(--glass-border);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--glass-shadow);
-  backdrop-filter: blur(var(--glass-blur));
-  -webkit-backdrop-filter: blur(var(--glass-blur));
-  padding: 2rem 1.75rem;
+  background: var(--bg-surface);
+  border: var(--rule);
+  border-radius: var(--radius-xl);
+  padding: 2.25rem 2rem;
 }
 
 .auth-brand {
   text-align: center;
-  margin-bottom: 1.5rem;
+  margin-bottom: 1.75rem;
 }
 
 .auth-logo {
-  width: 52px;
-  height: 52px;
-  margin-bottom: 0.5rem;
+  width: 44px;
+  height: 44px;
+  border-radius: var(--radius-md);
+  margin-bottom: 0.75rem;
 }
 
 .auth-brand h1 {
   margin: 0;
-  letter-spacing: 0.12em;
+  letter-spacing: 0.08em;
   color: var(--clarvi-navy);
-  font-size: 1.6rem;
+  font-size: 1.35rem;
+  font-weight: 600;
 }
 
 .auth-subtitle {
-  margin: 0.2rem 0 0;
-  color: var(--clarvi-blue);
-  font-weight: 600;
-  font-size: 0.9rem;
+  margin: 0.35rem 0 0;
+  color: var(--text-muted);
+  font-weight: 400;
+  font-size: 0.88rem;
 }
 </style>
