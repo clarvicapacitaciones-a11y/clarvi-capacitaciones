@@ -1,18 +1,36 @@
 <script setup lang="ts">
-// Dashboard personal: capacitaciones pendientes, en curso y completadas.
+// Dashboard personal: una sola página con secciones. Primero lo que quedó a
+// medias, luego lo que falta por ver y al final lo terminado.
 
 import { computed, onMounted, ref } from 'vue'
 import TrainingCard from '@/components/trainings/TrainingCard.vue'
 import { listMyTrainingStatuses } from '@/services/trainings.service'
 import { useAuthStore } from '@/stores/auth.store'
 import type { TrainingStatus, TrainingStatusRow } from '@/types/domain'
-import { STATUS_LABELS } from '@/types/domain'
 
 const auth = useAuthStore()
 const rows = ref<TrainingStatusRow[]>([])
 const loading = ref(true)
 const error = ref('')
-const activeTab = ref<TrainingStatus>('pending')
+
+/** Orden y textos de las secciones de la página. */
+const SECTIONS: { status: TrainingStatus; title: string; hint: string }[] = [
+  {
+    status: 'in_progress',
+    title: 'Continuar viendo',
+    hint: 'Retoma donde te quedaste',
+  },
+  {
+    status: 'pending',
+    title: 'Capacítate',
+    hint: 'Todavía no las empiezas',
+  },
+  {
+    status: 'completed',
+    title: 'Completadas',
+    hint: 'Ya las terminaste',
+  },
+]
 
 const buckets = computed(() => {
   const grouped: Record<TrainingStatus, TrainingStatusRow[]> = {
@@ -27,7 +45,13 @@ const buckets = computed(() => {
   return grouped
 })
 
-const tabs: TrainingStatus[] = ['pending', 'in_progress', 'completed']
+/** Solo se pintan las secciones que tienen algo que mostrar. */
+const sections = computed(() =>
+  SECTIONS.map((section) => ({
+    ...section,
+    rows: buckets.value[section.status],
+  })).filter((section) => section.rows.length > 0),
+)
 
 onMounted(async () => {
   try {
@@ -52,56 +76,65 @@ onMounted(async () => {
       </div>
     </header>
 
-    <div class="tabs">
-      <button
-        v-for="tabName in tabs"
-        :key="tabName"
-        class="tab"
-        :class="{ 'is-active': activeTab === tabName }"
-        @click="activeTab = tabName"
-      >
-        {{ STATUS_LABELS[tabName] }}
-        <span class="count">{{ buckets[tabName].length }}</span>
-      </button>
-    </div>
-
     <p v-if="error" class="form-error">{{ error }}</p>
     <p v-else-if="loading" class="muted">Cargando…</p>
 
-    <div v-else-if="buckets[activeTab].length" class="cards-grid">
-      <TrainingCard
-        v-for="row in buckets[activeTab]"
-        :key="row.training_id ?? ''"
-        :row="row"
-      />
-    </div>
+    <template v-else-if="sections.length">
+      <section
+        v-for="section in sections"
+        :key="section.status"
+        class="training-section"
+      >
+        <div class="section-head">
+          <h2>{{ section.title }}</h2>
+          <span class="section-count">{{ section.rows.length }}</span>
+        </div>
+        <p class="muted section-hint">{{ section.hint }}</p>
+
+        <div class="cards-grid">
+          <TrainingCard
+            v-for="row in section.rows"
+            :key="row.training_id ?? ''"
+            :row="row"
+          />
+        </div>
+      </section>
+    </template>
 
     <div v-else class="empty-state">
-      <strong v-if="activeTab === 'pending'">Sin capacitaciones pendientes</strong>
-      <strong v-else-if="activeTab === 'in_progress'">Nada en curso</strong>
-      <strong v-else>Aún no completas ninguna capacitación</strong>
-      <span v-if="activeTab === 'pending'">
-        Cuando un administrador publique un video nuevo, aparecerá aquí.
-      </span>
+      <strong>Aún no tienes capacitaciones</strong>
+      <span>Cuando el equipo publique una nueva, aparecerá aquí.</span>
     </div>
   </div>
 </template>
 
 <style scoped>
-/* El control segmentado vive en base.css (.tabs/.tab); aquí solo el
-   contador de cada pestaña. */
-.count {
-  font-size: 0.78rem;
-  font-variant-numeric: tabular-nums;
-  transition: color var(--transition-fast);
+/* Secciones apiladas, separadas por aire y una línea suave. */
+.training-section + .training-section {
+  margin-top: 2.5rem;
+  padding-top: 2.5rem;
+  border-top: var(--rule);
 }
 
-.tab:not(.is-active) .count {
+.section-head {
+  display: flex;
+  align-items: baseline;
+  gap: 0.6rem;
+}
+
+.section-head h2 {
+  margin: 0;
+  font-size: 1.2rem;
+}
+
+.section-count {
+  font-size: 0.85rem;
   color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
 }
 
-.tab.is-active .count {
-  color: var(--blue-100);
+.section-hint {
+  margin: 0.15rem 0 1.1rem;
 }
 
 .cards-grid {

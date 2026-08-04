@@ -70,10 +70,3 @@ export const APPROVAL_LABELS: Record<ApprovalStatus, string> = {
 /** Roles con acceso a la sección de administración (el líder, solo a Solicitudes). */
 export const ADMIN_ROLES: UserRole[] = ['administrador', 'owner']
 export const APPROVER_ROLES: UserRole[] = ['lider', 'administrador', 'owner']
-
-/** Etiquetas de las pestañas del dashboard (agrupan capacitaciones, en plural). */
-export const STATUS_LABELS: Record<TrainingStatus, string> = {
-  pending: 'Pendientes',
-  in_progress: 'En curso',
-  completed: 'Completadas',
-}
