@@ -7,8 +7,10 @@ import UiButton from '@/components/ui/UiButton.vue'
 import UiCard from '@/components/ui/UiCard.vue'
 import UiBadge from '@/components/ui/UiBadge.vue'
 import YoutubePlayer from '@/components/trainings/YoutubePlayer.vue'
+import { FEATURES } from '@/config/features'
 import { formatDate } from '@/composables/useFormat'
 import { coverImageUrl } from '@/composables/useTrainingCover'
+import { getCertificateForTraining } from '@/services/certificates.service'
 import { getExamStatus } from '@/services/exams.service'
 import {
   getMyAttendance,
@@ -18,6 +20,7 @@ import {
 import { useAuthStore } from '@/stores/auth.store'
 import type {
   Attendance,
+  CertificateWithSnapshot,
   Training,
   WatchedRange,
   WatchProgress,
@@ -34,6 +37,8 @@ const training = ref<Training | null>(null)
 const progress = shallowRef<WatchProgress | null>(null)
 const attendance = ref<Attendance | null>(null)
 const exam = ref<ExamStatus | null>(null)
+// Emitido por la base de datos al acreditar; oculto hasta encender la bandera.
+const certificate = ref<CertificateWithSnapshot | null>(null)
 const loading = ref(true)
 const error = ref('')
 
@@ -71,6 +76,12 @@ onMounted(async () => {
       exam.value = examStatus
       livePercent.value = progressRow?.watch_percent ?? 0
       liveSeconds.value = progressRow?.watched_seconds ?? 0
+      if (FEATURES.diplomas) {
+        certificate.value = await getCertificateForTraining(
+          trainingId,
+          auth.userId,
+        )
+      }
     }
   } catch (err) {
     error.value =
@@ -194,6 +205,18 @@ function goToExam(): void {
         <UiButton :disabled="!exam.can_attempt" @click="goToExam">
           {{ examButtonLabel }}
         </UiButton>
+      </UiCard>
+
+      <UiCard v-if="FEATURES.diplomas && certificate" class="exam-card">
+        <div class="exam-info">
+          <h3>Diploma</h3>
+          <p class="muted">
+            Acreditaste esta capacitación · Folio {{ certificate.folio }}
+          </p>
+        </div>
+        <RouterLink :to="{ name: 'diploma', params: { id: certificate.id } }">
+          <UiButton>Ver diploma</UiButton>
+        </RouterLink>
       </UiCard>
 
       <UiCard v-if="training.description" class="description-card">

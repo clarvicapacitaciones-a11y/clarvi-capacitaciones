@@ -1,6 +1,8 @@
-// Guards globales: autenticación, cuentas desactivadas y roles.
+// Guards globales: autenticación, cuentas desactivadas, roles y funcionalidad
+// todavía no abierta al público.
 
 import type { Router } from 'vue-router'
+import { FEATURES } from '@/config/features'
 import { useAuthStore } from '@/stores/auth.store'
 import type { UserRole } from '@/types/domain'
 
@@ -28,6 +30,12 @@ export function applyGuards(router: Router): void {
       return to.name === 'pendiente' ? true : { name: 'pendiente' }
     }
     if (auth.isAuthenticated && to.name === 'pendiente') {
+      return { name: 'dashboard' }
+    }
+
+    // Pantallas construidas pero todavía apagadas.
+    const feature = to.meta.feature as keyof typeof FEATURES | undefined
+    if (feature && !FEATURES[feature]) {
       return { name: 'dashboard' }
     }
 

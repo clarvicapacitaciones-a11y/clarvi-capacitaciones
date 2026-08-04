@@ -113,6 +113,50 @@ enunciado, opciones y respuesta correcta del momento en que se contestó: si el
 admin edita o borra la pregunta después, **el reporte histórico no cambia**
 (mismo criterio que congelar área/sucursal en `attendance`).
 
+### `notifications` (avisos dentro de la plataforma)
+Sin SMTP, el aviso vive en la campana del encabezado. Las filas **solo las
+escribe la base de datos** (funciones `security definer` disparadas por
+triggers): no hay política de `insert`, y un trigger deja que el cliente
+cambie únicamente `read_at`.
+
+| Columna | Notas |
+|---|---|
+| `user_id` | destinatario; cada quien lee solo los suyos |
+| `type` | `solicitud_registro` \| `registro_aprobado` |
+| `link` | ruta interna de la app (`/admin/solicitudes`), nunca una URL externa |
+| `subject_id` | de qué habla el aviso; permite darlo por atendido cuando **otro** lo resuelve |
+| `read_at` | `null` = sin leer (alimenta el contador de la campana) |
+
+Quién recibe qué:
+
+- **Nuevo registro pendiente** → los líderes de esa área (de cualquier
+  sucursal). Si el área no tiene líder, el aviso va a administradores y owner
+  para que la solicitud no se quede esperando a nadie.
+- **Solicitud resuelta** → se marcan como leídos los avisos de esa solicitud
+  para los demás aprobadores, y quien se registró recibe "Tu registro fue
+  aprobado".
+
+### `certificates` (diplomas)
+Un diploma por persona y capacitación (`unique (training_id, user_id)`). Se
+emiten solos: con examen publicado, al aprobarlo; sin examen, al completar el
+video. Solo los escribe `grant_certificate_if_earned`; desde el cliente son de
+lectura (los propios, o todos para admin/owner).
+
+| Columna | Notas |
+|---|---|
+| `folio` | `CLARVI-<año>-<consecutivo>`; es lo que se verifica |
+| `earned_via` | `examen` \| `video` |
+| `earned_at` | cuándo se ganó (fecha real, no la de emisión) |
+| `snapshot` | nombre, capacitación, fecha de sesión, área y sucursal **congelados** |
+
+El `snapshot` sigue el mismo criterio que `attendance` y `question_snapshot`:
+renombrar un área o corregir el título de la capacitación no reescribe un
+documento ya entregado.
+
+> La interfaz todavía no los muestra (bandera `FEATURES.diplomas` en
+> `src/config/features.ts`). La base sí los emite y acumula desde ya, para que
+> el día que se encienda no arranque vacía.
+
 ### Vista `user_training_status`
 Cruza capacitaciones × perfiles con progreso, asistencia y examen; deriva
 `status`: `pending` (sin fila de progreso), `in_progress` (fila sin
@@ -133,9 +177,14 @@ sus propias filas; admin/owner ven todas. Alimenta el dashboard.
 | `exam_questions` | **sin acceso** (traen la respuesta correcta) | igual | todo |
 | `exam_attempts` | lee los suyos | igual | lee todos |
 | `exam_attempt_answers` | lee las suyas | igual | lee todas |
+| `notifications` | lee las suyas y las marca leídas | igual | igual |
+| `certificates` | lee los suyos | igual | lee todos |
 
 Fuera de aprobar registros, un **líder es un colaborador**: ve y aplica sus
-propias capacitaciones, nada más.
+propias capacitaciones, nada más. Y su cola de solicitudes está acotada a **su
+área** (`lider_cubre()`), en todas las sucursales: quien lidera Comercial
+aprueba a los de Comercial estén donde estén, y compartir sucursal no da
+alcance sobre las demás áreas de esa sucursal.
 
 Una cuenta **pendiente de aprobación** no pasa de la puerta: `trainings` solo
 es legible con `current_user_is_approved()`, y las escrituras de `attendance` y
@@ -159,6 +208,8 @@ Reglas finas que las políticas no cubren van en el trigger
   sella `approved_by`/`approved_at` — el cliente no puede fingir quién aprobó.
 - Un líder **solo** puede aprobar o rechazar: si el mismo UPDATE toca nombre,
   área, sucursal, rol o `is_active`, se rechaza.
+- Un líder solo resuelve registros de su área (`lider_cubre()`, comprobado
+  también en la política de `update`).
 
 ## Triggers sobre `auth.users`
 
@@ -201,6 +252,23 @@ sin recursión. Para anon devuelve `null`.
 El mismo patrón para el estado de aprobación: `true` solo si la fila propia
 está `aprobado`. Para anon (y para una cuenta pendiente o rechazada) devuelve
 `false`.
+
+### `lider_cubre(area_id, sucursal_id)`
+`true` si quien consulta pertenece a esa **área**. Es el alcance del líder
+(su área completa, en todas las sucursales): lo usan las políticas de
+`profiles` y el trigger que resuelve solicitudes.
+
+### `grant_certificate_if_earned(training_id, user_id)`
+Emite el diploma si ya se cumplió el requisito (examen aprobado, o video
+completado cuando no hay examen publicado) y todavía no existe. Idempotente.
+La disparan cuatro triggers —`exam_attempts` y `watch_progress`, uno por
+operación— con cláusulas `when` que sonan **solo en el momento de acreditar**:
+`upsert_watch_progress` escribe cada ~15 s de reproducción y sería un
+desperdicio revisarlo en cada latido.
+
+### `certificate_by_folio(folio)` *(pública, también anon)*
+Verificación del folio impreso: confirma que el diploma existe y de qué es, sin
+exponer la tabla ni el resto de los datos de la persona.
 
 ### `save_exam(training_id, exam, questions)` *(admin)*
 `SECURITY INVOKER`: quien autoriza son las políticas de `exams` /

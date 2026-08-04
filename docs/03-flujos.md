@@ -31,8 +31,9 @@ tiene que aprobar un **líder** (o un admin/owner).
 1. La persona se registra por usuario. Se le abre sesión, pero el guard del
    router solo la deja ver `/pendiente`: una pantalla que explica que falta la
    aprobación, con un botón para volver a consultar y otro para salir.
-2. En Administración → **Solicitudes** el líder ve la fila con nombre, usuario,
-   área, sucursal y fecha, y **Aprueba** o **Rechaza** (con motivo opcional).
+2. Los líderes de esa área reciben un **aviso en la campana** del encabezado
+   (si el área no tiene líder, lo reciben administradores y owner). En Administración → **Solicitudes** ven la fila con nombre, usuario,
+   área, sucursal y fecha, y **Aprueban** o **Rechazan** (con motivo opcional).
    La pestaña trae el número de pendientes al lado del nombre.
 3. Aprobada, la persona entra normal (el botón "Ya me aprobaron" o un login
    nuevo bastan). Rechazada, se le cierra la sesión con el aviso al intentar
@@ -45,7 +46,39 @@ un trigger le impide abrir un intento de examen. `checkin_via_qr` responde
 
 Quién resolvió la solicitud y cuándo lo sella el trigger
 `guard_profile_changes`; el cliente solo manda el estado nuevo. Una solicitud
-ya resuelta no se puede volver a resolver, y nadie puede aprobar su propia fila.
+ya resuelta no se puede volver a resolver, nadie puede aprobar su propia fila y
+un líder solo alcanza a quien se registró en **su área**.
+
+## Avisos dentro de la plataforma
+
+No hay SMTP, así que el aviso vive en la **campana del encabezado**: contador
+de no leídos, lista con los últimos avisos y, al pulsar uno, se marca leído y
+lleva a donde apunta. La lista se refresca al abrirla y cada minuto mientras la
+pestaña esté visible (no hay suscripción realtime abierta: un aviso que se
+atiende en horas no la necesita).
+
+Los avisos los escribe **solo la base de datos**; el cliente únicamente puede
+marcarlos como leídos. Hoy se emiten dos: *nueva solicitud de registro* (a los
+líderes que la cubren) y *tu registro fue aprobado* (a quien se registró).
+Cuando alguien resuelve una solicitud, el aviso se da por atendido para el
+resto de los aprobadores.
+
+## Diplomas *(construido, todavía sin mostrar)*
+
+Cada persona que acredita una capacitación recibe un diploma con folio. Se
+emite solo: si la capacitación tiene examen publicado, al aprobarlo; si no, al
+completar el video. El documento **congela** los datos con los que se emitió
+(nombre, capacitación, área, sucursal, calificación), así que renombrar un área
+después no reescribe un diploma ya entregado, y trae un folio
+`CLARVI-<año>-<consecutivo>` verificable con `certificate_by_folio`.
+
+El formato es una hoja horizontal imprimible (`DiplomaSheet.vue`): se guarda
+como PDF desde el propio diálogo de impresión del navegador, sin librerías.
+
+La interfaz está apagada con `FEATURES.diplomas` en `src/config/features.ts`.
+Ponerla en `true` enciende de una vez el bloque "Mis diplomas" del perfil, el
+botón en la ficha de la capacitación y la ruta `/diploma/:id`. Mientras tanto
+la base de datos ya los emite y acumula.
 
 **Contraseñas olvidadas:** las cuentas con correo podrán usar recuperación por
 correo cuando se configure SMTP propio; para cuentas por usuario no hay bandeja

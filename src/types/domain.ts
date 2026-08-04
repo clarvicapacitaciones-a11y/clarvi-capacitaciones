@@ -13,6 +13,8 @@ export type Training = Tables<'trainings'>
 export type WatchProgress = Tables<'watch_progress'>
 export type Attendance = Tables<'attendance'>
 export type TrainingStatusRow = Tables<'user_training_status'>
+export type AppNotification = Tables<'notifications'>
+export type Certificate = Tables<'certificates'>
 
 export type TrainingStatus = 'pending' | 'in_progress' | 'completed'
 
@@ -27,6 +29,19 @@ export interface ProfileWithCatalogs extends Profile {
 /** Solicitud de registro con el nombre de quien la resolvió, si ya se resolvió. */
 export interface ApprovalRequest extends ProfileWithCatalogs {
   approver: { full_name: string } | null
+}
+
+/** Datos congelados al emitir el diploma (columna `snapshot`). */
+export interface CertificateSnapshot {
+  full_name: string
+  training_title: string
+  session_date: string | null
+  area: string | null
+  sucursal: string | null
+}
+
+export interface CertificateWithSnapshot extends Omit<Certificate, 'snapshot'> {
+  snapshot: CertificateSnapshot
 }
 
 export interface TrainingWithCounts extends Training {

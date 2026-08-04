@@ -55,6 +55,14 @@ const router = createRouter({
       component: () => import('@/views/ProfileView.vue'),
     },
     {
+      // meta.feature: la ruta existe pero el guard la bloquea mientras la
+      // bandera esté apagada (ver src/config/features.ts).
+      path: '/diploma/:id',
+      name: 'diploma',
+      component: () => import('@/views/certificates/CertificateView.vue'),
+      meta: { bare: true, feature: 'diplomas' },
+    },
+    {
       // El líder entra a esta sección, pero solo a Solicitudes: cada hijo
       // declara sus roles y el hijo gana sobre el meta del padre.
       path: '/admin',
