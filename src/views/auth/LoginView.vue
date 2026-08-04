@@ -23,6 +23,10 @@ onMounted(() => {
     notice.value =
       'Tu cuenta está desactivada. Contacta a un administrador de CLARVI.'
   }
+  if (route.query.rejected === '1') {
+    notice.value =
+      'Tu registro fue rechazado. Si crees que es un error, habla con tu líder.'
+  }
 })
 
 async function handleSubmit(): Promise<void> {

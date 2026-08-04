@@ -56,6 +56,11 @@ async function handleSubmit(): Promise<void> {
       area_id: areaId.value,
       sucursal_id: sucursalId.value,
     })
+    // El alta por usuario queda pendiente de que un líder la apruebe.
+    if (tab.value === 'username') {
+      await router.push({ name: 'pendiente' })
+      return
+    }
     const redirect =
       typeof route.query.redirect === 'string' ? route.query.redirect : null
     await router.push(redirect ?? { name: 'dashboard' })
@@ -115,6 +120,11 @@ async function handleSubmit(): Promise<void> {
         required
       />
 
+      <p v-if="tab === 'username'" class="approval-note">
+        Al no haber correo corporativo que te identifique, tu registro lo tiene
+        que <strong>aprobar un líder</strong>. Podrás entrar en cuanto lo haga.
+      </p>
+
       <div class="form-row">
         <UiSelect
           v-model="areaId"
@@ -170,5 +180,20 @@ async function handleSubmit(): Promise<void> {
   margin: 1.25rem 0 0;
   font-size: 0.9rem;
   color: var(--text-muted);
+}
+
+/* Aviso de que el alta por usuario no es inmediata. */
+.approval-note {
+  margin: 0;
+  padding: 0.7rem 0.85rem;
+  border-radius: var(--radius-md);
+  background: var(--color-warning-bg);
+  color: var(--color-warning);
+  font-size: 0.85rem;
+  line-height: 1.45;
+}
+
+.approval-note strong {
+  font-weight: 600;
 }
 </style>

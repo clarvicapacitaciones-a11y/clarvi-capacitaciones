@@ -9,6 +9,10 @@
 //
 // La base de datos re-valida ambas reglas con un trigger BEFORE INSERT en
 // auth.users, por lo que esta función no es la única línea de defensa.
+//
+// El alta por usuario no verifica nada de quien se registra, así que nace
+// pendiente de aprobación (lo decide handle_new_user, no esta función) y no
+// puede usar la plataforma hasta que un líder la apruebe.
 
 import { createClient } from "jsr:@supabase/supabase-js@2";
 
@@ -116,5 +120,12 @@ Deno.serve(async (req: Request) => {
     );
   }
 
-  return json({ ok: true, user_id: data.user?.id }, 200);
+  return json(
+    {
+      ok: true,
+      user_id: data.user?.id,
+      pending_approval: method === "username",
+    },
+    200,
+  );
 });

@@ -10,7 +10,7 @@ contraseña (mínimo 8 caracteres):
 - **Sin correo (usuario)** — para personal sin correo corporativo. Elige un
   nombre de usuario (3–30 caracteres); internamente se crea el correo sintético
   `usuario@users.internal.clarvi` porque Supabase Auth exige uno. El usuario
-  nunca ve ese correo.
+  nunca ve ese correo. **Requiere aprobación** (ver abajo).
 
 El alta pasa por la Edge Function **`register`** (`supabase/functions/register`),
 que usa la service role key para crear la cuenta **ya confirmada**
@@ -19,6 +19,33 @@ del alta, el frontend inicia sesión automáticamente con `signInWithPassword`.
 
 El login con usuario simplemente convierte `usuario` → correo sintético y usa
 el mismo `signInWithPassword`.
+
+## Aprobación de registros
+
+El registro con correo se verifica solo: el trigger de `auth.users` no deja
+pasar nada que no sea `@clarvi.com`, así que quien entra ya es de la empresa.
+El registro por nombre de usuario no verifica nada — cualquiera con el link
+podría crearse una cuenta — así que nace `approval_status = 'pendiente'` y la
+tiene que aprobar un **líder** (o un admin/owner).
+
+1. La persona se registra por usuario. Se le abre sesión, pero el guard del
+   router solo la deja ver `/pendiente`: una pantalla que explica que falta la
+   aprobación, con un botón para volver a consultar y otro para salir.
+2. En Administración → **Solicitudes** el líder ve la fila con nombre, usuario,
+   área, sucursal y fecha, y **Aprueba** o **Rechaza** (con motivo opcional).
+   La pestaña trae el número de pendientes al lado del nombre.
+3. Aprobada, la persona entra normal (el botón "Ya me aprobaron" o un login
+   nuevo bastan). Rechazada, se le cierra la sesión con el aviso al intentar
+   entrar.
+
+La regla no es solo del frontend: mientras esté pendiente, la RLS no le
+devuelve capacitaciones, no la deja registrar asistencia ni guardar progreso, y
+un trigger le impide abrir un intento de examen. `checkin_via_qr` responde
+`not_approved` en vez de un confuso "código no válido".
+
+Quién resolvió la solicitud y cuándo lo sella el trigger
+`guard_profile_changes`; el cliente solo manda el estado nuevo. Una solicitud
+ya resuelta no se puede volver a resolver, y nadie puede aprobar su propia fila.
 
 **Contraseñas olvidadas:** las cuentas con correo podrán usar recuperación por
 correo cuando se configure SMTP propio; para cuentas por usuario no hay bandeja

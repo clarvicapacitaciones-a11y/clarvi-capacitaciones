@@ -23,8 +23,17 @@ Una fila por usuario, creada automáticamente al registrarse (trigger
 | `username` | solo cuentas por usuario; **inmutable** (el login depende de él) |
 | `auth_method` | `email` \| `username` |
 | `area_id`, `sucursal_id` | FK a catálogos |
-| `role` | `owner` \| `administrador` \| `usuario` |
+| `role` | `owner` \| `administrador` \| `lider` \| `colaborador` |
 | `is_active` | cuentas desactivadas no pueden usar la plataforma (guard del router) |
+| `approval_status` | `pendiente` \| `aprobado` \| `rechazado`; las altas por usuario nacen pendientes, las de correo aprobadas |
+| `approved_by`, `approved_at` | quién resolvió la solicitud y cuándo; **los sella el trigger**, no el cliente |
+| `rejection_reason` | motivo opcional del rechazo |
+
+El enum `user_role` cambió en la migración **0010**: `usuario` se renombró a
+`colaborador` (`alter type … rename value`, no toca los datos) y se agregó
+`lider`. Va en una migración aparte porque Postgres no permite *usar* un valor
+de enum recién agregado en la misma transacción en que se agregó; por eso la
+0011 compara contra `'lider'` como texto.
 
 ### `trainings`
 | Columna | Notas |
@@ -113,17 +122,26 @@ sus propias filas; admin/owner ven todas. Alimenta el dashboard.
 
 ## Reglas de acceso (RLS)
 
-| Tabla | usuario | administrador / owner |
-|---|---|---|
-| `areas`/`sucursales` | lee activas (también anon, para el registro) | todo |
-| `profiles` | lee/edita solo su fila | lee/edita todas |
-| `trainings` | lee todas | todo |
-| `attendance` | lee/inserta solo la suya | lee todas |
-| `watch_progress` | lee/escribe solo la suya | lee todas |
-| `exams` | lee solo los publicados | todo |
-| `exam_questions` | **sin acceso** (traen la respuesta correcta) | todo |
-| `exam_attempts` | lee los suyos | lee todos |
-| `exam_attempt_answers` | lee las suyas | lee todas |
+| Tabla | colaborador | líder | administrador / owner |
+|---|---|---|---|
+| `areas`/`sucursales` | lee activas (también anon, para el registro) | igual | todo |
+| `profiles` | lee/edita solo su fila | + las solicitudes sin resolver, las rechazadas y las que él resolvió | lee/edita todas |
+| `trainings` | lee todas | igual | todo |
+| `attendance` | lee/inserta solo la suya | igual | lee todas |
+| `watch_progress` | lee/escribe solo la suya | igual | lee todas |
+| `exams` | lee solo los publicados | igual | todo |
+| `exam_questions` | **sin acceso** (traen la respuesta correcta) | igual | todo |
+| `exam_attempts` | lee los suyos | igual | lee todos |
+| `exam_attempt_answers` | lee las suyas | igual | lee todas |
+
+Fuera de aprobar registros, un **líder es un colaborador**: ve y aplica sus
+propias capacitaciones, nada más.
+
+Una cuenta **pendiente de aprobación** no pasa de la puerta: `trainings` solo
+es legible con `current_user_is_approved()`, y las escrituras de `attendance` y
+`watch_progress` lo exigen también. Como los intentos de examen se crean desde
+RPC `security definer` (que se saltan la RLS), esa guarda vive ahí en un
+trigger `BEFORE INSERT` sobre `exam_attempts`.
 
 `exam_attempts` y `exam_attempt_answers` no tienen políticas de escritura: las
 únicas escrituras vienen de los RPC `security definer`, así nadie puede
@@ -136,6 +154,11 @@ Reglas finas que las políticas no cubren van en el trigger
 - `is_active` solo admin/owner.
 - `username`, `email` y `auth_method` son inmutables.
 - Un administrador no puede editar la fila de un owner.
+- `approval_status` solo lo cambia líder/admin/owner, solo desde `pendiente`
+  (una solicitud no se re-resuelve), nunca sobre la propia fila, y el trigger
+  sella `approved_by`/`approved_at` — el cliente no puede fingir quién aprobó.
+- Un líder **solo** puede aprobar o rechazar: si el mismo UPDATE toca nombre,
+  área, sucursal, rol o `is_active`, se rechaza.
 
 ## Triggers sobre `auth.users`
 
@@ -144,7 +167,9 @@ Reglas finas que las políticas no cubren van en el trigger
   `@users.internal.clarvi`. Es la garantía de servidor, independiente del
   cliente y de la Edge Function.
 - `handle_new_user` (AFTER INSERT): crea la fila de `profiles` con los datos
-  del registro (`raw_user_meta_data`).
+  del registro (`raw_user_meta_data`) y decide su `approval_status`:
+  `pendiente` si el alta fue por nombre de usuario, `aprobado` si fue por
+  correo `@clarvi.com`.
 
 ## Funciones RPC
 
@@ -160,7 +185,8 @@ sean un arreglo ordenado y sin traslape, y aplica dos guardas anti-trampa:
 
 ### `checkin_via_qr(token)`
 Registra asistencia. Devuelve `checked_in` | `already_checked_in` |
-`invalid_token`. Congela área/sucursal del perfil. `SECURITY INVOKER`.
+`invalid_token` | `not_approved`. Congela área/sucursal del perfil.
+`SECURITY INVOKER`.
 
 ### `training_title_for_token(token)` *(pública, también anon)*
 Devuelve solo el título de la capacitación del token — para que la página de
@@ -170,6 +196,11 @@ sesión, sin exponer el resto de la tabla (ni el ID del video).
 ### `current_user_role()`
 Helper `SECURITY DEFINER` que usan las políticas RLS para leer el rol propio
 sin recursión. Para anon devuelve `null`.
+
+### `current_user_is_approved()`
+El mismo patrón para el estado de aprobación: `true` solo si la fila propia
+está `aprobado`. Para anon (y para una cuenta pendiente o rechazada) devuelve
+`false`.
 
 ### `save_exam(training_id, exam, questions)` *(admin)*
 `SECURITY INVOKER`: quien autoriza son las políticas de `exams` /
@@ -209,7 +240,7 @@ mayúsculas, sin espacios de más), así "  SOLUCION   QUIMICA " acierta
 ## Cuenta owner inicial
 
 `lnoris@clarvi.com` se sembró por SQL con rol `owner` (ningún flujo de registro
-otorga ese rol). Los siguientes administradores se nombran desde
+otorga ese rol). Los administradores y líderes que siguen se nombran desde
 Administración → Usuarios con la sesión del owner.
 
 ## Regenerar tipos TypeScript

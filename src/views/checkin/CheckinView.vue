@@ -4,7 +4,7 @@
 // (conservando el token para volver). Con sesión: registra la asistencia.
 
 import { onMounted, ref } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import AuthLayout from '@/components/layout/AuthLayout.vue'
 import UiButton from '@/components/ui/UiButton.vue'
 import {
@@ -22,6 +22,7 @@ const UUID_REGEX =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
 
 const route = useRoute()
+const router = useRouter()
 const auth = useAuthStore()
 const catalogs = useCatalogsStore()
 
@@ -51,6 +52,13 @@ onMounted(async () => {
     title.value = response.trainingTitle
     if (response.status === 'invalid_token') {
       state.value = 'invalid'
+      return
+    }
+    // Registro sin aprobar: no hay asistencia que registrar todavía. El guard
+    // del router normalmente ya la mandó a la pantalla de espera; esto cubre
+    // el caso en que el servidor lo diga primero.
+    if (response.status === 'not_approved') {
+      await router.push({ name: 'pendiente' })
       return
     }
     // Recuperar la hora del registro (nuevo o previo) para mostrarla.

@@ -18,6 +18,7 @@ import {
 import { useAuthStore } from '@/stores/auth.store'
 import { useCatalogsStore } from '@/stores/catalogs.store'
 import {
+  APPROVAL_LABELS,
   ROLE_LABELS,
   type ProfileWithCatalogs,
   type UserRole,
@@ -39,7 +40,7 @@ const editing = ref<ProfileWithCatalogs | null>(null)
 const editName = ref('')
 const editArea = ref('')
 const editSucursal = ref('')
-const editRole = ref<UserRole>('usuario')
+const editRole = ref<UserRole>('colaborador')
 const editActive = ref(true)
 const saving = ref(false)
 const editError = ref('')
@@ -51,7 +52,8 @@ const sucursalOptions = computed(() =>
   catalogs.sucursales.map((s) => ({ value: s.id, label: s.nombre })),
 )
 const roleOptions = [
-  { value: 'usuario', label: 'Usuario' },
+  { value: 'colaborador', label: 'Colaborador' },
+  { value: 'lider', label: 'Líder' },
   { value: 'administrador', label: 'Administrador' },
   { value: 'owner', label: 'Owner' },
 ]
@@ -141,7 +143,7 @@ async function saveEdit(): Promise<void> {
 
 function roleTone(role: UserRole): 'info' | 'warning' | 'neutral' {
   if (role === 'owner') return 'warning'
-  if (role === 'administrador') return 'info'
+  if (role === 'administrador' || role === 'lider') return 'info'
   return 'neutral'
 }
 </script>
@@ -212,7 +214,15 @@ function roleTone(role: UserRole): 'info' | 'warning' | 'neutral' {
                 </UiBadge>
               </td>
               <td>
-                <UiBadge :tone="user.is_active ? 'success' : 'danger'">
+                <!-- Un registro sin resolver pesa más que activa/desactivada:
+                     mientras siga pendiente la cuenta no entra. -->
+                <UiBadge
+                  v-if="user.approval_status !== 'aprobado'"
+                  :tone="user.approval_status === 'pendiente' ? 'warning' : 'danger'"
+                >
+                  {{ APPROVAL_LABELS[user.approval_status] }}
+                </UiBadge>
+                <UiBadge v-else :tone="user.is_active ? 'success' : 'danger'">
                   {{ user.is_active ? 'Activa' : 'Desactivada' }}
                 </UiBadge>
               </td>

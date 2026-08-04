@@ -341,6 +341,9 @@ export type Database = {
       }
       profiles: {
         Row: {
+          approval_status: Database["public"]["Enums"]["approval_status_type"]
+          approved_at: string | null
+          approved_by: string | null
           area_id: string | null
           auth_method: Database["public"]["Enums"]["auth_method_type"]
           created_at: string
@@ -348,12 +351,16 @@ export type Database = {
           full_name: string
           id: string
           is_active: boolean
+          rejection_reason: string | null
           role: Database["public"]["Enums"]["user_role"]
           sucursal_id: string | null
           updated_at: string
           username: string | null
         }
         Insert: {
+          approval_status?: Database["public"]["Enums"]["approval_status_type"]
+          approved_at?: string | null
+          approved_by?: string | null
           area_id?: string | null
           auth_method?: Database["public"]["Enums"]["auth_method_type"]
           created_at?: string
@@ -361,12 +368,16 @@ export type Database = {
           full_name: string
           id: string
           is_active?: boolean
+          rejection_reason?: string | null
           role?: Database["public"]["Enums"]["user_role"]
           sucursal_id?: string | null
           updated_at?: string
           username?: string | null
         }
         Update: {
+          approval_status?: Database["public"]["Enums"]["approval_status_type"]
+          approved_at?: string | null
+          approved_by?: string | null
           area_id?: string | null
           auth_method?: Database["public"]["Enums"]["auth_method_type"]
           created_at?: string
@@ -374,12 +385,20 @@ export type Database = {
           full_name?: string
           id?: string
           is_active?: boolean
+          rejection_reason?: string | null
           role?: Database["public"]["Enums"]["user_role"]
           sucursal_id?: string | null
           updated_at?: string
           username?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "profiles_approved_by_fkey"
+            columns: ["approved_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "profiles_area_id_fkey"
             columns: ["area_id"]
@@ -593,6 +612,7 @@ export type Database = {
           training_title: string
         }[]
       }
+      current_user_is_approved: { Args: never; Returns: boolean }
       current_user_role: {
         Args: never
         Returns: Database["public"]["Enums"]["user_role"]
@@ -641,6 +661,7 @@ export type Database = {
       }
     }
     Enums: {
+      approval_status_type: "pendiente" | "aprobado" | "rechazado"
       auth_method_type: "email" | "username"
       question_type:
         | "multiple_choice"
@@ -649,7 +670,7 @@ export type Database = {
         | "matching"
         | "ordering"
         | "fill_blank"
-      user_role: "owner" | "administrador" | "usuario"
+      user_role: "owner" | "administrador" | "lider" | "colaborador"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -777,6 +798,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      approval_status_type: ["pendiente", "aprobado", "rechazado"],
       auth_method_type: ["email", "username"],
       question_type: [
         "multiple_choice",
@@ -786,7 +808,7 @@ export const Constants = {
         "ordering",
         "fill_blank",
       ],
-      user_role: ["owner", "administrador", "usuario"],
+      user_role: ["owner", "administrador", "lider", "colaborador"],
     },
   },
 } as const

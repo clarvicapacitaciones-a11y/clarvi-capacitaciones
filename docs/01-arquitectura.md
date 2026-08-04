@@ -24,7 +24,8 @@ asistencia presencial se registra en papel. Esta plataforma cierra ambos huecos.
    que se anima es el color, así que la UI se lee igual en una laptop vieja
    de planta que en un celular.
 5. **Cada quien ve lo que necesita.** El menú de navegación solo aparece para
-   administradores; un usuario normal entra directo a sus capacitaciones.
+   quien administra o aprueba registros; un colaborador entra directo a sus
+   capacitaciones. El líder ve esa sección con una sola pestaña: Solicitudes.
 
 ## Componentes
 
@@ -48,6 +49,7 @@ asistencia presencial se registra en papel. Esta plataforma cierra ambos huecos.
 | Decisión | Por qué |
 |---|---|
 | Cuentas sin correo usan un correo sintético `usuario@users.internal.clarvi` | Supabase Auth exige un correo por usuario. El dominio es reservado y no enrutable; el login mapea `usuario` → correo sintético de forma transparente. |
+| El alta por nombre de usuario nace pendiente y la aprueba un **líder** | El registro con correo se auto-verifica (solo pasa un `@clarvi.com`); el de usuario no verifica nada, así que sin aprobación cualquiera podría entrar. El rol `lider` existe para que ese filtro no dependa de un administrador. |
 | Alta de cuentas vía Edge Function (no `auth.signUp`) | Crea las cuentas ya confirmadas con la service role key: no depende de envío de correos (el SMTP integrado de Supabase está limitado a ~2/hora) y funciona igual para cuentas con y sin correo. |
 | El QR codifica un `qr_token` opaco, no el ID de la capacitación | Permite regenerar/invalidar un QR impreso sin romper la asistencia ya registrada (que cuelga del ID real). |
 | Progreso como **rangos vistos** `[[inicio,fin],…]` y no "segundo máximo alcanzado" | Adelantar el video no acredita el tramo saltado; re-ver un tramo no lo cuenta doble; el total cubierto es tiempo de video realmente reproducido. |
