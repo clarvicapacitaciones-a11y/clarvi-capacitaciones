@@ -7,10 +7,13 @@ import UiBadge from '@/components/ui/UiBadge.vue'
 import UiButton from '@/components/ui/UiButton.vue'
 import UiInput from '@/components/ui/UiInput.vue'
 import UiSelect from '@/components/ui/UiSelect.vue'
+import { FEATURES } from '@/config/features'
+import { formatDateTime } from '@/composables/useFormat'
+import { listMyCertificates } from '@/services/certificates.service'
 import { updateProfile } from '@/services/profiles.service'
 import { useAuthStore } from '@/stores/auth.store'
 import { useCatalogsStore } from '@/stores/catalogs.store'
-import { ROLE_LABELS } from '@/types/domain'
+import { ROLE_LABELS, type CertificateWithSnapshot } from '@/types/domain'
 
 const auth = useAuthStore()
 const catalogs = useCatalogsStore()
@@ -46,12 +49,19 @@ const accountLabel = computed(() => {
     : `@${auth.profile.username ?? ''}`
 })
 
+// Diplomas: la base de datos ya los emite, pero no se muestran hasta que se
+// encienda FEATURES.diplomas.
+const certificates = ref<CertificateWithSnapshot[]>([])
+
 onMounted(async () => {
   await catalogs.fetchCatalogs()
   if (auth.profile) {
     fullName.value = auth.profile.full_name
     areaId.value = auth.profile.area_id ?? ''
     sucursalId.value = auth.profile.sucursal_id ?? ''
+  }
+  if (FEATURES.diplomas && auth.userId) {
+    certificates.value = await listMyCertificates(auth.userId)
   }
 })
 
@@ -140,6 +150,29 @@ async function savePassword(): Promise<void> {
       </form>
     </UiCard>
 
+    <UiCard v-if="FEATURES.diplomas" class="profile-card">
+      <h3>Mis diplomas</h3>
+      <p v-if="certificates.length === 0" class="muted">
+        Cuando acredites una capacitación, tu diploma aparecerá aquí.
+      </p>
+      <ul v-else class="diploma-list">
+        <li v-for="certificate in certificates" :key="certificate.id">
+          <RouterLink
+            :to="{ name: 'diploma', params: { id: certificate.id } }"
+            class="diploma-row"
+          >
+            <span class="diploma-title">
+              {{ certificate.snapshot.training_title }}
+            </span>
+            <span class="muted">
+              {{ formatDateTime(certificate.earned_at) }} ·
+              Folio {{ certificate.folio }}
+            </span>
+          </RouterLink>
+        </li>
+      </ul>
+    </UiCard>
+
     <UiCard class="profile-card">
       <h3>Cambiar contraseña</h3>
       <p v-if="auth.profile?.auth_method === 'username'" class="muted">
@@ -198,5 +231,26 @@ async function savePassword(): Promise<void> {
   font-weight: 500;
   color: var(--text-strong);
   margin: 0;
+}
+
+/* Diplomas: renglones separados por línea, como las tablas. */
+.diploma-list {
+  list-style: none;
+  margin: 0.5rem 0 0;
+  padding: 0;
+}
+
+.diploma-row {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  padding: 0.7rem 0;
+  border-top: var(--rule);
+  font-size: 0.9rem;
+}
+
+.diploma-title {
+  color: var(--text-strong);
+  font-weight: 500;
 }
 </style>

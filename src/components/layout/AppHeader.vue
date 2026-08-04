@@ -1,12 +1,20 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
+import { computed, onMounted, onUnmounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
+import NotificationsBell from '@/components/layout/NotificationsBell.vue'
 import { useAuthStore } from '@/stores/auth.store'
+import { useNotificationsStore } from '@/stores/notifications.store'
 import { ROLE_LABELS } from '@/types/domain'
 
 const auth = useAuthStore()
+const notifications = useNotificationsStore()
 const router = useRouter()
 const menuOpen = ref(false)
+
+// El encabezado solo existe donde hay sesión, así que es el lugar natural
+// para prender y apagar el refresco de avisos.
+onMounted(() => notifications.start())
+onUnmounted(() => notifications.stop())
 
 /** Iniciales para el avatar del menú de cuenta. */
 const initials = computed(() => {
@@ -48,6 +56,8 @@ async function handleLogout(): Promise<void> {
           {{ auth.isAdmin ? 'Administración' : 'Solicitudes' }}
         </RouterLink>
       </nav>
+
+      <NotificationsBell v-if="auth.profile" class="header-bell" />
 
       <div v-if="auth.profile" class="user-menu">
         <button class="user-chip" @click="menuOpen = !menuOpen">
@@ -146,11 +156,16 @@ async function handleLogout(): Promise<void> {
   color: var(--clarvi-navy);
 }
 
+/* La campana abre el bloque de la derecha; la cuenta va pegada a ella. */
+.header-bell {
+  margin-left: auto;
+}
+
 .user-menu {
   position: relative;
   display: flex;
   align-items: center;
-  margin-left: auto;
+  margin-left: 0.15rem;
 }
 
 .user-chip {

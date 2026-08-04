@@ -95,6 +95,11 @@ La bandeja de altas por **nombre de usuario**, que son las que nadie verificó
 (quien se registra con `@clarvi.com` entra directo). La ven el líder, el
 administrador y el owner; la pestaña muestra cuántas hay pendientes.
 
+Un **líder solo ve y resuelve a quien comparte su área o su sucursal** (basta
+una de las dos). Administradores y owner ven todas. Cuando llega una solicitud
+que ningún líder cubre, el aviso se manda a administradores y owner para que no
+se quede esperando a nadie.
+
 - **Aprobar** — la persona entra a la plataforma como colaboradora.
 - **Rechazar** — la cuenta queda bloqueada, con un motivo opcional que queda
   registrado. Al intentar entrar se le cierra la sesión con el aviso.
@@ -108,8 +113,8 @@ qué motivo. Reglas de la base de datos:
 - El líder **solo** aprueba o rechaza: no edita nombres, áreas, roles ni
   desactiva cuentas.
 
-> Mientras no haya SMTP configurado no hay aviso automático: conviene que quien
-> se registra le avise a su líder, y que el líder revise la pestaña.
+> No hay correo (falta SMTP), pero sí **aviso dentro de la plataforma**: al
+> líder le aparece en la campana del encabezado la próxima vez que entre.
 
 ## Catálogos
 

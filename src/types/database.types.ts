@@ -109,6 +109,64 @@ export type Database = {
           },
         ]
       }
+      certificates: {
+        Row: {
+          created_at: string
+          earned_at: string
+          earned_via: string
+          folio: string
+          id: string
+          score_percent: number | null
+          snapshot: Json
+          training_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          earned_at?: string
+          earned_via: string
+          folio: string
+          id?: string
+          score_percent?: number | null
+          snapshot: Json
+          training_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          earned_at?: string
+          earned_via?: string
+          folio?: string
+          id?: string
+          score_percent?: number | null
+          snapshot?: Json
+          training_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "certificates_training_id_fkey"
+            columns: ["training_id"]
+            isOneToOne: false
+            referencedRelation: "trainings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "certificates_training_id_fkey"
+            columns: ["training_id"]
+            isOneToOne: false
+            referencedRelation: "user_training_status"
+            referencedColumns: ["training_id"]
+          },
+          {
+            foreignKeyName: "certificates_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       exam_attempt_answers: {
         Row: {
           attempt_id: string
@@ -336,6 +394,50 @@ export type Database = {
             isOneToOne: true
             referencedRelation: "user_training_status"
             referencedColumns: ["training_id"]
+          },
+        ]
+      }
+      notifications: {
+        Row: {
+          body: string | null
+          created_at: string
+          id: string
+          link: string | null
+          read_at: string | null
+          subject_id: string | null
+          title: string
+          type: string
+          user_id: string
+        }
+        Insert: {
+          body?: string | null
+          created_at?: string
+          id?: string
+          link?: string | null
+          read_at?: string | null
+          subject_id?: string | null
+          title: string
+          type: string
+          user_id: string
+        }
+        Update: {
+          body?: string | null
+          created_at?: string
+          id?: string
+          link?: string | null
+          read_at?: string | null
+          subject_id?: string | null
+          title?: string
+          type?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notifications_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -612,6 +714,7 @@ export type Database = {
           training_title: string
         }[]
       }
+      certificate_by_folio: { Args: { p_folio: string }; Returns: Json }
       current_user_is_approved: { Args: never; Returns: boolean }
       current_user_role: {
         Args: never
@@ -629,6 +732,10 @@ export type Database = {
           p_type: Database["public"]["Enums"]["question_type"]
         }
         Returns: number
+      }
+      lider_cubre: {
+        Args: { p_area_id: string; p_sucursal_id: string }
+        Returns: boolean
       }
       normalize_text: { Args: { p_value: string }; Returns: string }
       public_question_content: {

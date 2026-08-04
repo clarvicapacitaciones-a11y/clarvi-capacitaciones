@@ -35,14 +35,18 @@ src/
     ui/                # UiCard, UiButton, UiInput, UiSelect, UiBadge, UiModal
     trainings/         # YoutubePlayer (con tracking), TrainingCard, QrCodeDisplay
     exams/             # constructor del examen (editors/) y aplicación (runners/)
-    layout/            # AppHeader, AuthLayout
+    certificates/      # DiplomaSheet (formato imprimible; apagado por bandera)
+    layout/            # AppHeader, AuthLayout, NotificationsBell
+  config/features.ts   # interruptores de lo construido pero todavía sin abrir
   composables/
     useWatchTracking.ts  # medición de visualización (rangos vistos + anti-salto)
     useYoutubePlayer.ts  # carga del IFrame API + parseo de links
     useQrCode.ts         # generación de QR de check-in
     useTrainingCover.ts  # portada de la tarjeta (imagen propia → miniatura de YouTube)
-  services/            # acceso a datos (supabase, trainings, profiles, exams)
-  stores/              # auth.store (sesión/rol), catalogs.store (áreas/sucursales)
+  services/            # acceso a datos (supabase, trainings, profiles, exams,
+                       #   notifications, certificates)
+  stores/              # auth (sesión/rol), catalogs (áreas/sucursales),
+                       #   approvals (solicitudes), notifications (campana)
   views/               # auth, dashboard, capacitación, examen, checkin, admin, perfil
 docs/                  # documentación detallada (ver abajo)
 ```
@@ -93,8 +97,9 @@ tiene video, se usa la miniatura de YouTube (`maxresdefault`, con respaldo a
 - **Administrador** — crear/editar/eliminar capacitaciones, ver resultados por
   usuario y por capacitación, administrar usuarios (área, sucursal, activar/
   desactivar), catálogos y resolver solicitudes de registro.
-- **Líder** — solo la pestaña **Solicitudes**: aprueba o rechaza a quien se
-  registró sin correo corporativo. No administra capacitaciones ni usuarios.
+- **Líder** — solo la pestaña **Solicitudes**, y solo de **su área o su
+  sucursal**: aprueba o rechaza a quien se registró sin correo corporativo. No
+  administra capacitaciones ni usuarios.
 - **Colaborador** — ver capacitaciones, registrar asistencia con QR, aplicar exámenes y consultar su propio avance.
 
 ## Aprobación de registros
@@ -106,6 +111,19 @@ espera en una pantalla de aviso hasta que un líder (o un admin/owner) la
 apruebe desde Administración → Solicitudes. Mientras siga pendiente no ve
 capacitaciones, no registra asistencia ni aplica exámenes — lo aplica la RLS,
 no solo el frontend.
+
+Al líder le llega el aviso en la **campana del encabezado** (no hay SMTP: las
+notificaciones viven dentro de la plataforma).
+
+## Diplomas
+
+Quien acredita una capacitación (aprobar el examen, o completar el video si no
+hay examen) recibe un **diploma con folio**, con los datos congelados al
+emitirlo y una hoja imprimible que se guarda como PDF desde el navegador.
+
+> Construido pero **todavía sin mostrar**: la base de datos ya los emite y
+> acumula; la interfaz se enciende poniendo `diplomas: true` en
+> `src/config/features.ts`.
 
 ## Flujo de una capacitación
 

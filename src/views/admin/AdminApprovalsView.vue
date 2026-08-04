@@ -12,9 +12,11 @@ import UiInput from '@/components/ui/UiInput.vue'
 import UiModal from '@/components/ui/UiModal.vue'
 import { formatDateTime } from '@/composables/useFormat'
 import { useApprovalsStore } from '@/stores/approvals.store'
+import { useAuthStore } from '@/stores/auth.store'
 import { APPROVAL_LABELS, type ApprovalRequest } from '@/types/domain'
 
 const approvals = useApprovalsStore()
+const auth = useAuthStore()
 
 const error = ref('')
 const busyId = ref<string | null>(null)
@@ -77,6 +79,9 @@ async function confirmReject(): Promise<void> {
         <p class="muted">
           Quien no tiene correo se registra con un nombre de usuario y espera
           aquí: apruébalo solo si de verdad trabaja en CLARVI.
+        </p>
+        <p v-if="auth.isLider" class="muted">
+          Ves únicamente a quien comparte tu área o tu sucursal.
         </p>
       </div>
     </header>
