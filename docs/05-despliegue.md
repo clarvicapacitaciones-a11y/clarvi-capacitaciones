@@ -91,5 +91,20 @@ sesión**.
 - **Migraciones**: están en `supabase/migrations/` y se aplican con el MCP de
   Supabase o `supabase db push`; tras cada cambio, regenerar
   `src/types/database.types.ts`.
+- **Recargar la caché de PostgREST tras cada migración**:
+
+  ```sql
+  notify pgrst, 'reload schema';
+  ```
+
+  PostgREST guarda en memoria las tablas, columnas y **relaciones** del
+  esquema, y las consultas que embeben otra tabla dependen de esa caché. Si se
+  queda desfasada, la API responde cosas como *"Could not find a relationship
+  between 'profiles' and 'profiles' in the schema cache"* aunque la llave
+  foránea exista y la consulta esté bien escrita (le pasó a la pestaña
+  Solicitudes, que embebe `approver:profiles!profiles_approved_by_fkey`).
+  Normalmente el disparador `pgrst_ddl_watch` la recarga solo; el `notify` es
+  la forma manual de forzarlo y es inofensivo, así que conviene correrlo
+  siempre al terminar una migración.
 - **Respaldo**: el plan gratuito de Supabase no incluye backups automáticos;
   considerar exportes periódicos (`pg_dump`) cuando haya datos valiosos.
