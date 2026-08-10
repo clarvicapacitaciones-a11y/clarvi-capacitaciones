@@ -132,6 +132,8 @@ export interface TrainingInput {
   session_date: string | null
   youtube_video_id: string | null
   cover_image_url: string | null
+  /** Canal o link del directo; la transmisión se enciende desde la ficha. */
+  live_source_url: string | null
 }
 
 export async function createTraining(

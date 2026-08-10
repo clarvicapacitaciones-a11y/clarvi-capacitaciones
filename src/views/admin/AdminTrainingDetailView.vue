@@ -2,19 +2,28 @@
 // Ficha completa de una capacitación: QR de asistencia, video,
 // lista de asistentes presenciales y avance de visualización por usuario.
 
-import { computed, onMounted, ref, shallowRef } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref, shallowRef } from 'vue'
 import { useRoute } from 'vue-router'
 import UiBadge from '@/components/ui/UiBadge.vue'
 import UiButton from '@/components/ui/UiButton.vue'
 import UiCard from '@/components/ui/UiCard.vue'
 import UiModal from '@/components/ui/UiModal.vue'
 import QrCodeDisplay from '@/components/trainings/QrCodeDisplay.vue'
+import LiveViewersTable from '@/components/trainings/LiveViewersTable.vue'
+import UiInput from '@/components/ui/UiInput.vue'
 import {
   formatDate,
   formatDateTime,
   formatMinutes,
   formatPercent,
 } from '@/composables/useFormat'
+import {
+  cancelLiveBroadcast,
+  finishLiveBroadcast,
+  probeLiveUrl,
+  startLiveBroadcast,
+  syncLiveState,
+} from '@/services/live.service'
 import {
   getExamForEdit,
   listExamAttempts,
@@ -27,6 +36,7 @@ import {
   listViewers,
   regenerateQrToken,
 } from '@/services/trainings.service'
+import { asLiveStatus, LIVE_STATUS_LABELS } from '@/types/domain'
 import type {
   AttendanceWithProfile,
   Training,
@@ -54,6 +64,20 @@ const error = ref('')
 
 const showRegenerateModal = ref(false)
 const regenerating = ref(false)
+
+// Quién está viendo la grabación en este momento: `upsert_watch_progress`
+// escribe cada ~15 s mientras se reproduce, así que un latido de hace menos de
+// 90 segundos significa que esa persona está viendo el video ahora mismo.
+const viewersRefreshedAt = ref(Date.now())
+let viewersTimer: number | null = null
+
+function isWatchingRecording(viewer: ViewerProgress): boolean {
+  return viewersRefreshedAt.value - Date.parse(viewer.last_heartbeat_at) < 90_000
+}
+
+const watchingRecordingCount = computed(
+  () => viewers.value.filter(isWatchingRecording).length,
+)
 
 const completedCount = computed(
   () => viewers.value.filter((viewer) => viewer.completed_at !== null).length,
@@ -97,6 +121,11 @@ onMounted(async () => {
     attendance.value = attendanceRows
     viewers.value = viewerRows
     exam.value = examDraft
+    liveSourceUrl.value = trainingRow?.live_source_url ?? ''
+    if (trainingRow?.live_enabled) {
+      void refreshLive(false)
+      startLivePolling()
+    }
 
     if (examDraft?.id) {
       const attempts = await listExamAttempts(examDraft.id)
@@ -109,6 +138,159 @@ onMounted(async () => {
     loading.value = false
   }
 })
+
+// La lista de quién ve la grabación se mantiene fresca mientras la ficha esté
+// abierta: sin esto, "viendo ahora" sería una foto del momento de cargar.
+onMounted(() => {
+  viewersTimer = window.setInterval(async () => {
+    if (document.hidden || !training.value) return
+    try {
+      viewers.value = await listViewers(training.value.id)
+      viewersRefreshedAt.value = Date.now()
+    } catch {
+      /* un refresco perdido no rompe la pantalla */
+    }
+  }, 30_000)
+})
+
+onBeforeUnmount(() => {
+  stopLivePolling()
+  if (viewersTimer !== null) window.clearInterval(viewersTimer)
+})
+
+// ── Transmisión en vivo ────────────────────────────────────────────────────
+
+const liveSourceUrl = ref('')
+const liveBusy = ref('')
+const liveError = ref('')
+const liveMessage = ref('')
+
+const liveStatus = computed(() => asLiveStatus(training.value?.live_status))
+const isLive = computed(() => liveStatus.value === 'en_vivo')
+const liveEnabled = computed(() => training.value?.live_enabled === true)
+
+const liveTone = computed(() => {
+  if (isLive.value) return 'danger' as const
+  if (liveStatus.value === 'programada') return 'warning' as const
+  if (liveStatus.value === 'finalizada') return 'success' as const
+  return 'neutral' as const
+})
+
+let liveTimer: number | null = null
+
+/** Mientras la transmisión esté encendida, la ficha se mantiene al día sola. */
+function startLivePolling(): void {
+  if (liveTimer !== null) return
+  liveTimer = window.setInterval(() => {
+    if (!document.hidden && liveEnabled.value) void refreshLive(false)
+  }, 20_000)
+}
+
+function stopLivePolling(): void {
+  if (liveTimer !== null) {
+    window.clearInterval(liveTimer)
+    liveTimer = null
+  }
+}
+
+async function reloadTraining(): Promise<void> {
+  if (!training.value) return
+  const fresh = await getTraining(training.value.id)
+  if (fresh) training.value = fresh
+  if (!fresh?.live_enabled) stopLivePolling()
+}
+
+async function refreshLive(force: boolean): Promise<void> {
+  if (!training.value) return
+  liveError.value = ''
+  if (force) liveBusy.value = 'sync'
+  try {
+    await syncLiveState(training.value.id, force)
+    await reloadTraining()
+  } catch (err) {
+    liveError.value =
+      err instanceof Error ? err.message : 'No se pudo consultar la transmisión'
+  } finally {
+    liveBusy.value = ''
+  }
+}
+
+async function activateLive(): Promise<void> {
+  if (!training.value) return
+  liveError.value = ''
+  liveMessage.value = ''
+  if (!liveSourceUrl.value.trim()) {
+    liveError.value = 'Pega el link del canal o de la transmisión.'
+    return
+  }
+  liveBusy.value = 'start'
+  try {
+    await startLiveBroadcast(training.value.id, liveSourceUrl.value)
+    await refreshLive(true)
+    startLivePolling()
+  } catch (err) {
+    liveError.value = err instanceof Error ? err.message : 'No se pudo activar'
+  } finally {
+    liveBusy.value = ''
+  }
+}
+
+async function stopLive(): Promise<void> {
+  if (!training.value) return
+  liveBusy.value = 'cancel'
+  try {
+    await cancelLiveBroadcast(training.value.id)
+    await reloadTraining()
+  } catch (err) {
+    liveError.value = err instanceof Error ? err.message : 'No se pudo apagar'
+  } finally {
+    liveBusy.value = ''
+  }
+}
+
+async function publishRecording(): Promise<void> {
+  if (!training.value) return
+  liveError.value = ''
+  liveBusy.value = 'finish'
+  try {
+    const result = await finishLiveBroadcast(training.value.id)
+    if (result.status === 'finalizada') {
+      liveMessage.value = result.credited
+        ? `Grabación publicada. Se acreditó el tiempo de ${result.credited} ${
+            result.credited === 1 ? 'persona' : 'personas'
+          }.`
+        : 'Grabación publicada.'
+      await reloadTraining()
+      viewers.value = await listViewers(training.value.id)
+    } else {
+      liveError.value = 'La transmisión ya no estaba al aire.'
+      await reloadTraining()
+    }
+  } catch (err) {
+    liveError.value = err instanceof Error ? err.message : 'No se pudo finalizar'
+  } finally {
+    liveBusy.value = ''
+  }
+}
+
+/** Lee el link y reporta qué hay, sin guardar nada. */
+async function testLiveUrl(): Promise<void> {
+  liveError.value = ''
+  liveMessage.value = ''
+  liveBusy.value = 'probe'
+  try {
+    const probe = await probeLiveUrl(liveSourceUrl.value)
+    const parts = [`Estado: ${LIVE_STATUS_LABELS[probe.info.status]}`]
+    if (probe.info.videoId) parts.push(`video ${probe.info.videoId}`)
+    if (probe.info.title) parts.push(`“${probe.info.title}”`)
+    if (probe.info.error) parts.push(probe.info.error)
+    liveMessage.value = parts.join(' · ')
+  } catch (err) {
+    liveError.value = err instanceof Error ? err.message : 'No se pudo leer'
+  } finally {
+    liveBusy.value = ''
+  }
+}
 
 async function confirmRegenerate(): Promise<void> {
   if (!training.value) return
@@ -207,6 +389,111 @@ async function confirmRegenerate(): Promise<void> {
       </div>
 
       <UiCard class="table-card">
+        <header class="live-header">
+          <div>
+            <h3>
+              Transmisión en vivo
+              <UiBadge :tone="liveTone">
+                {{ LIVE_STATUS_LABELS[liveStatus] }}
+              </UiBadge>
+            </h3>
+            <p class="muted">
+              Abre la transmisión en YouTube (como <strong>no listada</strong>)
+              y actívala aquí. La plataforma la embebe, registra quién la ve y,
+              al terminar, publica la grabación sola.
+            </p>
+          </div>
+          <UiButton
+            v-if="liveEnabled"
+            variant="ghost"
+            :loading="liveBusy === 'sync'"
+            @click="refreshLive(true)"
+          >
+            Sincronizar ahora
+          </UiButton>
+        </header>
+
+        <UiInput
+          v-model="liveSourceUrl"
+          label="Canal o link de la transmisión"
+          placeholder="https://www.youtube.com/@tucanal  ·  https://youtu.be/…"
+          hint="Del canal se lee lo que esté transmitiendo; del link del directo, ese video."
+        />
+
+        <div class="live-actions">
+          <UiButton
+            v-if="!liveEnabled"
+            :loading="liveBusy === 'start'"
+            @click="activateLive"
+          >
+            Activar transmisión
+          </UiButton>
+          <template v-else>
+            <UiButton
+              :disabled="!isLive"
+              :loading="liveBusy === 'finish'"
+              @click="publishRecording"
+            >
+              Finalizar y publicar grabación
+            </UiButton>
+            <UiButton
+              variant="ghost"
+              :loading="liveBusy === 'cancel'"
+              @click="stopLive"
+            >
+              Apagar transmisión
+            </UiButton>
+          </template>
+          <UiButton
+            variant="ghost"
+            :disabled="!liveSourceUrl"
+            :loading="liveBusy === 'probe'"
+            @click="testLiveUrl"
+          >
+            Probar link
+          </UiButton>
+        </div>
+
+        <p v-if="liveError" class="form-error">{{ liveError }}</p>
+        <p v-if="liveMessage" class="live-message">{{ liveMessage }}</p>
+
+        <dl v-if="liveEnabled || training.live_video_id" class="live-facts">
+          <div v-if="training.live_video_id">
+            <dt>Video del directo</dt>
+            <dd>{{ training.live_video_id }}</dd>
+          </div>
+          <div v-if="training.live_title">
+            <dt>Título en YouTube</dt>
+            <dd>{{ training.live_title }}</dd>
+          </div>
+          <div v-if="training.live_scheduled_at">
+            <dt>Anunciada para</dt>
+            <dd>{{ formatDateTime(training.live_scheduled_at) }}</dd>
+          </div>
+          <div v-if="training.live_started_at">
+            <dt>Empezó</dt>
+            <dd>{{ formatDateTime(training.live_started_at) }}</dd>
+          </div>
+          <div v-if="training.live_ended_at">
+            <dt>Terminó</dt>
+            <dd>{{ formatDateTime(training.live_ended_at) }}</dd>
+          </div>
+          <div v-if="training.live_checked_at">
+            <dt>Última consulta</dt>
+            <dd>{{ formatDateTime(training.live_checked_at) }}</dd>
+          </div>
+        </dl>
+
+        <p v-if="training.live_error" class="muted live-warning">
+          {{ training.live_error }}
+        </p>
+
+        <div v-if="liveEnabled || training.live_started_at" class="live-viewers">
+          <LiveViewersTable :training-id="training.id" :is-live="isLive" />
+        </div>
+      </UiCard>
+
+      <UiCard class="table-card">
         <h3>Asistencia presencial ({{ attendance.length }})</h3>
         <div v-if="attendance.length" class="table-wrap">
           <table class="data-table">
@@ -232,7 +519,12 @@ async function confirmRegenerate(): Promise<void> {
       </UiCard>
 
       <UiCard class="table-card">
-        <h3>Visualización del video ({{ viewers.length }})</h3>
+        <h3>
+          Visualización del video ({{ viewers.length }})
+          <UiBadge v-if="watchingRecordingCount" tone="info">
+            {{ watchingRecordingCount }} viendo ahora
+          </UiBadge>
+        </h3>
         <div v-if="viewers.length" class="table-wrap">
           <table class="data-table">
             <thead>
@@ -275,7 +567,14 @@ async function confirmRegenerate(): Promise<void> {
                   </UiBadge>
                   <span v-else class="muted">—</span>
                 </td>
-                <td>{{ formatDateTime(viewer.last_heartbeat_at) }}</td>
+                <td>
+                  <UiBadge v-if="isWatchingRecording(viewer)" tone="info">
+                    Viendo ahora
+                  </UiBadge>
+                  <template v-else>
+                    {{ formatDateTime(viewer.last_heartbeat_at) }}
+                  </template>
+                </td>
               </tr>
             </tbody>
           </table>
@@ -527,6 +826,74 @@ async function confirmRegenerate(): Promise<void> {
 
 .table-card {
   margin-bottom: 1rem;
+}
+
+/* ── Transmisión en vivo ── */
+
+.live-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-bottom: 0.9rem;
+}
+
+.live-header h3 {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0 0 0.2rem;
+}
+
+.live-header p {
+  margin: 0;
+  max-width: 62ch;
+}
+
+.live-actions {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  margin-top: 0.9rem;
+}
+
+.live-message {
+  margin: 0.8rem 0 0;
+  font-size: 0.85rem;
+  color: var(--clarvi-blue-ink);
+}
+
+.live-warning {
+  margin: 0.8rem 0 0;
+  font-size: 0.82rem;
+}
+
+.live-facts {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 0.7rem 1.2rem;
+  margin: 1.1rem 0 0;
+  padding-top: 1rem;
+  border-top: var(--rule);
+}
+
+.live-facts dt {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.live-facts dd {
+  margin: 0.1rem 0 0;
+  font-size: 0.9rem;
+  color: var(--text-strong);
+  word-break: break-word;
+}
+
+.live-viewers {
+  margin-top: 1.4rem;
+  padding-top: 1.2rem;
+  border-top: var(--rule);
 }
 
 .percent-cell {

@@ -101,7 +101,16 @@ async function confirmDelete(): Promise<void> {
               </td>
               <td>{{ formatDate(training.session_date) }}</td>
               <td>
-                <UiBadge v-if="training.youtube_video_id" tone="success">
+                <UiBadge v-if="training.live_status === 'en_vivo'" tone="danger">
+                  En vivo
+                </UiBadge>
+                <UiBadge
+                  v-else-if="training.live_status === 'programada'"
+                  tone="warning"
+                >
+                  Transmisión programada
+                </UiBadge>
+                <UiBadge v-else-if="training.youtube_video_id" tone="success">
                   Publicado
                 </UiBadge>
                 <UiBadge v-else tone="warning">Sin video</UiBadge>

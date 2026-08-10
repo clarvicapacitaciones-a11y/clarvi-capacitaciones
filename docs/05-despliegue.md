@@ -6,7 +6,7 @@
 |---|---|
 | Supabase | Proyecto `clarvi-capacitaciones` (`hwotaytvjjlvwkpnhotd`), org CLARVI, región `us-east-1`, plan gratuito |
 | API Supabase | `https://hwotaytvjjlvwkpnhotd.supabase.co` |
-| Edge Function | `register` (registro de cuentas con auto-confirmación) |
+| Edge Functions | `register` (registro de cuentas con auto-confirmación) y `youtube-live` (estado de la transmisión, leyendo la página pública de YouTube) |
 | Vercel | Proyecto `clarvi-capacitaciones`, team `clarvicapacitaciones-1010s-projects` |
 | URL producción | `https://clarvi-capacitaciones-clarvicapacitaciones-1010s-projects.vercel.app` |
 
@@ -68,14 +68,43 @@ sesión**.
 3. **Dominio propio** (p. ej. `capacitaciones.clarvi.com`) en Vercel →
    Domains, si se quiere una URL corporativa en los QR impresos.
 4. **Conectar GitHub a Vercel** (ver arriba).
+5. **Cierre automático de transmisiones sin público** (opcional): si una
+   transmisión termina y nadie tiene la plataforma abierta, la grabación se
+   publica en cuanto alguien entre (o cuando el admin pulse *Finalizar*). Para
+   que ocurra sin esperar a nadie se puede programar `pg_cron` + `pg_net`
+   llamando a la Edge Function `youtube-live` cada minuto por cada
+   capacitación con `live_enabled`. Requiere guardar la service role key en la
+   base, así que **no está activado**: los tres caminos actuales cubren el caso
+   real sin ese riesgo.
 
 ## Operación
 
-- **Logs de la Edge Function**: Supabase Dashboard → Edge Functions →
-  `register` → Logs.
+- **Logs de las Edge Functions**: Supabase Dashboard → Edge Functions →
+  `register` / `youtube-live` → Logs. En `youtube-live`, `bot_wall: true` en la
+  respuesta significa que YouTube pidió verificación a esa consulta y se
+  usaron las señales de respaldo (ver `docs/03-flujos.md`); no es una falla.
+- **Transmisiones**: la consulta a YouTube sale de la Edge Function y está
+  limitada a una lectura cada 15 s por capacitación, sin importar cuánta gente
+  esté viendo. Solo se consulta mientras `trainings.live_enabled` esté
+  encendido, y se apaga solo al terminar la transmisión.
 - **Advisors**: revisar Security/Performance advisors tras cada migración.
 - **Migraciones**: están en `supabase/migrations/` y se aplican con el MCP de
   Supabase o `supabase db push`; tras cada cambio, regenerar
   `src/types/database.types.ts`.
+- **Recargar la caché de PostgREST tras cada migración**:
+
+  ```sql
+  notify pgrst, 'reload schema';
+  ```
+
+  PostgREST guarda en memoria las tablas, columnas y **relaciones** del
+  esquema, y las consultas que embeben otra tabla dependen de esa caché. Si se
+  queda desfasada, la API responde cosas como *"Could not find a relationship
+  between 'profiles' and 'profiles' in the schema cache"* aunque la llave
+  foránea exista y la consulta esté bien escrita (le pasó a la pestaña
+  Solicitudes, que embebe `approver:profiles!profiles_approved_by_fkey`).
+  Normalmente el disparador `pgrst_ddl_watch` la recarga solo; el `notify` es
+  la forma manual de forzarlo y es inofensivo, así que conviene correrlo
+  siempre al terminar una migración.
 - **Respaldo**: el plan gratuito de Supabase no incluye backups automáticos;
   considerar exportes periódicos (`pg_dump`) cuando haya datos valiosos.

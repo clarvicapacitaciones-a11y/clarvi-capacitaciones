@@ -397,6 +397,91 @@ export type Database = {
           },
         ]
       }
+      live_attendance: {
+        Row: {
+          area_id: string | null
+          credited_at: string | null
+          id: string
+          is_watching: boolean
+          joined_at: string
+          last_seen_at: string
+          sucursal_id: string | null
+          training_id: string
+          user_id: string
+          video_id: string | null
+          watched_seconds: number
+        }
+        Insert: {
+          area_id?: string | null
+          credited_at?: string | null
+          id?: string
+          is_watching?: boolean
+          joined_at?: string
+          last_seen_at?: string
+          sucursal_id?: string | null
+          training_id: string
+          user_id: string
+          video_id?: string | null
+          watched_seconds?: number
+        }
+        Update: {
+          area_id?: string | null
+          credited_at?: string | null
+          id?: string
+          is_watching?: boolean
+          joined_at?: string
+          last_seen_at?: string
+          sucursal_id?: string | null
+          training_id?: string
+          user_id?: string
+          video_id?: string | null
+          watched_seconds?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "live_attendance_area_id_fkey"
+            columns: ["area_id"]
+            isOneToOne: false
+            referencedRelation: "areas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "live_attendance_sucursal_id_fkey"
+            columns: ["sucursal_id"]
+            isOneToOne: false
+            referencedRelation: "sucursales"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "live_attendance_training_id_fkey"
+            columns: ["training_id"]
+            isOneToOne: false
+            referencedRelation: "trainings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "live_attendance_training_id_fkey"
+            columns: ["training_id"]
+            isOneToOne: false
+            referencedRelation: "user_training_status"
+            referencedColumns: ["training_id"]
+          },
+          {
+            foreignKeyName: "live_attendance_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "live_attendance_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "user_training_status"
+            referencedColumns: ["user_id"]
+          },
+        ]
+      }
       notifications: {
         Row: {
           body: string | null
@@ -546,6 +631,16 @@ export type Database = {
           description: string | null
           duration_seconds: number | null
           id: string
+          live_checked_at: string | null
+          live_enabled: boolean
+          live_ended_at: string | null
+          live_error: string | null
+          live_scheduled_at: string | null
+          live_source_url: string | null
+          live_started_at: string | null
+          live_status: string
+          live_title: string | null
+          live_video_id: string | null
           qr_token: string
           session_date: string | null
           title: string
@@ -559,6 +654,16 @@ export type Database = {
           description?: string | null
           duration_seconds?: number | null
           id?: string
+          live_checked_at?: string | null
+          live_enabled?: boolean
+          live_ended_at?: string | null
+          live_error?: string | null
+          live_scheduled_at?: string | null
+          live_source_url?: string | null
+          live_started_at?: string | null
+          live_status?: string
+          live_title?: string | null
+          live_video_id?: string | null
           qr_token?: string
           session_date?: string | null
           title: string
@@ -572,6 +677,16 @@ export type Database = {
           description?: string | null
           duration_seconds?: number | null
           id?: string
+          live_checked_at?: string | null
+          live_enabled?: boolean
+          live_ended_at?: string | null
+          live_error?: string | null
+          live_scheduled_at?: string | null
+          live_source_url?: string | null
+          live_started_at?: string | null
+          live_status?: string
+          live_title?: string | null
+          live_video_id?: string | null
           qr_token?: string
           session_date?: string | null
           title?: string
@@ -684,6 +799,11 @@ export type Database = {
           has_exam: boolean | null
           last_heartbeat_at: string | null
           last_position_seconds: number | null
+          live_scheduled_at: string | null
+          live_started_at: string | null
+          live_status: string | null
+          live_title: string | null
+          live_video_id: string | null
           session_date: string | null
           status: string | null
           sucursal_nombre: string | null
@@ -715,7 +835,17 @@ export type Database = {
         }[]
       }
       certificate_by_folio: { Args: { p_folio: string }; Returns: Json }
+      credit_live_attendance: {
+        Args: { p_duration: number; p_training_id: string }
+        Returns: number
+      }
       current_user_is_approved: { Args: never; Returns: boolean }
+      finish_live_broadcast: { Args: { p_training_id: string }; Returns: Json }
+      live_heartbeat: {
+        Args: { p_leaving?: boolean; p_training_id: string }
+        Returns: Json
+      }
+      live_viewer_count: { Args: { p_training_id: string }; Returns: number }
       current_user_role: {
         Args: never
         Returns: Database["public"]["Enums"]["user_role"]

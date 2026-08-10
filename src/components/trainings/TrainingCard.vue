@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, watchEffect } from 'vue'
+import { computed, ref, watchEffect } from 'vue'
 import UiBadge from '@/components/ui/UiBadge.vue'
 import { formatDate } from '@/composables/useFormat'
 import { coverFallbackUrl, coverImageUrl } from '@/composables/useTrainingCover'
@@ -12,13 +12,24 @@ const props = defineProps<{ row: TrainingStatusRow }>()
 // pestaña no cubre (asistencia y examen) y el avance real del video.
 const cover = ref<string | null>(null)
 watchEffect(() => {
-  cover.value = coverImageUrl(props.row.cover_image_url, props.row.youtube_video_id)
+  // En una transmisión todavía no hay grabación, así que la portada sale de
+  // la miniatura del directo.
+  cover.value = coverImageUrl(
+    props.row.cover_image_url,
+    props.row.youtube_video_id ?? props.row.live_video_id,
+  )
 })
+
+const isLive = computed(() => props.row.live_status === 'en_vivo')
+const isScheduled = computed(() => props.row.live_status === 'programada')
 
 /** Si la miniatura grande de YouTube no existe, se intenta con la chica. */
 function onCoverError(): void {
   cover.value = cover.value
-    ? coverFallbackUrl(cover.value, props.row.youtube_video_id)
+    ? coverFallbackUrl(
+        cover.value,
+        props.row.youtube_video_id ?? props.row.live_video_id,
+      )
     : null
 }
 </script>
@@ -38,6 +49,8 @@ function onCoverError(): void {
       <p class="card-date">{{ formatDate(row.session_date) }}</p>
 
       <div class="card-tags">
+        <UiBadge v-if="isLive" tone="danger">En vivo</UiBadge>
+        <UiBadge v-else-if="isScheduled" tone="warning">Programada</UiBadge>
         <UiBadge v-if="row.attended_in_person" tone="success">Asististe</UiBadge>
         <UiBadge v-if="row.exam_passed" tone="success">Examen aprobado</UiBadge>
         <UiBadge v-else-if="row.has_exam" tone="warning">Examen pendiente</UiBadge>

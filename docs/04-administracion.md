@@ -30,11 +30,55 @@ ve Solicitudes.
   completadas y avance promedio.
 - **QR**: descargar PNG (para imprimir), copiar link, regenerar (invalida el
   QR anterior; la asistencia registrada se conserva).
+- **Transmisión en vivo**: encender, seguir y cerrar el directo (ver abajo).
 - **Asistencia presencial**: quién escaneó, de qué área/sucursal y a qué hora.
 - **Visualización del video**: por persona: % de avance con barra, tiempo
-  visto, fecha en que completó y última actividad.
+  visto, fecha en que completó y última actividad. Quien esté viendo el video
+  en este momento aparece marcado como **Viendo ahora** (la lista se refresca
+  sola cada 30 segundos).
 - **Examen**: si lo hay, cuántos lo presentaron y aprobaron, la calificación de
   cada persona y qué preguntas se fallan más.
+
+### Dar una capacitación en vivo
+
+La sesión se transmite por YouTube y se ve **dentro de la plataforma**, que es
+lo que permite saber quién la está viendo. Al terminar, la grabación queda
+publicada sola: no hay que volver a cargar el video.
+
+1. **En YouTube**: crea la transmisión en el canal de CLARVI y ponla como **no
+   listada** (igual que las grabaciones). No hace falta ninguna llave ni
+   configuración extra: la plataforma lee la página pública.
+2. **En la plataforma**: abre la ficha de la capacitación → tarjeta
+   **Transmisión en vivo** → pega el link del canal
+   (`https://www.youtube.com/@tucanal`) o el del directo, y pulsa **Activar
+   transmisión**.
+   - *Probar link* te dice qué encuentra la plataforma en ese link (qué video,
+     con qué título y en qué estado) sin guardar nada.
+   - Del link **del canal** se lee lo que esté transmitiendo en ese momento;
+     del link **del directo**, ese video concreto.
+3. En cuanto la transmisión está al aire, la capacitación sube al principio del
+   dashboard de todos y les llega el aviso en la campana.
+4. Durante la sesión, la tarjeta muestra **quién está viendo**: nombre, área,
+   sucursal, a qué hora se conectó y cuánto tiempo lleva. Se actualiza sola
+   cada 15 segundos. Si abres la capacitación desde el dashboard, esa misma
+   lista aparece debajo del reproductor.
+5. Al terminar, la plataforma lo detecta sola (por su cuenta y por el
+   reproductor de quienes están viendo) y publica la grabación. Si quieres
+   cerrarla tú, usa **Finalizar y publicar grabación**.
+
+Después de eso, la capacitación es un video normal: quien no la vio en vivo la
+ve como pendiente y la plataforma mide su avance como siempre. A quien la vio
+en vivo se le acredita ese tiempo, así que si estuvo el 90% de la sesión le
+queda **completada** sin volver a verla.
+
+**Si algo no cuadra:**
+
+| Lo que ves | Qué pasa |
+|---|---|
+| "El canal no tiene una transmisión al aire en este momento" | Todavía no arranca en YouTube, o el link del canal está mal escrito. La plataforma sigue revisando sola. |
+| "YouTube no confirma el estado desde el servidor…" | YouTube pidió verificación a la consulta del servidor. No hay nada que hacer: en cuanto la transmisión esté al aire se marca sola, y si ya terminó puedes usar *Finalizar y publicar grabación*. |
+| Activaste la transmisión equivocada | **Apagar transmisión** y vuelve a activarla con el link correcto. No se pierde nada. |
+| Terminó pero la grabación no aparece | *Finalizar y publicar grabación*. Si el video ya estaba cargado a mano, ese se respeta y no se pisa. |
 
 ### Examen (opcional)
 

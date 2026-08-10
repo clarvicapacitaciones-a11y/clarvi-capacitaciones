@@ -33,6 +33,7 @@ const title = ref('')
 const description = ref('')
 const sessionDate = ref('')
 const youtubeUrl = ref('')
+const liveSourceUrl = ref('')
 const coverImageUrl = ref('')
 const error = ref('')
 const loading = ref(false)
@@ -111,6 +112,7 @@ onMounted(async () => {
       youtubeUrl.value = training.youtube_video_id
         ? `https://youtu.be/${training.youtube_video_id}`
         : ''
+      liveSourceUrl.value = training.live_source_url ?? ''
       coverImageUrl.value = training.cover_image_url ?? ''
     }
     if (examDraft) {
@@ -139,6 +141,7 @@ async function handleSubmit(): Promise<void> {
       session_date: sessionDate.value || null,
       youtube_video_id: parsedVideoId.value,
       cover_image_url: coverImageUrl.value.trim() || null,
+      live_source_url: liveSourceUrl.value.trim() || null,
     }
     let id = editingId.value ?? createdId.value
     if (id) {
@@ -209,6 +212,13 @@ async function handleSubmit(): Promise<void> {
           No se reconoce ese link de YouTube. Copia el link directo del video
           (youtu.be/… o youtube.com/watch?v=…).
         </p>
+
+        <UiInput
+          v-model="liveSourceUrl"
+          label="Transmisión en vivo: canal o link del directo"
+          placeholder="https://www.youtube.com/@tucanal  ·  https://youtu.be/…"
+          hint="Se guarda aquí y la transmisión se enciende desde la ficha de la capacitación. Al terminar, la grabación se publica sola en el campo de arriba."
+        />
 
         <div v-if="parsedVideoId" class="preview">
           <span class="field-label">Vista previa del video</span>

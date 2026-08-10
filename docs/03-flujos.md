@@ -102,6 +102,84 @@ cambiarla desde Mi perfil requiere sesión activa).
 4. "Regenerar código" en la ficha admin crea un token nuevo: el QR viejo deja
    de funcionar y la asistencia previa se conserva.
 
+## Capacitación en vivo (transmisión de YouTube)
+
+Una sesión se transmite por YouTube y se ve **dentro de la plataforma**, que es
+lo que permite saber quién la está viendo. Al terminar, la grabación queda
+publicada sola: nadie tiene que volver a cargar el video.
+
+### El camino completo
+
+1. El instructor abre la transmisión en el canal de YouTube (como **no
+   listada**, igual que las grabaciones).
+2. El admin la **activa** desde la ficha de la capacitación pegando el link del
+   canal (`https://www.youtube.com/@tucanal`) o el del directo.
+3. La Edge Function `youtube-live` lee la página pública de YouTube y averigua
+   qué video está al aire, cómo se llama y en qué estado está. Sin API de
+   Google: sin proyecto de Google Cloud, sin llave y sin cuota.
+4. La capacitación pasa a `en_vivo`, sube al principio del dashboard de todos
+   (sección **En vivo ahora**) y les llega el aviso en la campana.
+5. Quien la ve la reproduce embebida. Mientras el video está reproduciéndose y
+   la pestaña visible, el reproductor manda un latido cada 15 s: eso es lo que
+   alimenta **quién está viendo** y cuánto tiempo lleva.
+6. Al terminar, la transmisión pasa a `finalizada`, `live_video_id` se copia a
+   `youtube_video_id` y esa misma capacitación se convierte en un video normal,
+   con su medición de avance de siempre.
+7. El tiempo que cada quien estuvo conectado se escribe como progreso de la
+   grabación. Con la regla de siempre (90%), quien la vio completa en vivo
+   queda **completada** —y con diploma, cuando se enciendan— sin volver a
+   verla; quien entró tarde completa lo que le falta con la grabación.
+
+### Cómo se lee YouTube sin su API
+
+La página del video trae embebido el JSON con el que arranca su propio
+reproductor. La función lo lee en dos capas, porque **YouTube le contesta a un
+servidor con un muro anti-bot**: la página llega completa (HTTP 200) pero el
+bloque rico viene vacío, con `playabilityStatus = LOGIN_REQUIRED` ("Accede para
+confirmar que no eres un bot"). Comprobado contra YouTube real desde la
+infraestructura de Supabase.
+
+| Capa | Qué lee | Cuándo sirve |
+|---|---|---|
+| `ytInitialPlayerResponse` | `isLive`, `liveBroadcastDetails` (inicio/fin), `lengthSeconds`, título | cuando YouTube contesta completo: es el mejor dato |
+| `ytInitialData` | `currentVideoEndpoint` (qué video es), `videoViewCountRenderer.isLive` (está al aire), `upcomingEventData.startTime` (hora anunciada) | **también con el muro anti-bot**: son las marcas que sí sobreviven |
+
+Con la segunda capa alcanza para lo que la plataforma necesita: resolver
+`/@canal/live` → id del directo, y saber si está al aire. Lo que el muro sí
+impide es distinguir "todavía no empieza" de "ya terminó" en una capacitación
+que nunca se vio al aire, así que en ese caso la función **no publica nada por
+suposición**: espera a verla al aire, y el admin siempre tiene el botón
+*Finalizar y publicar grabación*.
+
+### Tres caminos para enterarse de que terminó
+
+Que la grabación se publique no depende de uno solo:
+
+1. **La lectura periódica.** Mientras la transmisión está encendida, quien
+   tenga abierto el dashboard o la página de la capacitación dispara una
+   consulta cada minuto. El servidor no lee YouTube más de una vez cada 15 s
+   (antirebote sobre `live_checked_at`), así que cien personas viendo no son
+   cien consultas.
+2. **El reproductor.** El navegador de quien está viendo sí ve YouTube sin
+   muro: cuando el directo termina, el iframe pasa a `ENDED` y avisa
+   (`finish_live_broadcast`). Es la vía más confiable.
+3. **El admin.** Botón *Finalizar y publicar grabación* en la ficha.
+
+Los tres terminan en la misma función, que es idempotente: el primero que
+llegue cierra la transmisión y los demás no hacen nada.
+
+### Qué se puede falsificar y qué no
+
+- El tiempo en la transmisión lo suma **el servidor** entre latidos, y solo si
+  el hueco es creíble (≤ 90 s). Dejar la pestaña abierta sin reproducir no
+  acredita nada: el latido solo sale mientras el video está reproduciéndose.
+- El aviso de "terminó" solo se acepta de alguien que estuvo conectado y
+  cuando la transmisión lleva al menos 2 minutos al aire. Lo peor que logra un
+  aviso falso es publicar la grabación antes de tiempo; el admin lo revierte
+  reactivando la transmisión.
+- Los nombres de quienes están viendo son de admin/owner (RLS). Al resto la
+  plataforma solo le dice **cuántos** son.
+
 ## Medición de visualización (el corazón de la plataforma)
 
 Implementada en `src/composables/useWatchTracking.ts` +
