@@ -1,23 +1,31 @@
 <script setup lang="ts">
-// Página del video: reproductor con tracking + progreso propio.
+// Página de la capacitación. Dos modos según el momento:
+//   · transmisión en vivo → reproductor del directo y presencia (quién la ve);
+//   · grabación → reproductor con medición de avance, como siempre.
+// El cambio de uno a otro es automático: al terminar la transmisión, la
+// grabación queda publicada con el mismo video y la página se recarga sola.
 
-import { computed, onMounted, ref, shallowRef } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref, shallowRef } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import UiButton from '@/components/ui/UiButton.vue'
 import UiCard from '@/components/ui/UiCard.vue'
 import UiBadge from '@/components/ui/UiBadge.vue'
 import YoutubePlayer from '@/components/trainings/YoutubePlayer.vue'
+import LiveYoutubePlayer from '@/components/trainings/LiveYoutubePlayer.vue'
+import LiveViewersTable from '@/components/trainings/LiveViewersTable.vue'
 import { FEATURES } from '@/config/features'
-import { formatDate } from '@/composables/useFormat'
+import { formatDate, formatDateTime } from '@/composables/useFormat'
 import { coverImageUrl } from '@/composables/useTrainingCover'
 import { getCertificateForTraining } from '@/services/certificates.service'
 import { getExamStatus } from '@/services/exams.service'
+import { finishLiveBroadcast, syncLiveState } from '@/services/live.service'
 import {
   getMyAttendance,
   getMyProgress,
   getTraining,
 } from '@/services/trainings.service'
 import { useAuthStore } from '@/stores/auth.store'
+import { asLiveStatus } from '@/types/domain'
 import type {
   Attendance,
   CertificateWithSnapshot,
@@ -26,6 +34,9 @@ import type {
   WatchProgress,
 } from '@/types/domain'
 import type { ExamStatus } from '@/types/exams'
+
+/** Cada cuánto se le pregunta a YouTube si la transmisión empezó o terminó. */
+const LIVE_SYNC_MS = 60_000
 
 const route = useRoute()
 const router = useRouter()
@@ -61,10 +72,90 @@ const isCompleted = computed(
   () => progress.value?.completed_at != null || livePercent.value >= 90,
 )
 
+// ── Transmisión en vivo ────────────────────────────────────────────────────
+
+const liveStatus = computed(() => asLiveStatus(training.value?.live_status))
+const isLive = computed(
+  () => liveStatus.value === 'en_vivo' && training.value?.live_video_id != null,
+)
+const isScheduled = computed(
+  () => liveStatus.value === 'programada' && training.value?.live_enabled === true,
+)
+
+let liveTimer: number | null = null
+
+/** Relee la capacitación para reflejar un cambio de estado de la transmisión. */
+async function reloadTraining(): Promise<void> {
+  training.value = await getTraining(String(route.params.id))
+}
+
+/**
+ * Le pregunta al servidor en qué va la transmisión.
+ *
+ * Es lo que hace que esta página se entere sola: cuando el directo termina, la
+ * grabación queda publicada con el mismo video y aquí aparece el reproductor
+ * normal, sin que nadie recargue nada.
+ */
+async function syncLive(): Promise<void> {
+  if (!training.value?.live_enabled) return
+  try {
+    const state = await syncLiveState(training.value.id)
+    if (
+      state.live_status !== training.value.live_status ||
+      state.live_video_id !== training.value.live_video_id ||
+      state.youtube_video_id !== training.value.youtube_video_id
+    ) {
+      await reloadTraining()
+      if (!training.value?.live_enabled) stopLiveSync()
+    }
+  } catch {
+    // Si la consulta falla se reintenta en el siguiente ciclo.
+  }
+}
+
+function stopLiveSync(): void {
+  if (liveTimer !== null) {
+    window.clearInterval(liveTimer)
+    liveTimer = null
+  }
+}
+
+function startLiveSync(): void {
+  if (liveTimer !== null || !training.value?.live_enabled) return
+  liveTimer = window.setInterval(() => {
+    if (!document.hidden) void syncLive()
+  }, LIVE_SYNC_MS)
+}
+
+/**
+ * El reproductor avisó que la transmisión terminó.
+ *
+ * Es el aviso más confiable que existe: el navegador de quien está viendo sí
+ * ve YouTube sin restricciones. El servidor decide si lo acepta.
+ */
+async function onLiveEnded(): Promise<void> {
+  if (!training.value) return
+  try {
+    const result = await finishLiveBroadcast(training.value.id)
+    if (result.status === 'finalizada') {
+      await reloadTraining()
+      stopLiveSync()
+      return
+    }
+  } catch {
+    /* si no se acepta, la sincronización periódica lo resolverá */
+  }
+  void syncLive()
+}
+
 onMounted(async () => {
   const trainingId = String(route.params.id)
   try {
     training.value = await getTraining(trainingId)
+    if (training.value?.live_enabled) {
+      await syncLive()
+      startLiveSync()
+    }
     if (training.value && auth.userId) {
       const [progressRow, attendanceRow, examStatus] = await Promise.all([
         getMyProgress(trainingId, auth.userId),
@@ -90,6 +181,8 @@ onMounted(async () => {
     loading.value = false
   }
 })
+
+onBeforeUnmount(stopLiveSync)
 
 function onProgress(percent: number, seconds: number): void {
   livePercent.value = Math.max(livePercent.value, percent)
@@ -123,7 +216,10 @@ function goBack(): void {
 
 /** Portada para la ficha cuando todavía no hay video que mostrar. */
 const cover = computed(() =>
-  coverImageUrl(training.value?.cover_image_url, training.value?.youtube_video_id),
+  coverImageUrl(
+    training.value?.cover_image_url,
+    training.value?.youtube_video_id ?? training.value?.live_video_id,
+  ),
 )
 
 function goToExam(): void {
@@ -145,6 +241,10 @@ function goToExam(): void {
           <p class="muted">{{ formatDate(training.session_date) }}</p>
         </div>
         <div class="header-badges">
+          <UiBadge v-if="isLive" tone="danger">En vivo ahora</UiBadge>
+          <UiBadge v-else-if="isScheduled" tone="warning">
+            Transmisión programada
+          </UiBadge>
           <UiBadge v-if="attendance" tone="success">
             Asististe presencialmente
           </UiBadge>
@@ -153,7 +253,44 @@ function goToExam(): void {
         </div>
       </header>
 
-      <template v-if="training.youtube_video_id">
+      <!-- Transmisión al aire: manda sobre la grabación. -->
+      <template v-if="isLive && training.live_video_id">
+        <LiveYoutubePlayer
+          :video-id="training.live_video_id"
+          :training-id="training.id"
+          @ended="onLiveEnded"
+        />
+        <p class="muted live-note">
+          Estás viendo la capacitación en vivo. Al terminar, la grabación queda
+          disponible aquí mismo y el tiempo que estuviste conectado cuenta como
+          avance.
+        </p>
+
+        <UiCard v-if="auth.isAdmin" class="live-admin-card">
+          <LiveViewersTable :training-id="training.id" :is-live="true" />
+        </UiCard>
+      </template>
+
+      <!-- Anunciada pero todavía sin empezar. -->
+      <template v-else-if="isScheduled">
+        <div v-if="cover" class="detail-cover">
+          <img :src="cover" alt="" />
+        </div>
+        <div class="empty-state">
+          <strong>La transmisión todavía no empieza</strong>
+          <span v-if="training.live_scheduled_at">
+            Está anunciada para el
+            {{ formatDateTime(training.live_scheduled_at) }}. Deja esta página
+            abierta: cuando empiece aparece aquí.
+          </span>
+          <span v-else>
+            Deja esta página abierta: en cuanto el instructor abra la
+            transmisión, aparece aquí.
+          </span>
+        </div>
+      </template>
+
+      <template v-else-if="training.youtube_video_id">
         <YoutubePlayer
           :video-id="training.youtube_video_id"
           :training-id="training.id"
@@ -239,6 +376,14 @@ function goToExam(): void {
 }
 
 .progress-card {
+  margin-top: 1rem;
+}
+
+.live-note {
+  margin: 0.6rem 0 0;
+}
+
+.live-admin-card {
   margin-top: 1rem;
 }
 

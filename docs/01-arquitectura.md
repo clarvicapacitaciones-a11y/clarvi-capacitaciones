@@ -31,17 +31,19 @@ asistencia presencial se registra en papel. Esta plataforma cierra ambos huecos.
 
 ```
 ┌─────────────────────┐         ┌──────────────────────────────┐
-│  Navegador (Vue 3)  │ iframe  │  YouTube (videos no listados) │
-│  Vercel (SPA)       │────────▶│  IFrame Player API            │
-└─────────┬───────────┘         └──────────────────────────────┘
-          │ supabase-js (anon key + JWT del usuario)
-          ▼
-┌─────────────────────────────────────────────────┐
-│  Supabase                                       │
-│  ├─ Auth (correo @clarvi.com o usuario)         │
-│  ├─ Postgres + RLS (datos y reglas)             │
-│  └─ Edge Function `register` (alta de cuentas)  │
-└─────────────────────────────────────────────────┘
+│  Navegador (Vue 3)  │ iframe  │  YouTube (no listados)        │
+│  Vercel (SPA)       │────────▶│  grabaciones y transmisiones  │
+└─────────┬───────────┘         └───────────────▲──────────────┘
+          │ supabase-js (anon key + JWT del usuario)  │ HTML público
+          ▼                                          │ (sin API key)
+┌──────────────────────────────────────────────┐     │
+│  Supabase                                    │     │
+│  ├─ Auth (correo @clarvi.com o usuario)      │     │
+│  ├─ Postgres + RLS (datos y reglas)          │     │
+│  ├─ Edge Function `register` (alta de cuentas)│    │
+│  └─ Edge Function `youtube-live` ────────────┼─────┘
+│       (estado del directo, sin API de Google)│
+└──────────────────────────────────────────────┘
 ```
 
 ## Decisiones clave
@@ -59,6 +61,10 @@ asistencia presencial se registra en papel. Esta plataforma cierra ambos huecos.
 | La respuesta correcta de un examen nunca sale del servidor hacia un usuario | `exam_questions` guarda `answer_key` y solo es legible por admin/owner; el usuario recibe las preguntas saneadas por RPC. Sin esto, bastaría abrir la pestaña de red del navegador para ver las respuestas. |
 | El examen lo califica Postgres, no el navegador | El cliente solo manda lo que eligió. `exam_attempts` no acepta escrituras directas, así que no hay forma de insertarse una calificación. |
 | Cada respuesta contestada guarda el `question_snapshot` de su pregunta | El admin puede corregir o borrar preguntas después sin alterar el historial de quienes ya presentaron. Mismo criterio que congelar área/sucursal al escanear el QR. |
+| El estado del directo se lee **raspando la página pública** de YouTube, no con la Data API | La API v3 exige proyecto de Google Cloud, llave y cuota diaria, y vigilar una transmisión obliga a sondear —justo lo que gasta la cuota—. La página pública trae el mismo dato, sin llave y sin cuota. |
+| Esa lectura tiene dos capas y el reproductor es una tercera red | YouTube le contesta a un servidor con un muro anti-bot: la página llega, pero el bloque rico del reproductor viene vacío. Las marcas de `ytInitialData` sí sobreviven, y el navegador de quien está viendo —que no tiene ese muro— avisa cuando la transmisión termina. Publicar la grabación no depende de un solo camino. |
+| Al terminar el directo, su video pasa a ser el de la capacitación | YouTube deja la grabación con **el mismo id** con el que transmitió, así que la grabación se publica sola. Era el punto de todo: que nadie tenga que cargar el video a mano. |
+| El tiempo en la transmisión lo suma el servidor entre latidos, no el cliente | Mismo criterio que el anti-trampa del video: el navegador dice "sigo aquí", nunca "vi tantos minutos". |
 | El contenido del examen (`content`/`answer_key`) es `jsonb` y no tablas por tipo | Seis tipos de pregunta con formas muy distintas. Un trigger de validación (`assert_question_shape`) da la garantía que darían las columnas, sin seis tablas ni migraciones nuevas por cada tipo que se agregue. |
 
 ## Trabajo futuro (fuera de alcance actual)

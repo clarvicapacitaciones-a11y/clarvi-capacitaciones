@@ -43,6 +43,28 @@ de enum recién agregado en la misma transacción en que se agregó; por eso la
 | `session_date` | fecha de la sesión presencial |
 | `duration_seconds` | opcional; la duración real la reporta el reproductor |
 | `cover_image_url` | portada de la tarjeta; `null` = se usa la miniatura de YouTube |
+| `live_enabled` | interruptor del admin: mientras esté encendido se consulta el estado del directo |
+| `live_source_url` | canal o link del directo que se lee (sin API de Google) |
+| `live_video_id` | video que está transmitiendo; al terminar se copia a `youtube_video_id` |
+| `live_status` | `inactiva` · `programada` · `en_vivo` · `finalizada` |
+| `live_title` | título que tiene la transmisión en YouTube |
+| `live_scheduled_at` / `live_started_at` / `live_ended_at` | hora anunciada, de arranque y de cierre |
+| `live_checked_at` | última lectura de la página de YouTube (antirebote) |
+| `live_error` | por qué falló la última lectura, para que el admin lo vea |
+
+### `live_attendance` (quién ve la transmisión en vivo)
+`unique (training_id, user_id)` — una fila por persona y transmisión. Solo la
+escribe `live_heartbeat`; **no tiene políticas de escritura**, así que el
+cliente no puede inventarse tiempo.
+
+| Columna | Notas |
+|---|---|
+| `joined_at` / `last_seen_at` | cuándo entró y cuándo fue su último latido (cada 15 s) |
+| `watched_seconds` | lo suma el servidor entre latidos, y solo si el hueco es ≤ 90 s |
+| `is_watching` | lo apaga el reproductor al salir; con el latido vencido (>45 s) también cuenta como desconectado |
+| `video_id` | qué transmisión vio (por si la capacitación tuviera otra después) |
+| `credited_at` | cuándo ese tiempo se convirtió en progreso de la grabación |
+| `area_id` / `sucursal_id` | congelados al conectarse, igual que en `attendance` |
 
 ### Bucket `training-covers` (portadas)
 Bucket público de Storage para las portadas que sube el admin. Lectura
@@ -161,8 +183,12 @@ documento ya entregado.
 Cruza capacitaciones × perfiles con progreso, asistencia y examen; deriva
 `status`: `pending` (sin fila de progreso), `in_progress` (fila sin
 `completed_at`), `completed`. Incluye la capacitación que todavía no tiene
-video si ya tiene examen publicado. Es `security_invoker`: cada usuario solo ve
-sus propias filas; admin/owner ven todas. Alimenta el dashboard.
+video si ya tiene examen publicado **o si tiene una transmisión al aire o
+anunciada** (con `live_status`, `live_video_id`, `live_title`,
+`live_scheduled_at` y `live_started_at`, que es lo que pinta las secciones
+"En vivo ahora" y "Próximas transmisiones"). Es `security_invoker`: cada
+usuario solo ve sus propias filas; admin/owner ven todas. Alimenta el
+dashboard.
 
 ## Reglas de acceso (RLS)
 
@@ -173,6 +199,7 @@ sus propias filas; admin/owner ven todas. Alimenta el dashboard.
 | `trainings` | lee todas | igual | todo |
 | `attendance` | lee/inserta solo la suya | igual | lee todas |
 | `watch_progress` | lee/escribe solo la suya | igual | lee todas |
+| `live_attendance` | lee solo la suya; **escribe nadie** (la escribe `live_heartbeat`) | igual | lee todas |
 | `exams` | lee solo los publicados | igual | todo |
 | `exam_questions` | **sin acceso** (traen la respuesta correcta) | igual | todo |
 | `exam_attempts` | lee los suyos | igual | lee todos |
@@ -233,6 +260,35 @@ sean un arreglo ordenado y sin traslape, y aplica dos guardas anti-trampa:
    el último heartbeat (permite ver a 2x; impide saltar al final y acreditarlo).
    En el primer registro el tope es 60s (el primer flush ocurre ~15s de
    reproducción).
+
+### `live_heartbeat(training_id, leaving)`
+`SECURITY DEFINER`. El reproductor dice "sigo aquí" cada 15 segundos; el
+servidor crea o refresca la fila de `live_attendance` y **suma él mismo** el
+tiempo transcurrido desde el latido anterior, solo si es creíble (≤ 90 s: un
+par de latidos perdidos). El cliente nunca manda segundos. Devuelve
+`{ status, viewers }`. Solo funciona con la transmisión `en_vivo`.
+
+### `live_viewer_count(training_id)`
+Cuánta gente está viendo el directo ahora (latido de hace menos de 45 s). Es lo
+único de la asistencia en vivo que ve cualquiera: el número, nunca los nombres.
+
+### `finish_live_broadcast(training_id)`
+`SECURITY DEFINER`. Cierra la transmisión: la marca `finalizada`, apaga
+`live_enabled`, copia `live_video_id` a `youtube_video_id` **si no había video
+cargado a mano** y acredita el tiempo de quienes la vieron. La llaman dos
+caminos: el botón del admin y el reproductor de quien está viendo cuando
+YouTube le avisa que terminó. A quien no es admin se le exige haber estado
+conectado (latido de hace menos de 5 min) y que la transmisión lleve al menos
+2 minutos al aire. La duración la calcula el servidor con el reloj de la
+transmisión; el cliente no manda números.
+
+### `credit_live_attendance(training_id, duration)` *(interna)*
+Convierte el tiempo del directo en progreso de la grabación: escribe
+`watch_progress` con `[[0, segundos]]` y deja que el trigger de siempre decida
+quién llegó al 90% (y por tanto quién la completó y quién gana diploma). El
+rango arranca en 0 porque el directo no permite saber qué tramo vio cada quien;
+quien entró tarde completa lo que le falta con la grabación. Solo la llaman la
+Edge Function `youtube-live` y `finish_live_broadcast`.
 
 ### `checkin_via_qr(token)`
 Registra asistencia. Devuelve `checked_in` | `already_checked_in` |

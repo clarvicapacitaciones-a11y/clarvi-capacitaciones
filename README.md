@@ -3,7 +3,9 @@
 Plataforma interna de CLARVI para gestionar capacitaciones: los videos viven en
 YouTube (no listados), la plataforma los reproduce embebidos y **mide quién los
 ve, cuánto tiempo y si los completó**, además de registrar la asistencia
-presencial escaneando un código QR por sesión.
+presencial escaneando un código QR por sesión. Las sesiones también se pueden
+**dar en vivo por YouTube**: se ven dentro de la plataforma, se sabe quién las
+está viendo y al terminar la grabación queda publicada sola.
 
 ## Stack
 
@@ -12,6 +14,7 @@ presencial escaneando un código QR por sesión.
 | Frontend | Vue 3 + TypeScript + Vite, Pinia, Vue Router |
 | Backend | Supabase (Postgres, Auth, RLS, Edge Functions) |
 | Video | YouTube IFrame Player API (sin API key) |
+| Transmisiones | Lectura de la página pública de YouTube (sin API de Google) |
 | Hosting | Vercel (SPA) |
 
 ## Desarrollo local
@@ -28,23 +31,26 @@ npm run build          # type-check (vue-tsc) + build de producción
 ```
 supabase/
   migrations/          # esquema completo de la BD (ya aplicado al proyecto)
-  functions/register/  # Edge Function de registro (correo y usuario)
+  functions/register/      # Edge Function de registro (correo y usuario)
+  functions/youtube-live/  # estado del directo leyendo la página de YouTube
 src/
   assets/styles/       # tokens de marca (#00205c, #009bdd) + sistema plano
   components/
     ui/                # UiCard, UiButton, UiInput, UiSelect, UiBadge, UiModal
-    trainings/         # YoutubePlayer (con tracking), TrainingCard, QrCodeDisplay
+    trainings/         # YoutubePlayer (con tracking), LiveYoutubePlayer,
+                       #   LiveViewersTable, TrainingCard, QrCodeDisplay
     exams/             # constructor del examen (editors/) y aplicación (runners/)
     certificates/      # DiplomaSheet (formato imprimible; apagado por bandera)
     layout/            # AppHeader, AuthLayout, NotificationsBell
   config/features.ts   # interruptores de lo construido pero todavía sin abrir
   composables/
     useWatchTracking.ts  # medición de visualización (rangos vistos + anti-salto)
+    useLivePresence.ts   # presencia en la transmisión (latido cada 15s)
     useYoutubePlayer.ts  # carga del IFrame API + parseo de links
     useQrCode.ts         # generación de QR de check-in
     useTrainingCover.ts  # portada de la tarjeta (imagen propia → miniatura de YouTube)
-  services/            # acceso a datos (supabase, trainings, profiles, exams,
-                       #   notifications, certificates)
+  services/            # acceso a datos (supabase, trainings, live, profiles,
+                       #   exams, notifications, certificates)
   stores/              # auth (sesión/rol), catalogs (áreas/sucursales),
                        #   approvals (solicitudes), notifications (campana)
   views/               # auth, dashboard, capacitación, examen, checkin, admin, perfil
@@ -124,6 +130,31 @@ emitirlo y una hoja imprimible que se guarda como PDF desde el navegador.
 > Construido pero **todavía sin mostrar**: la base de datos ya los emite y
 > acumula; la interfaz se enciende poniendo `diplomas: true` en
 > `src/config/features.ts`.
+
+## Capacitaciones en vivo
+
+Una sesión se puede transmitir por YouTube y verse **dentro de la plataforma**.
+El punto: no tener que cargar la grabación a mano, y saber quién la vio.
+
+1. El instructor abre la transmisión en el canal de YouTube (**no listada**).
+2. El admin la activa desde la ficha pegando el link del canal o del directo.
+3. La plataforma averigua sola qué video está al aire leyendo la **página
+   pública** de YouTube — sin la API de Google: sin proyecto de Google Cloud,
+   sin llave y sin cuota.
+4. La capacitación sube al principio del dashboard de todos (**En vivo ahora**)
+   y les llega el aviso en la campana.
+5. Mientras la ven, la plataforma registra **quién está conectado** y cuánto
+   tiempo lleva: nombre, área, sucursal y hora de conexión, para el admin.
+6. Al terminar, la grabación queda publicada sola (YouTube la deja con el mismo
+   id del directo) y la capacitación pasa a ser un video normal.
+7. El tiempo que cada quien estuvo en vivo se acredita como avance, así que
+   quien la vio completa no tiene que volver a verla.
+
+Que la grabación se publique no depende de un solo camino: la lectura periódica
+de YouTube, el reproductor de quien está viendo (que avisa cuando el directo
+termina) y el botón del admin llevan al mismo cierre. Los detalles —incluido
+el muro anti-bot que YouTube le pone a las consultas de un servidor y cómo se
+sortea— están en [docs/03-flujos.md](docs/03-flujos.md).
 
 ## Flujo de una capacitación
 
