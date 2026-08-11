@@ -39,25 +39,38 @@ ve Solicitudes.
 - **Examen**: si lo hay, cuántos lo presentaron y aprobaron, la calificación de
   cada persona y qué preguntas se fallan más.
 
+### Configurar el canal (una sola vez)
+
+Administración → Capacitaciones → tarjeta **Iniciar una capacitación en vivo**
+→ pega la dirección del canal de CLARVI (`https://www.youtube.com/@tucanal`) y
+pulsa **Guardar canal**. Queda guardado para todas las transmisiones; no hay
+que volver a capturarlo.
+
 ### Dar una capacitación en vivo
 
 La sesión se transmite por YouTube y se ve **dentro de la plataforma**, que es
 lo que permite saber quién la está viendo. Al terminar, la grabación queda
 publicada sola: no hay que volver a cargar el video.
 
-1. **En YouTube**: crea la transmisión en el canal de CLARVI y ponla como **no
+1. **En YouTube**: abre la transmisión en el canal de CLARVI y ponla como **no
    listada** (igual que las grabaciones). No hace falta ninguna llave ni
    configuración extra: la plataforma lee la página pública.
-2. **En la plataforma**: abre la ficha de la capacitación → tarjeta
-   **Transmisión en vivo** → pega el link del canal
-   (`https://www.youtube.com/@tucanal`) o el del directo, y pulsa **Activar
-   transmisión**.
-   - *Probar link* te dice qué encuentra la plataforma en ese link (qué video,
-     con qué título y en qué estado) sin guardar nada.
-   - Del link **del canal** se lee lo que esté transmitiendo en ese momento;
-     del link **del directo**, ese video concreto.
+2. **En la plataforma**: Administración → Capacitaciones → **Revisar canal**.
+   La plataforma consulta el canal y, si está al aire, **crea sola la
+   capacitación** con el título, el video y la miniatura del propio directo, y
+   te deja en su ficha para ajustar lo que quieras (descripción, fecha) o
+   ponerle examen. No hay que capturar la tarjeta a mano.
+   - Pulsar **Revisar canal** dos veces no duplica nada: si esa transmisión ya
+     tiene capacitación, te lleva a la que existe.
+   - Si el canal no está transmitiendo, te lo dice y no crea nada.
 3. En cuanto la transmisión está al aire, la capacitación sube al principio del
    dashboard de todos y les llega el aviso en la campana.
+
+> **Si prefieres preparar la tarjeta antes** (con su descripción y su examen
+> listos), créala con **Nueva capacitación** y, cuando abras el directo, actívala
+> desde su ficha → tarjeta **Transmisión en vivo** → *Activar transmisión*. Ahí
+> también está *Probar link*, que te dice qué ve la plataforma en un link sin
+> guardar nada.
 4. Durante la sesión, la tarjeta muestra **quién está viendo**: nombre, área,
    sucursal, a qué hora se conectó y cuánto tiempo lleva. Se actualiza sola
    cada 15 segundos. Si abres la capacitación desde el dashboard, esa misma

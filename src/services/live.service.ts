@@ -9,7 +9,12 @@
 import { FunctionsHttpError } from '@supabase/supabase-js'
 import { supabase, requireActiveSession } from '@/services/supabase'
 import { asLiveStatus } from '@/types/domain'
-import type { LiveProbe, LiveState, LiveViewer } from '@/types/domain'
+import type {
+  LiveProbe,
+  LiveScanResult,
+  LiveState,
+  LiveViewer,
+} from '@/types/domain'
 
 /** Mensaje de error de una Edge Function (el cuerpo trae `{ error }`). */
 async function functionErrorMessage(
@@ -64,6 +69,28 @@ export async function syncLiveState(
     )
   }
   return toLiveState((data as { state: Record<string, unknown> }).state)
+}
+
+/**
+ * Revisa el canal y, si está transmitiendo, da de alta la capacitación.
+ *
+ * Es el botón "Revisar canal": el instructor abre el directo en YouTube y la
+ * plataforma lo encuentra y crea la tarjeta con el título, el video y la
+ * miniatura del propio directo. Pulsarlo dos veces no duplica nada: si ese
+ * directo ya tiene capacitación, devuelve la que hay.
+ *
+ * `channelUrl` es opcional; sin él se usa el canal configurado.
+ */
+export async function scanChannelForLive(
+  channelUrl?: string,
+): Promise<LiveScanResult> {
+  const { data, error } = await supabase.functions.invoke('youtube-live', {
+    body: { scan: true, channel_url: channelUrl },
+  })
+  if (error) {
+    throw new Error(await functionErrorMessage(error, 'No se pudo revisar el canal'))
+  }
+  return data as LiveScanResult
 }
 
 /** Lee un link y reporta qué hay ahí, sin tocar la capacitación (solo admin). */

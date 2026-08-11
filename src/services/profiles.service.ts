@@ -54,19 +54,49 @@ export async function setUserActive(
  * Las solicitudes sin resolver, las rechazadas y las que resolvió quien
  * consulta. Es exactamente lo que la RLS le deja ver a un líder; para admin y
  * owner acota la consulta a lo mismo (el roster completo vive en Usuarios).
+ *
+ * El nombre de quien resolvió cada solicitud se busca en una segunda consulta
+ * y **no** embebiendo `profiles` dentro de `profiles`. Ese embebido apunta a la
+ * misma tabla por `approved_by`, y PostgREST lo rechazaba con "Could not find a
+ * relationship between 'profiles' and 'profiles' in the schema cache" aunque la
+ * llave existe y la consulta la nombraba explícitamente. Dos consultas simples
+ * cuestan lo mismo aquí (la lista es corta) y no dependen de cómo PostgREST
+ * resuelva una relación de una tabla consigo misma.
  */
 export async function listApprovalRequests(
   viewerId: string,
 ): Promise<ApprovalRequest[]> {
   const { data, error } = await supabase
     .from('profiles')
-    .select(
-      '*, areas(nombre), sucursales(nombre), approver:profiles!profiles_approved_by_fkey(full_name)',
-    )
+    .select('*, areas(nombre), sucursales(nombre)')
     .or(`approval_status.neq.aprobado,approved_by.eq.${viewerId}`)
     .order('created_at', { ascending: true })
   if (error) throw new Error(error.message)
-  return data as unknown as ApprovalRequest[]
+
+  const approverIds = [
+    ...new Set(
+      data
+        .map((row) => row.approved_by)
+        .filter((id): id is string => id !== null),
+    ),
+  ]
+
+  const names = new Map<string, string>()
+  if (approverIds.length > 0) {
+    // Sin `throw`: que no se pueda leer el nombre de quien aprobó (la RLS del
+    // líder no alcanza a todos los perfiles) no es motivo para dejar la
+    // pantalla sin solicitudes.
+    const { data: approvers } = await supabase
+      .from('profiles')
+      .select('id, full_name')
+      .in('id', approverIds)
+    for (const row of approvers ?? []) names.set(row.id, row.full_name)
+  }
+
+  return data.map((row) => {
+    const name = row.approved_by ? names.get(row.approved_by) : undefined
+    return { ...row, approver: name ? { full_name: name } : null }
+  }) as unknown as ApprovalRequest[]
 }
 
 export async function countPendingApprovals(): Promise<number> {

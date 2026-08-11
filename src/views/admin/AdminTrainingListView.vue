@@ -1,18 +1,28 @@
 <script setup lang="ts">
-// Lista de capacitaciones para administración, con métricas rápidas.
+// Lista de capacitaciones para administración, con métricas rápidas, y el
+// alta desde la transmisión: revisar el canal y, si está al aire, dejar que la
+// plataforma cree la tarjeta con los datos del propio directo.
 
 import { onMounted, ref } from 'vue'
+import { useRouter } from 'vue-router'
 import UiBadge from '@/components/ui/UiBadge.vue'
 import UiButton from '@/components/ui/UiButton.vue'
 import UiCard from '@/components/ui/UiCard.vue'
+import UiInput from '@/components/ui/UiInput.vue'
 import UiModal from '@/components/ui/UiModal.vue'
 import { formatDate } from '@/composables/useFormat'
+import { scanChannelForLive } from '@/services/live.service'
+import { getChannelUrl, setChannelUrl } from '@/services/settings.service'
 import {
   completedCountsByTraining,
   deleteTraining,
   listAllTrainings,
 } from '@/services/trainings.service'
+import { useAuthStore } from '@/stores/auth.store'
 import type { TrainingWithCounts } from '@/types/domain'
+
+const router = useRouter()
+const auth = useAuthStore()
 
 const trainings = ref<TrainingWithCounts[]>([])
 const completedCounts = ref<Record<string, number>>({})
@@ -36,6 +46,64 @@ async function load(): Promise<void> {
       err instanceof Error ? err.message : 'No se pudieron cargar las capacitaciones'
   } finally {
     loading.value = false
+  }
+}
+
+// ── Alta desde la transmisión ──────────────────────────────────────────────
+
+const channelUrl = ref('')
+const scanning = ref(false)
+const savingChannel = ref(false)
+const scanMessage = ref('')
+const scanError = ref('')
+
+onMounted(async () => {
+  try {
+    channelUrl.value = (await getChannelUrl()) ?? ''
+  } catch {
+    /* sin canal configurado la tarjeta se muestra igual, vacía */
+  }
+})
+
+async function saveChannel(): Promise<void> {
+  scanError.value = ''
+  savingChannel.value = true
+  try {
+    await setChannelUrl(channelUrl.value, auth.userId)
+    scanMessage.value = 'Canal guardado.'
+  } catch (err) {
+    scanError.value = err instanceof Error ? err.message : 'No se pudo guardar'
+  } finally {
+    savingChannel.value = false
+  }
+}
+
+/**
+ * Revisa el canal. Si está transmitiendo, la capacitación se crea sola con el
+ * título, el video y la miniatura del directo, y se abre su ficha para
+ * ajustarla o ponerle examen.
+ */
+async function scanChannel(): Promise<void> {
+  scanError.value = ''
+  scanMessage.value = ''
+  scanning.value = true
+  try {
+    const result = await scanChannelForLive(channelUrl.value || undefined)
+    if (!result.found) {
+      scanMessage.value = result.info?.error ??
+        'El canal no está transmitiendo en este momento.'
+      return
+    }
+    if (result.training_id) {
+      await router.push({
+        name: 'admin-training-detail',
+        params: { id: result.training_id },
+      })
+    }
+  } catch (err) {
+    scanError.value = err instanceof Error ? err.message : 'No se pudo revisar'
+  } finally {
+    scanning.value = false
   }
 }
 
@@ -68,9 +136,46 @@ async function confirmDelete(): Promise<void> {
         <p class="muted">Sesiones, videos y su seguimiento</p>
       </div>
       <RouterLink :to="{ name: 'admin-training-new' }">
-        <UiButton>+ Nueva capacitación</UiButton>
+        <UiButton variant="ghost">+ Nueva capacitación</UiButton>
       </RouterLink>
     </header>
+
+    <UiCard class="scan-card">
+      <div class="scan-head">
+        <div>
+          <h3>Iniciar una capacitación en vivo</h3>
+          <p class="muted">
+            Abre la transmisión en YouTube (como <strong>no listada</strong>) y
+            pulsa <strong>Revisar canal</strong>. Si está al aire, la
+            capacitación se crea sola con el título, el video y la miniatura del
+            directo — no hace falta capturarla.
+          </p>
+        </div>
+        <UiButton :loading="scanning" @click="scanChannel">
+          Revisar canal
+        </UiButton>
+      </div>
+
+      <div class="scan-channel">
+        <UiInput
+          v-model="channelUrl"
+          label="Canal de las capacitaciones"
+          placeholder="https://www.youtube.com/@tucanal"
+          hint="Se guarda una sola vez y sirve para todas las transmisiones."
+        />
+        <UiButton
+          variant="ghost"
+          :loading="savingChannel"
+          :disabled="!channelUrl"
+          @click="saveChannel"
+        >
+          Guardar canal
+        </UiButton>
+      </div>
+
+      <p v-if="scanError" class="form-error">{{ scanError }}</p>
+      <p v-else-if="scanMessage" class="muted scan-message">{{ scanMessage }}</p>
+    </UiCard>
 
     <p v-if="error" class="form-error">{{ error }}</p>
     <p v-else-if="loading" class="muted">Cargando…</p>
@@ -162,6 +267,47 @@ async function confirmDelete(): Promise<void> {
 </template>
 
 <style scoped>
+.scan-card {
+  margin-bottom: 1.25rem;
+}
+
+.scan-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.scan-head h3 {
+  margin: 0 0 0.25rem;
+}
+
+.scan-head p {
+  margin: 0;
+  max-width: 62ch;
+}
+
+/* El campo del canal manda; el botón de guardar se alinea a su base. */
+.scan-channel {
+  display: flex;
+  align-items: flex-end;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: var(--rule);
+}
+
+.scan-channel > :first-child {
+  flex: 1;
+  min-width: 260px;
+}
+
+.scan-message {
+  margin: 0.8rem 0 0;
+}
+
 .row-title {
   font-weight: 500;
   color: var(--text-strong);

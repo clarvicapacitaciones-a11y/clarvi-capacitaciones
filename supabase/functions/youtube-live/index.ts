@@ -30,6 +30,9 @@
 // grabación se publica aunque YouTube se ponga difícil con el servidor.
 //
 // Se llama desde el navegador (supabase.functions.invoke('youtube-live')):
+//   { scan: true }             → revisa el canal y, si está al aire, **crea la
+//                                capacitación** con los datos del directo
+//                                (admin/owner)
 //   { training_id }            → sincroniza esa capacitación y devuelve su estado
 //   { training_id, force }     → ignora el antirebote (solo admin/owner)
 //   { probe_url }              → solo lee y reporta, sin tocar la BD (admin/owner)
@@ -169,6 +172,32 @@ async function fetchHtml(url: string): Promise<string> {
   } finally {
     clearTimeout(timeout);
   }
+}
+
+/**
+ * La mejor miniatura que exista para ese video.
+ *
+ * `maxresdefault` (1280×720) no existe para todos los videos —en un directo
+ * recién abierto casi nunca—, así que se comprueba antes de guardarla y si no
+ * está se usa `hqdefault`, que existe siempre. Es una petición HEAD: no baja
+ * la imagen.
+ */
+async function bestThumbnail(videoId: string): Promise<string> {
+  const maxres = `https://i.ytimg.com/vi/${videoId}/maxresdefault.jpg`;
+  try {
+    const response = await fetch(maxres, { method: "HEAD" });
+    if (response.ok) return maxres;
+  } catch {
+    /* sin conexión a la miniatura: se usa la que siempre existe */
+  }
+  return `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`;
+}
+
+/** Fecha de hoy en la zona de la operación, para `session_date`. */
+function todayInMexico(): string {
+  return new Intl.DateTimeFormat("en-CA", {
+    timeZone: "America/Mexico_City",
+  }).format(new Date());
 }
 
 /**
@@ -545,6 +574,109 @@ Deno.serve(async (req: Request) => {
     return json({ error: "Cuenta sin acceso a la plataforma" }, 403);
   }
   const isAdmin = profile.role === "administrador" || profile.role === "owner";
+
+  // ── Revisar el canal y dar de alta la capacitación ───────────────────────
+  // Es el botón "Revisar canal": el instructor abre el directo en YouTube y
+  // desde aquí la plataforma lo encuentra y crea la tarjeta con sus datos, en
+  // vez de capturarla a mano.
+  if (body.scan === true) {
+    if (!isAdmin) return json({ error: "Solo administradores" }, 403);
+
+    let channelUrl = typeof body.channel_url === "string"
+      ? body.channel_url
+      : "";
+    if (!channelUrl) {
+      const { data: setting } = await admin
+        .from("app_settings")
+        .select("value")
+        .eq("key", "youtube_channel_url")
+        .maybeSingle();
+      channelUrl = (setting?.value as string | null) ?? "";
+    }
+    if (!channelUrl) {
+      return json(
+        { error: "Falta configurar el canal de YouTube de las capacitaciones" },
+        400,
+      );
+    }
+
+    const target = resolveTarget(channelUrl);
+    if (!target) return json({ error: "Ese link no es de YouTube" }, 400);
+
+    let info: LiveInfo;
+    try {
+      info = interpret(await fetchHtml(target.url), target.videoId);
+    } catch (err) {
+      return json(
+        { error: err instanceof Error ? err.message : "No se pudo leer YouTube" },
+        502,
+      );
+    }
+
+    // Nada al aire ni anunciado: no hay tarjeta que crear.
+    if (
+      !info.videoId ||
+      (info.status !== "en_vivo" && info.status !== "programada")
+    ) {
+      return json({ ok: true, found: false, info }, 200);
+    }
+
+    // El botón se va a pulsar dos veces: si ese directo ya tiene tarjeta, se
+    // devuelve la que hay (el índice único lo garantiza además en la base).
+    const { data: existing } = await admin
+      .from("trainings")
+      .select("id")
+      .eq("live_video_id", info.videoId)
+      .maybeSingle();
+
+    if (existing) {
+      return json(
+        {
+          ok: true,
+          found: true,
+          created: false,
+          training_id: (existing as { id: string }).id,
+          info,
+        },
+        200,
+      );
+    }
+
+    const now = new Date();
+    const { data: created, error: createError } = await admin
+      .from("trainings")
+      .insert({
+        title: info.title ?? "Capacitación en vivo",
+        session_date: todayInMexico(),
+        cover_image_url: await bestThumbnail(info.videoId),
+        live_enabled: true,
+        live_source_url: channelUrl,
+        live_video_id: info.videoId,
+        live_status: info.status,
+        live_title: info.title,
+        live_scheduled_at: info.scheduledAt,
+        live_started_at: info.status === "en_vivo"
+          ? (info.startedAt ?? now.toISOString())
+          : null,
+        live_checked_at: now.toISOString(),
+        created_by: user.id,
+      })
+      .select("id")
+      .single();
+
+    if (createError) return json({ error: createError.message }, 500);
+
+    return json(
+      {
+        ok: true,
+        found: true,
+        created: true,
+        training_id: (created as { id: string }).id,
+        info,
+      },
+      200,
+    );
+  }
 
   // ── Modo prueba: leer un link y reportar, sin tocar la base ──────────────
   if (typeof body.probe_url === "string") {

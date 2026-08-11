@@ -106,6 +106,16 @@ export interface LiveState {
   youtube_video_id: string | null
 }
 
+/** Resultado de revisar el canal (botón "Revisar canal"). */
+export interface LiveScanResult {
+  /** true si el canal está al aire (o tiene un directo anunciado). */
+  found: boolean
+  /** true si esta revisión creó la capacitación; false si ya existía. */
+  created?: boolean
+  training_id?: string
+  info: LiveProbe['info']
+}
+
 /** Lo que la función encontró en un link, sin guardar nada (botón "Probar"). */
 export interface LiveProbe {
   url: string
