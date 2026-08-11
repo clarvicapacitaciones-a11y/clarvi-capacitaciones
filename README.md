@@ -137,10 +137,11 @@ Una sesión se puede transmitir por YouTube y verse **dentro de la plataforma**.
 El punto: no tener que cargar la grabación a mano, y saber quién la vio.
 
 1. El instructor abre la transmisión en el canal de YouTube (**no listada**).
-2. El admin la activa desde la ficha pegando el link del canal o del directo.
-3. La plataforma averigua sola qué video está al aire leyendo la **página
-   pública** de YouTube — sin la API de Google: sin proyecto de Google Cloud,
-   sin llave y sin cuota.
+2. El admin pulsa **Revisar canal** en Administración → Capacitaciones.
+3. La plataforma lee la **página pública** del canal —sin la API de Google: sin
+   proyecto de Google Cloud, sin llave y sin cuota— y, si está al aire, **crea
+   sola la capacitación** con el título, el video y la miniatura del directo.
+   Se acabó capturar la tarjeta a mano.
 4. La capacitación sube al principio del dashboard de todos (**En vivo ahora**)
    y les llega el aviso en la campana.
 5. Mientras la ven, la plataforma registra **quién está conectado** y cuánto
