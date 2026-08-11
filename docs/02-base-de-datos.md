@@ -52,6 +52,17 @@ de enum recién agregado en la misma transacción en que se agregó; por eso la
 | `live_checked_at` | última lectura de la página de YouTube (antirebote) |
 | `live_error` | por qué falló la última lectura, para que el admin lo vea |
 
+### `app_settings` (ajustes de la plataforma)
+Tabla llave/valor. Hoy solo guarda `youtube_channel_url`: el canal del que se
+leen las transmisiones, para que se configure **una vez** y no por
+capacitación. La lee cualquiera con sesión (es un link público); solo
+`administrador` y `owner` la escriben.
+
+Ojo con `trainings.live_video_id`: tiene un **índice único parcial**
+(`uq_trainings_live_video`, donde no es null). "Revisar canal" es un botón y se
+va a pulsar dos veces seguidas; sin eso, la segunda pulsación crearía una
+tarjeta duplicada de la misma transmisión.
+
 ### `live_attendance` (quién ve la transmisión en vivo)
 `unique (training_id, user_id)` — una fila por persona y transmisión. Solo la
 escribe `live_heartbeat`; **no tiene políticas de escritura**, así que el
