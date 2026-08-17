@@ -1,117 +1,103 @@
 <script setup lang="ts">
-// Dashboard personal: una sola página con secciones. Arriba, el resumen de en
-// qué va la persona; luego lo que está pasando ahora (transmisiones), lo que
-// quedó a medias, lo que falta por ver y al final lo terminado.
+// Mis cursos: la pantalla principal del colaborador.
+//
+// Orden de la página: lo que está pasando ahora (transmisión al aire), el
+// calendario de lo que viene, lo que quedó a medias y lo que falta por
+// empezar.
+//
+// Dos reglas de la plataforma que esta vista sostiene:
+//   · Solo se ven los cursos asignados. La vista `user_training_status` ya
+//     filtra por área, así que aquí no hay catálogo abierto ni forma de
+//     asomarse a otra área.
+//   · Un curso completado sale de esta pantalla. Al llegar al 100 % pasa a
+//     vivir en el perfil (y a Certificados cuando esa sección se abra), para
+//     que el home hable siempre de lo que falta por hacer.
 
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 import TrainingCard from '@/components/trainings/TrainingCard.vue'
-import UiCard from '@/components/ui/UiCard.vue'
+import UpcomingCalendar from '@/components/trainings/UpcomingCalendar.vue'
 import UiEmptyState from '@/components/ui/UiEmptyState.vue'
 import UiSectionHeader from '@/components/ui/UiSectionHeader.vue'
 import UiSkeleton from '@/components/ui/UiSkeleton.vue'
-import UiStat from '@/components/ui/UiStat.vue'
-import type { IconName } from '@/components/ui/UiIcon.vue'
+import { useCourseSearch } from '@/composables/useCourseSearch'
 import { syncLiveState } from '@/services/live.service'
 import { listMyTrainingStatuses } from '@/services/trainings.service'
 import { useAuthStore } from '@/stores/auth.store'
-import type { TrainingStatus, TrainingStatusRow } from '@/types/domain'
+import type { TrainingStatusRow } from '@/types/domain'
 
 /** Cada cuánto se revisa si una transmisión anunciada ya empezó. */
 const BROADCAST_SYNC_MS = 60_000
 
+/** Cuántas tarjetas caben en una fila antes de tener que pulsar "Ver todos". */
+const ROW_SIZE = 4
+
 const auth = useAuthStore()
+const { matches, isSearching, term } = useCourseSearch()
+
 const rows = ref<TrainingStatusRow[]>([])
 const loading = ref(true)
 const error = ref('')
 
-/** Orden y textos de las secciones de la página. */
-const SECTIONS: {
-  status: TrainingStatus
-  title: string
-  hint: string
-  icon: IconName
-}[] = [
-  {
-    status: 'in_progress',
-    title: 'Continuar viendo',
-    hint: 'Retoma donde te quedaste',
-    icon: 'play',
-  },
-  {
-    status: 'pending',
-    title: 'Capacítate',
-    hint: 'Todavía no las empiezas',
-    icon: 'book',
-  },
-  {
-    status: 'completed',
-    title: 'Completadas',
-    hint: 'Ya las terminaste',
-    icon: 'check-circle',
-  },
-]
+/** Secciones que la persona abrió con "Ver todos". */
+const expanded = ref<Record<string, boolean>>({})
+
+function toggle(key: string): void {
+  expanded.value[key] = !expanded.value[key]
+}
+
+/** Lo que se muestra de una sección: una fila, o todo si se desplegó. */
+function visible(key: string, list: TrainingStatusRow[]): TrainingStatusRow[] {
+  // Buscando no se recorta: si el resultado cabe en dos filas, se ven las dos.
+  if (isSearching.value || expanded.value[key]) return list
+  return list.slice(0, ROW_SIZE)
+}
+
+function countLabel(total: number, one: string, many: string): string {
+  return `${total} ${total === 1 ? one : many}`
+}
 
 const firstName = computed(
   () => auth.profile?.full_name?.trim().split(/\s+/)[0] ?? '',
 )
 
-/**
- * Lo que está al aire (o anunciado) sale de las secciones normales: una
- * capacitación en vivo no es "pendiente", es algo que está pasando ahora.
- */
-const liveRows = computed(() =>
-  rows.value.filter((row) => row.live_status === 'en_vivo'),
+/** El buscador de la barra superior filtra por título y descripción. */
+const found = computed(() =>
+  rows.value.filter((row) => matches(row.title, row.description)),
 )
+
+const liveRows = computed(() =>
+  found.value.filter((row) => row.live_status === 'en_vivo'),
+)
+
+/**
+ * Continuar: lo empezado y sin terminar. Una transmisión al aire no entra
+ * aquí — ya tiene su propia franja arriba.
+ */
+const inProgressRows = computed(() =>
+  found.value.filter(
+    (row) => row.status === 'in_progress' && row.live_status !== 'en_vivo',
+  ),
+)
+
+/**
+ * Obligatorios: todo lo asignado que aún no se empieza. Como el alcance por
+ * área lo aplica la vista de la base, lo que llega aquí ya es de la persona.
+ */
+const pendingRows = computed(() =>
+  found.value.filter(
+    (row) => (row.status ?? 'pending') === 'pending' && row.live_status !== 'en_vivo',
+  ),
+)
+
+/** El calendario mira todo lo asignado, no solo lo que pasa el filtro. */
 const scheduledRows = computed(() =>
   rows.value.filter((row) => row.live_status === 'programada'),
 )
 
-const buckets = computed(() => {
-  const grouped: Record<TrainingStatus, TrainingStatusRow[]> = {
-    pending: [],
-    in_progress: [],
-    completed: [],
-  }
-  for (const row of rows.value) {
-    if (row.live_status === 'en_vivo' || row.live_status === 'programada') {
-      continue
-    }
-    const status = (row.status ?? 'pending') as TrainingStatus
-    grouped[status].push(row)
-  }
-  return grouped
-})
-
-/** Solo se pintan las secciones que tienen algo que mostrar. */
-const sections = computed(() =>
-  SECTIONS.map((section) => ({
-    ...section,
-    rows: buckets.value[section.status],
-  })).filter((section) => section.rows.length > 0),
-)
-
 const hasTrainings = computed(() => rows.value.length > 0)
-
-/**
- * Resumen de arriba. Cuenta sobre TODAS las capacitaciones asignadas (las que
- * están al aire incluidas): es el avance de la persona en su plan, no el de
- * las secciones que se ven abajo.
- */
-const summary = computed(() => {
-  const total = rows.value.length
-  const completed = rows.value.filter((row) => row.status === 'completed').length
-  const inProgress = rows.value.filter((row) => row.status === 'in_progress').length
-  const pendingExams = rows.value.filter(
-    (row) => row.has_exam && !row.exam_passed,
-  ).length
-  return {
-    total,
-    completed,
-    inProgress,
-    pendingExams,
-    percent: total === 0 ? 0 : Math.round((completed / total) * 100),
-  }
-})
+const hasVisible = computed(
+  () => liveRows.value.length + inProgressRows.value.length + pendingRows.value.length > 0,
+)
 
 async function loadRows(): Promise<void> {
   if (!auth.userId) return
@@ -121,13 +107,15 @@ async function loadRows(): Promise<void> {
 /**
  * Mantiene al día lo que está por empezar o al aire.
  *
- * El dashboard es la pantalla que más se abre, así que es el mejor lugar para
- * que la plataforma se entere de que una transmisión arrancó: se le pregunta a
- * YouTube por las que están anunciadas (el servidor no consulta más de una vez
- * cada 15 segundos, sin importar cuánta gente tenga el dashboard abierto).
+ * Esta es la pantalla que más se abre, así que es el mejor lugar para que la
+ * plataforma se entere de que una transmisión arrancó: se le pregunta a
+ * YouTube por las anunciadas (el servidor no consulta más de una vez cada 15
+ * segundos, sin importar cuánta gente tenga la pantalla abierta).
  */
 async function syncBroadcasts(): Promise<void> {
-  const pending = [...scheduledRows.value, ...liveRows.value]
+  const pending = rows.value.filter(
+    (row) => row.live_status === 'programada' || row.live_status === 'en_vivo',
+  )
   if (pending.length === 0) return
   const before = pending.map((row) => row.live_status).join()
   const states = await Promise.all(
@@ -152,7 +140,7 @@ onMounted(async () => {
     }, BROADCAST_SYNC_MS)
   } catch (err) {
     error.value =
-      err instanceof Error ? err.message : 'No se pudieron cargar tus capacitaciones'
+      err instanceof Error ? err.message : 'No se pudieron cargar tus cursos'
   } finally {
     loading.value = false
   }
@@ -165,65 +153,34 @@ onBeforeUnmount(() => {
 
 <template>
   <div class="page">
-    <header class="dash-head">
+    <header class="page-header">
       <div>
-        <h1>Hola{{ firstName ? `, ${firstName}` : '' }}</h1>
-        <p class="muted">Estas son tus capacitaciones</p>
+        <h1>Mis cursos</h1>
+        <p class="muted">
+          {{ firstName ? `Hola, ${firstName}. ` : '' }}Esto es lo que tienes
+          asignado
+        </p>
       </div>
     </header>
 
     <p v-if="error" class="form-error">{{ error }}</p>
 
-    <!-- Mientras carga se reserva el espacio con la forma real de la página:
-         primero el resumen, luego una rejilla de tarjetas. -->
+    <!-- Mientras carga se reserva el espacio con la forma real de la página. -->
     <template v-else-if="loading">
-      <div class="summary" aria-hidden="true">
-        <UiSkeleton v-for="n in 4" :key="n" height="5.2rem" radius="md" />
+      <div class="courses-grid" aria-hidden="true">
+        <UiSkeleton v-for="n in 8" :key="n" class="card-skeleton" radius="lg" />
       </div>
-      <div class="cards-grid" aria-hidden="true">
-        <UiCard v-for="n in 6" :key="n" padding="none" class="skeleton-card">
-          <UiSkeleton height="0" width="100%" class="skeleton-cover" />
-          <div class="skeleton-body">
-            <UiSkeleton height="0.95rem" width="85%" />
-            <UiSkeleton height="0.8rem" width="55%" />
-            <UiSkeleton height="0.55rem" width="100%" radius="full" />
-          </div>
-        </UiCard>
-      </div>
-      <p class="visually-hidden" role="status">Cargando tus capacitaciones…</p>
+      <p class="visually-hidden" role="status">Cargando tus cursos…</p>
     </template>
 
     <template v-else-if="hasTrainings">
-      <div class="summary">
-        <UiStat
-          label="Asignadas"
-          :value="summary.total"
-          icon="book"
-        />
-        <UiStat
-          label="Completadas"
-          :value="summary.completed"
-          icon="check-circle"
-          tone="success"
-        />
-        <UiStat label="En curso" :value="summary.inProgress" icon="play" />
-        <UiStat
-          label="Avance general"
-          :value="summary.percent"
-          suffix="%"
-          icon="award"
-          tone="accent"
-        />
-      </div>
-
-      <section v-if="liveRows.length" class="training-section">
+      <section v-if="liveRows.length" class="course-section">
         <UiSectionHeader
           title="En vivo ahora"
-          hint="Se está transmitiendo en este momento"
-          :count="liveRows.length"
+          :subtitle="countLabel(liveRows.length, 'transmisión al aire', 'transmisiones al aire')"
           live
         />
-        <div class="cards-grid">
+        <div class="courses-grid">
           <TrainingCard
             v-for="row in liveRows"
             :key="row.training_id ?? ''"
@@ -232,103 +189,94 @@ onBeforeUnmount(() => {
         </div>
       </section>
 
-      <section v-if="scheduledRows.length" class="training-section">
+      <UpcomingCalendar
+        v-if="!isSearching"
+        :rows="[...liveRows, ...scheduledRows, ...pendingRows, ...inProgressRows]"
+        class="course-section"
+      />
+
+      <section v-if="inProgressRows.length" class="course-section">
         <UiSectionHeader
-          title="Próximas transmisiones"
-          hint="Anunciadas, todavía sin empezar"
-          :count="scheduledRows.length"
-          icon="clock"
-        />
-        <div class="cards-grid">
+          title="Continúa donde te quedaste"
+          :subtitle="countLabel(inProgressRows.length, 'curso en progreso', 'cursos en progreso')"
+        >
+          <template #action>
+            <button
+              v-if="inProgressRows.length > ROW_SIZE && !isSearching"
+              class="section-action"
+              type="button"
+              @click="toggle('progress')"
+            >
+              {{ expanded.progress ? 'Ver menos' : 'Ver todos' }}
+            </button>
+          </template>
+        </UiSectionHeader>
+        <div class="courses-grid">
           <TrainingCard
-            v-for="row in scheduledRows"
+            v-for="row in visible('progress', inProgressRows)"
             :key="row.training_id ?? ''"
             :row="row"
           />
         </div>
       </section>
 
-      <section
-        v-for="section in sections"
-        :key="section.status"
-        class="training-section"
-      >
+      <section v-if="pendingRows.length" class="course-section">
         <UiSectionHeader
-          :title="section.title"
-          :hint="section.hint"
-          :count="section.rows.length"
-          :icon="section.icon"
-        />
-        <div class="cards-grid">
+          title="Obligatorios de tu área"
+          :subtitle="countLabel(pendingRows.length, 'curso sin iniciar', 'cursos sin iniciar')"
+        >
+          <template #action>
+            <button
+              v-if="pendingRows.length > ROW_SIZE && !isSearching"
+              class="section-action"
+              type="button"
+              @click="toggle('pending')"
+            >
+              {{ expanded.pending ? 'Ver menos' : 'Ver todos' }}
+            </button>
+          </template>
+        </UiSectionHeader>
+        <div class="courses-grid">
           <TrainingCard
-            v-for="row in section.rows"
+            v-for="row in visible('pending', pendingRows)"
             :key="row.training_id ?? ''"
             :row="row"
           />
         </div>
       </section>
+
+      <!-- Nada que hacer: o la búsqueda no encontró, o ya terminó todo. -->
+      <UiEmptyState
+        v-if="!hasVisible && isSearching"
+        icon="search"
+        title="Sin resultados"
+        :description="`Ningún curso asignado coincide con “${term}”.`"
+      />
+      <UiEmptyState
+        v-else-if="!hasVisible"
+        icon="award"
+        title="Estás al día"
+        description="Terminaste todos tus cursos asignados. Los encuentras en tu perfil."
+      />
     </template>
 
     <UiEmptyState
       v-else
-      title="Aún no tienes capacitaciones"
-      description="Cuando el equipo publique una nueva, aparecerá aquí."
+      title="Aún no tienes cursos"
+      description="Cuando se publique uno para tu área, aparecerá aquí."
     />
   </div>
 </template>
 
 <style scoped>
-.dash-head {
-  margin-bottom: 1.5rem;
+/* Las secciones se separan por aire, no por líneas: el corte lo hace el
+   título de la siguiente. */
+.course-section + .course-section {
+  margin-top: var(--s-40);
 }
 
-.dash-head h1 {
-  margin: 0;
-  font-size: 1.7rem;
-}
-
-.dash-head p {
-  margin: 0.25rem 0 0;
-}
-
-/* Resumen: cuatro datos en una fila que se reacomoda sola en pantallas
-   angostas. */
-.summary {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-  gap: 0.75rem;
-  margin-bottom: 2.5rem;
-}
-
-/* Secciones apiladas, separadas por aire y una línea suave. */
-.training-section + .training-section {
-  margin-top: 2.5rem;
-  padding-top: 2.5rem;
-  border-top: var(--rule);
-}
-
-.cards-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(258px, 1fr));
-  gap: 1.1rem;
-}
-
-/* ── Esqueleto de carga ── */
-
-.skeleton-card {
-  overflow: hidden;
-}
-
-.skeleton-cover {
-  aspect-ratio: 16 / 9;
+.card-skeleton {
+  aspect-ratio: 16 / 10.6;
   height: auto;
-  border-radius: 0;
-}
-
-.skeleton-body {
-  display: flex;
-  flex-direction: column;
-  gap: 0.6rem;
-  padding: 1rem 1.05rem 1.15rem;
 }
 </style>

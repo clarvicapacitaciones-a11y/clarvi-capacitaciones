@@ -2,23 +2,23 @@
 // La firma de la plataforma: "Campus CLARVI", en una sola línea y sin ningún
 // símbolo al lado (la gota se retiró del logo).
 //
-// Es un componente y no texto suelto porque la marca aparece en el encabezado,
-// en las pantallas de acceso y en el diploma: al ajustar el peso, el color o
-// el espaciado aquí, cambia en los tres lugares a la vez.
+// Es un componente y no texto suelto porque la marca aparece en la barra
+// superior, en las pantallas de acceso y en el diploma: al ajustar el peso, el
+// color o el interletraje aquí, cambia en los tres lugares.
 //
-// El contraste entre "Campus" (peso normal, tinta suave) y "CLARVI" (peso
-// medio, color de acento) es lo que hace la jerarquía. Nada de mayúsculas
-// forzadas por CSS: "CLARVI" ya se escribe así.
+// Va en Space Grotesk, la tipografía de marca del sistema. El contraste entre
+// "Campus" (peso medio, tinta suave) y "CLARVI" (peso fuerte) hace la
+// jerarquía; nada de mayúsculas forzadas por CSS: "CLARVI" ya se escribe así.
 
 withDefaults(
   defineProps<{
     size?: 'sm' | 'md' | 'lg'
     /**
-     * `accent` en pantalla (sigue al tema), `strong` sobre superficies con
-     * color propio y `brand` en el pantón fijo de CLARVI, que es el que va
-     * al papel: el diploma se imprime igual venga de donde venga.
+     * `header` sobre la barra navy, `accent` sobre superficie normal,
+     * `strong` cuando la superficie ya tiene color propio y `brand` en el
+     * pantón fijo, que es el que va al papel.
      */
-    tone?: 'accent' | 'strong' | 'brand'
+    tone?: 'header' | 'accent' | 'strong' | 'brand'
   }>(),
   { size: 'md', tone: 'accent' },
 )
@@ -26,8 +26,7 @@ withDefaults(
 
 <template>
   <span class="ui-brand" :class="[`is-${size}`, `tone-${tone}`]">
-    <span class="brand-campus">Campus</span>
-    <span class="brand-name">CLARVI</span>
+    <span class="brand-campus">Campus</span><span class="brand-name">CLARVI</span>
   </span>
 </template>
 
@@ -35,21 +34,34 @@ withDefaults(
 .ui-brand {
   display: inline-flex;
   align-items: baseline;
-  gap: 0.36em;
+  gap: 0.34em;
   white-space: nowrap;
+  font-family: var(--font-display);
   line-height: 1.1;
 }
 
 .brand-campus {
-  color: var(--text-muted);
-  font-weight: 400;
+  font-weight: 500;
   transition: color var(--transition-fast);
 }
 
 .brand-name {
-  font-weight: 600;
-  letter-spacing: 0.06em;
+  font-weight: 700;
+  letter-spacing: 0.02em;
   transition: color var(--transition-fast);
+}
+
+/* Sobre la barra navy: "CLARVI" en blanco y "Campus" un paso atrás. */
+.tone-header .brand-campus {
+  color: var(--on-header-muted);
+}
+
+.tone-header .brand-name {
+  color: var(--on-header);
+}
+
+.tone-accent .brand-campus {
+  color: var(--text-muted);
 }
 
 .tone-accent .brand-name {
@@ -67,14 +79,14 @@ withDefaults(
 }
 
 .is-sm {
-  font-size: 0.9rem;
+  font-size: 14px;
 }
 
 .is-md {
-  font-size: 1.05rem;
+  font-size: 17px;
 }
 
 .is-lg {
-  font-size: 1.35rem;
+  font-size: 22px;
 }
 </style>

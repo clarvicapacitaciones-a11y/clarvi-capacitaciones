@@ -1,100 +1,77 @@
 <script setup lang="ts">
-// Encabezado de una sección del dashboard: título, cuántas cosas hay y una
-// línea que explica qué junta esa sección.
+// Encabezado de una sección: título, un subtítulo que dice cuántas cosas hay
+// y, alineada a la derecha, la acción de la sección ("Ver todos").
 //
-// Existe como componente para que todas las secciones alineen igual y para
-// que el punto de "en vivo" no se reinvente en cada pantalla.
-
-import UiIcon from '@/components/ui/UiIcon.vue'
-import type { IconName } from '@/components/ui/UiIcon.vue'
+// Existe como componente para que todas las secciones alineen igual y para que
+// el punto de "en vivo" no se reinvente en cada pantalla.
 
 withDefaults(
   defineProps<{
     title: string
-    hint?: string
-    /** Cuántos elementos trae la sección; se pinta como pastilla. */
-    count?: number
-    icon?: IconName
+    /** Línea de abajo; normalmente el conteo ("4 cursos en progreso"). */
+    subtitle?: string
     /** Marca la sección que está pasando ahora (transmisión al aire). */
     live?: boolean
   }>(),
-  { hint: '', live: false },
+  { subtitle: '', live: false },
 )
 </script>
 
 <template>
   <div class="section-header">
     <div class="heading">
-      <span v-if="live" class="live-dot" aria-hidden="true" />
-      <UiIcon v-else-if="icon" :name="icon" :size="18" class="heading-icon" />
-      <h2>{{ title }}</h2>
-      <span v-if="count !== undefined" class="count">{{ count }}</span>
-      <div class="actions">
-        <slot name="actions" />
-      </div>
+      <h2>
+        <span v-if="live" class="live-dot" aria-hidden="true" />
+        {{ title }}
+      </h2>
+      <p v-if="subtitle" class="subtitle">{{ subtitle }}</p>
     </div>
-    <p v-if="hint" class="hint">{{ hint }}</p>
+    <div class="action">
+      <slot name="action" />
+    </div>
   </div>
 </template>
 
 <style scoped>
 .section-header {
-  margin-bottom: 1.15rem;
-}
-
-.heading {
   display: flex;
-  align-items: center;
-  gap: 0.6rem;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--s-20);
+  margin-bottom: var(--s-18);
 }
 
 .heading h2 {
+  display: flex;
+  align-items: center;
+  gap: var(--s-9);
   margin: 0;
-  font-size: 1.15rem;
+  font-size: 20px;
   font-weight: 600;
-}
-
-.heading-icon {
-  color: var(--text-muted);
+  letter-spacing: -0.01em;
 }
 
 /* Punto sólido de "al aire": color, sin parpadeo ni movimiento. */
 .live-dot {
-  width: 9px;
-  height: 9px;
+  width: 8px;
+  height: 8px;
   border-radius: var(--radius-full);
-  background: var(--state-danger);
+  background: #ff5252;
   flex-shrink: 0;
 }
 
-.count {
-  display: inline-grid;
-  place-items: center;
-  min-width: 1.5rem;
-  height: 1.5rem;
-  padding: 0 0.45rem;
-  border-radius: var(--radius-full);
-  background: var(--surface-2);
+.subtitle {
+  margin: var(--s-4) 0 0;
   color: var(--text-muted);
-  font-size: 0.78rem;
-  font-weight: 500;
-  font-variant-numeric: tabular-nums;
+  font-size: 13px;
 }
 
-.actions {
-  margin-left: auto;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
+.action {
+  flex-shrink: 0;
+  padding-bottom: 2px;
 }
 
-.actions:empty {
+.action:empty {
   display: none;
-}
-
-.hint {
-  margin: 0.3rem 0 0;
-  color: var(--text-muted);
-  font-size: 0.88rem;
 }
 </style>

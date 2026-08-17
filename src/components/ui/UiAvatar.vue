@@ -1,6 +1,7 @@
 <script setup lang="ts">
 // Avatar de iniciales. No hay fotos de perfil en la plataforma, así que la
-// identidad visual de una persona son sus dos iniciales sobre un círculo.
+// identidad visual de una persona son sus dos iniciales sobre el círculo de
+// acento.
 
 import { computed } from 'vue'
 
@@ -30,29 +31,31 @@ const initials = computed(() => {
   display: grid;
   place-items: center;
   border-radius: var(--radius-full);
-  background: var(--accent-soft);
-  color: var(--accent-ink);
-  font-weight: 600;
+  background: var(--accent);
+  color: var(--accent-contrast);
+  font-family: var(--font-display);
+  font-weight: 700;
   line-height: 1;
   flex-shrink: 0;
-  transition: background-color var(--transition-fast), color var(--transition-fast);
+  transition: background-color var(--transition-fast);
 }
 
 .is-sm {
-  width: 1.7rem;
-  height: 1.7rem;
-  font-size: 0.7rem;
+  width: 26px;
+  height: 26px;
+  font-size: 10px;
 }
 
+/* 32px: el de la barra superior. */
 .is-md {
-  width: 2.1rem;
-  height: 2.1rem;
-  font-size: 0.8rem;
+  width: 32px;
+  height: 32px;
+  font-size: 11.5px;
 }
 
 .is-lg {
-  width: 3rem;
-  height: 3rem;
-  font-size: 1.05rem;
+  width: 48px;
+  height: 48px;
+  font-size: 16px;
 }
 </style>

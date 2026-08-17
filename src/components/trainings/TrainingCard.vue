@@ -1,20 +1,19 @@
 <script setup lang="ts">
-// Tarjeta de una capacitación. Es la pieza que más se repite en la
-// plataforma, así que se arma con el kit (UiCard, UiBadge, UiProgress,
-// UiIcon) y no con estilos propios: al cambiar el kit, cambian todas.
+// Tarjeta de curso: la pieza que más se repite en la plataforma.
 //
-// Qué muestra y en qué orden: la portada, el título, cuándo fue y lo que la
-// sección no alcanza a decir (asistencia, examen). El estado de avance va
-// abajo, como remate.
+// La miniatura va a sangre y el texto se apoya encima, sobre un degradado que
+// lo asienta; no hay bloque de texto debajo de la imagen. Arriba a la derecha,
+// la duración en píldora; abajo, el título y el estado (sin iniciar / barra de
+// avance / chip de completado), que vive en UiCourseStatus para que la ficha
+// del curso muestre exactamente lo mismo.
+//
+// Toda la tarjeta es un enlace: al pulsarla se retoma donde se quedó.
 
 import { computed, ref, watchEffect } from 'vue'
-import UiBadge from '@/components/ui/UiBadge.vue'
-import UiCard from '@/components/ui/UiCard.vue'
+import UiCourseStatus from '@/components/ui/UiCourseStatus.vue'
 import UiIcon from '@/components/ui/UiIcon.vue'
-import UiProgress from '@/components/ui/UiProgress.vue'
-import { formatDate, formatMinutes } from '@/composables/useFormat'
 import { coverFallbackUrl, coverImageUrl } from '@/composables/useTrainingCover'
-import type { TrainingStatusRow } from '@/types/domain'
+import type { TrainingStatus, TrainingStatusRow } from '@/types/domain'
 
 const props = defineProps<{ row: TrainingStatusRow }>()
 
@@ -30,19 +29,28 @@ watchEffect(() => {
 
 const isLive = computed(() => props.row.live_status === 'en_vivo')
 const isScheduled = computed(() => props.row.live_status === 'programada')
-const isPending = computed(() => props.row.status === 'pending')
 
-const percent = computed(() => Math.round(props.row.watch_percent ?? 0))
+const status = computed(
+  () => (props.row.status ?? 'pending') as TrainingStatus,
+)
 
 /**
- * Pie de la tarjeta. Una capacitación sin empezar no necesita una barra en
- * cero: lo útil ahí es decir cuánto dura y que se puede entrar.
+ * Duración en la píldora.
+ *
+ * Sale de `watch_progress`, que solo existe una vez que la persona abrió el
+ * video: en un curso sin empezar todavía no se sabe cuánto dura, y entonces la
+ * píldora no se pinta en lugar de mentir con un cero.
  */
-const duration = computed(() =>
-  props.row.video_duration_seconds
-    ? formatMinutes(props.row.video_duration_seconds)
-    : null,
-)
+const duration = computed(() => {
+  const seconds = props.row.video_duration_seconds
+  if (!seconds || seconds <= 0) return null
+  const minutes = Math.round(seconds / 60)
+  if (minutes < 60) return `${minutes} min`
+  const hours = Math.floor(minutes / 60)
+  const rest = minutes % 60
+  // Los minutos van a dos dígitos: "1 h 5" se lee como hora y media.
+  return rest === 0 ? `${hours} h` : `${hours} h ${String(rest).padStart(2, '0')}`
+})
 
 /** Si la miniatura grande de YouTube no existe, se intenta con la chica. */
 function onCoverError(): void {
@@ -56,180 +64,161 @@ function onCoverError(): void {
 </script>
 
 <template>
-  <UiCard
+  <RouterLink
     :to="{ name: 'training-detail', params: { id: row.training_id } }"
-    padding="none"
-    interactive
-    class="training-card"
-    :class="{ 'is-live': isLive }"
+    class="course-card"
   >
-    <div class="cover">
-      <img v-if="cover" :src="cover" alt="" loading="lazy" @error="onCoverError" />
-      <!-- Sin portada ni video: la marca del hueco es un icono del sistema,
-           no el logo. -->
-      <span v-else class="cover-placeholder" aria-hidden="true">
-        <UiIcon name="play" :size="30" :stroke="1.3" />
-      </span>
+    <img
+      v-if="cover"
+      :src="cover"
+      alt=""
+      loading="lazy"
+      class="cover"
+      @error="onCoverError"
+    />
+    <!-- Sin portada ni video: la miniatura queda en oscuro con el icono de
+         reproducción, para que el título de encima siga siendo legible. -->
+    <span v-else class="cover cover-empty" aria-hidden="true">
+      <UiIcon name="play" :size="34" :stroke="1.2" />
+    </span>
 
-      <span v-if="isLive || isScheduled" class="cover-badge">
-        <UiBadge v-if="isLive" tone="danger" variant="solid" dot>En vivo</UiBadge>
-        <UiBadge v-else tone="warning" variant="solid" icon="clock">
-          Programada
-        </UiBadge>
-      </span>
-    </div>
+    <span v-if="isLive || isScheduled" class="flag" :class="{ 'is-live': isLive }">
+      <span v-if="isLive" class="flag-dot" aria-hidden="true" />
+      <UiIcon v-else name="clock" :size="10" :stroke="2" />
+      {{ isLive ? 'En vivo' : 'Programada' }}
+    </span>
 
-    <div class="card-body">
+    <span v-if="duration" class="duration">{{ duration }}</span>
+
+    <div class="overlay">
       <h3 class="card-title">{{ row.title }}</h3>
-
-      <p class="card-meta">
-        <UiIcon name="calendar" :size="14" />
-        <span>{{ formatDate(row.session_date) }}</span>
-        <template v-if="duration">
-          <span class="meta-sep" aria-hidden="true" />
-          <span>{{ duration }}</span>
-        </template>
-      </p>
-
-      <div class="card-tags">
-        <UiBadge v-if="row.attended_in_person" tone="success" icon="check">
-          Asististe
-        </UiBadge>
-        <UiBadge v-if="row.exam_passed" tone="success" icon="award">
-          Examen aprobado
-        </UiBadge>
-        <UiBadge v-else-if="row.has_exam" tone="warning" icon="alert">
-          Examen pendiente
-        </UiBadge>
-      </div>
-
-      <div class="card-foot">
-        <UiProgress
-          v-if="!isPending"
-          :value="percent"
-          show-value
-          :label="`Avance de ${row.title ?? 'la capacitación'}`"
-        />
-        <span v-else class="card-cta">
-          Comenzar
-          <UiIcon name="arrow-right" :size="14" />
-        </span>
-      </div>
+      <UiCourseStatus
+        :status="status"
+        :percent="row.watch_percent ?? 0"
+        :title="row.title"
+        on-cover
+      />
     </div>
-  </UiCard>
+  </RouterLink>
 </template>
 
 <style scoped>
-/* La tarjeta es una columna: portada arriba, texto abajo y el avance pegado
-   al pie aunque los títulos midan distinto. Lo único que cambia al pasar el
-   cursor es el color. */
-.training-card {
-  display: flex;
-  flex-direction: column;
-  height: 100%;
+/* La tarjeta ES la miniatura: todo lo demás se apoya encima. */
+.course-card {
+  position: relative;
+  display: block;
+  aspect-ratio: 16 / 10.6;
+  border-radius: var(--radius-lg);
   overflow: hidden;
+  background: var(--surface-1);
+  border: 1px solid var(--line);
+  color: inherit;
+  transition:
+    transform var(--transition-med),
+    border-color var(--transition-med);
 }
 
-/* Al aire: la tarjeta se marca con el borde, no con un fondo distinto. */
-.training-card.is-live {
-  border-color: var(--state-danger);
+/* Único movimiento del sistema: 3px hacia arriba y el borde un paso más
+   claro. Sin sombra, sin escala. */
+.course-card:hover {
+  transform: translateY(var(--hover-lift));
+  border-color: var(--line-mid);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .course-card:hover {
+    transform: none;
+  }
 }
 
 .cover {
-  position: relative;
-  aspect-ratio: 16 / 9;
-  background: var(--surface-2);
-  border-bottom: var(--rule);
-  display: grid;
-  place-items: center;
-  overflow: hidden;
-}
-
-.cover img {
+  position: absolute;
+  inset: 0;
   width: 100%;
   height: 100%;
   object-fit: cover;
   display: block;
 }
 
-.cover-placeholder {
+/* La zona de miniatura es superficie de medio: se queda oscura en los dos
+   temas, porque el título que va encima siempre es blanco. */
+.cover-empty {
   display: grid;
   place-items: center;
-  color: var(--text-muted);
+  background: var(--cover-empty);
+  color: rgba(255, 255, 255, 0.3);
 }
 
-.cover-badge {
+/* Píldora de duración, arriba a la derecha. */
+.duration {
   position: absolute;
-  top: 0.6rem;
-  left: 0.6rem;
+  top: var(--s-10);
+  right: var(--s-10);
+  padding: 3px var(--s-9);
+  border-radius: var(--radius-xs);
+  background: var(--cover-pill);
+  color: #ffffff;
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  line-height: 1.5;
+  font-variant-numeric: tabular-nums;
 }
 
-.card-body {
+/* Estado de transmisión, arriba a la izquierda. */
+.flag {
+  position: absolute;
+  top: var(--s-10);
+  left: var(--s-10);
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-5);
+  padding: 3px var(--s-9);
+  border-radius: var(--radius-xs);
+  background: var(--cover-pill);
+  color: #ffffff;
+  font-family: var(--font-display);
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  line-height: 1.6;
+}
+
+.flag.is-live {
+  background: #c62828;
+}
+
+.flag-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: var(--radius-full);
+  background: currentColor;
+}
+
+/* El texto se apoya sobre la imagen: el degradado le da suelo sin tapar la
+   miniatura completa. */
+.overlay {
+  position: absolute;
+  inset: auto 0 0 0;
   display: flex;
   flex-direction: column;
-  gap: 0.4rem;
-  padding: 0.95rem 1.05rem 1.05rem;
-  flex: 1;
+  gap: var(--s-10);
+  padding: 46px var(--s-14) var(--s-14);
+  background: var(--cover-scrim);
 }
 
 .card-title {
   margin: 0;
-  font-size: 0.98rem;
+  color: #ffffff;
+  font-size: 14.5px;
   font-weight: 600;
-  line-height: 1.4;
-  color: var(--text-strong);
+  line-height: 1.35;
+  text-wrap: pretty;
   /* Dos líneas como máximo: los títulos largos no descuadran la rejilla. */
   display: -webkit-box;
   -webkit-line-clamp: 2;
   line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
-  transition: color var(--transition-fast);
-}
-
-.training-card:hover .card-title {
-  color: var(--accent-ink);
-}
-
-.card-meta {
-  display: flex;
-  align-items: center;
-  gap: 0.4rem;
-  margin: 0;
-  color: var(--text-muted);
-  font-size: 0.83rem;
-}
-
-.meta-sep {
-  width: 3px;
-  height: 3px;
-  border-radius: var(--radius-full);
-  background: currentColor;
-}
-
-.card-tags {
-  display: flex;
-  gap: 0.35rem;
-  flex-wrap: wrap;
-  margin-top: 0.2rem;
-}
-
-.card-tags:empty {
-  display: none;
-}
-
-/* El pie se empuja al fondo: todas las tarjetas de una fila rematan igual. */
-.card-foot {
-  margin-top: auto;
-  padding-top: 0.9rem;
-}
-
-.card-cta {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.35rem;
-  color: var(--accent-ink);
-  font-size: 0.85rem;
-  font-weight: 500;
 }
 </style>

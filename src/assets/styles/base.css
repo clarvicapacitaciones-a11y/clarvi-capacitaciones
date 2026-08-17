@@ -1,17 +1,22 @@
 /* Clases compartidas: layout, tablas, formularios, tabs y utilidades.
    Los componentes Ui* añaden sus propios estilos scoped encima.
 
-   Recordatorio del sistema: superficies sólidas con esquinas redondeadas,
-   líneas suaves, jerarquía por tamaño/peso/color y transiciones solo de
-   color. Todo el color sale de los tokens, así que estas clases sirven igual
-   en modo oscuro y en modo claro. */
+   Recordatorio del sistema: superficies sólidas, sin sombras, separadas por
+   borde; jerarquía por tamaño/peso/color. Todo el color sale de los tokens,
+   así que estas clases sirven igual en modo oscuro y en modo claro. */
 
 /* ---------- Layout de página ---------- */
 
 .page {
   max-width: var(--content-width);
   margin: 0 auto;
-  padding: 2rem 1.25rem 4rem;
+  padding: var(--s-32) var(--s-40) 80px;
+}
+
+@media (max-width: 720px) {
+  .page {
+    padding: var(--s-20) var(--s-18) 64px;
+  }
 }
 
 .page-header {
@@ -19,32 +24,30 @@
   flex-wrap: wrap;
   align-items: flex-end;
   justify-content: space-between;
-  gap: 1rem;
-  margin-bottom: 1.75rem;
+  gap: var(--s-14);
+  margin-bottom: var(--s-32);
 }
 
 .page-header h1 {
-  font-size: 1.6rem;
-  font-weight: 600;
-  letter-spacing: -0.02em;
   margin: 0;
 }
 
 .page-header p {
-  margin: 0.3rem 0 0;
+  margin: var(--s-4) 0 0;
 }
 
 .muted {
   color: var(--text-muted);
-  font-size: 0.88rem;
+  font-size: 13px;
   font-weight: 400;
 }
 
-/* Micro-etiqueta en mayúsculas. Solo para rótulos sueltos de sección,
+/* Micro-etiqueta en mayúsculas, en la display. Solo para rótulos sueltos,
    nunca para textos que la gente tenga que leer completos. */
 .eyebrow {
   display: block;
-  font-size: 0.7rem;
+  font-family: var(--font-display);
+  font-size: 10.5px;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: var(--tracking-label);
@@ -52,9 +55,10 @@
 }
 
 .section-title {
-  margin: 2.25rem 0 0.9rem;
-  font-size: 1.05rem;
+  margin: var(--s-32) 0 var(--s-14);
+  font-size: 20px;
   font-weight: 600;
+  letter-spacing: -0.01em;
   color: var(--text-strong);
 }
 
@@ -79,6 +83,51 @@
 .back-link:hover {
   background: var(--accent-soft);
   color: var(--accent-ink);
+}
+
+/* ---------- Rejilla de cursos ----------
+   Cuatro columnas en escritorio y una sola en teléfono, con la misma tarjeta.
+   La comparten Mis cursos y, cuando se abra, Certificados. */
+
+.courses-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--s-20);
+}
+
+@media (max-width: 1180px) {
+  .courses-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 900px) {
+  .courses-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 620px) {
+  .courses-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* Enlace de acción de una sección ("Ver todos"). */
+.section-action {
+  border: none;
+  background: none;
+  padding: 0;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--accent-ink);
+  cursor: pointer;
+  transition: color var(--transition-fast);
+}
+
+.section-action:hover {
+  color: var(--accent-ink-hover);
 }
 
 /* Texto solo para lectores de pantalla (avisos de carga, rótulos de apoyo). */
@@ -346,7 +395,7 @@
 .empty-state {
   text-align: center;
   padding: 3rem 1.25rem;
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-xl);
   background: var(--surface-1);
   border: 1px dashed var(--line-mid);
   color: var(--text-muted);

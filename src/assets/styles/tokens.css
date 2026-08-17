@@ -1,147 +1,195 @@
-/* Tokens de diseño de la marca CLARVI.
+/* Tokens de diseño de Campus CLARVI.
 
-   Sistema plano y moderno: color sólido, esquinas redondeadas y mucho aire.
-   Reglas del sistema (no romperlas al agregar componentes):
-   - Cero degradados, blur, sombras o destellos.
-   - La jerarquía se hace con tamaño, peso y color — no poniendo todo en
-     negritas ni todo en mayúsculas. Las mayúsculas se reservan para
-     micro-etiquetas sueltas (.eyebrow).
-   - Lo único que se anima es el color (color, background-color, border-color).
+   Sistema oscuro, plano y denso. Reglas que no se rompen al agregar
+   componentes:
+   - Sin sombras: la elevación se dice con el borde y un desplazamiento
+     vertical mínimo en hover.
+   - Sin degradados decorativos. El único degradado del sistema es el que
+     asienta el texto sobre la miniatura de la tarjeta de curso.
+   - La jerarquía se hace con tamaño, peso y color. Las mayúsculas se reservan
+     para micro-etiquetas (.eyebrow, estados de tarjeta).
    - Nada de emojis ni glifos de teclado como iconos: los iconos son SVG
      (componente UiIcon).
 
    ── Dos temas, un solo juego de nombres ─────────────────────────────────────
    La plataforma nace en oscuro: `:root` ES el tema oscuro y el claro se pinta
-   cuando el <html> lleva `data-theme="light"` (lo pone useTheme). Por eso
-   ningún componente pregunta por el tema: consume estas variables y el color
-   cambia solo aquí.
+   cuando el <html> lleva `data-theme="light"` (lo pone useTheme). Ningún
+   componente pregunta por el tema: consume estas variables.
 
-   Los tokens con nombre de marca (--clarvi-*) son ROLES de interfaz y sí
-   cambian con el tema: sobre fondo nocturno el navy no se ve, así que el color
-   de acción pasa a ser azul. Los pantones literales viven en --brand-* y solo
-   los usa lo que imprime la marca en papel (el diploma). */
+   Los tokens con nombre de marca (--clarvi-*) son ROLES de interfaz. Los
+   pantones literales viven en --brand-* y solo los usa lo que se imprime. */
 
 :root {
-  /* ── Pantones de marca (nunca cambian; solo para el diploma/sellos) ── */
+  /* ── Pantones de marca (nunca cambian; el diploma se imprime con estos) ── */
   --brand-navy: #00205c;
   --brand-blue: #009bdd;
   --brand-navy-rgb: 0, 32, 92;
   --brand-blue-rgb: 0, 155, 221;
 
-  /* ── Geometría: curvas suaves y consistentes ── */
-  --radius-sm: 8px;
+  /* ── Escala de espaciado ──
+     Irregular a propósito: son los saltos que usa el diseño, no una
+     progresión matemática. */
+  --s-4: 4px;
+  --s-5: 5px;
+  --s-9: 9px;
+  --s-10: 10px;
+  --s-12: 12px;
+  --s-14: 14px;
+  --s-18: 18px;
+  --s-20: 20px;
+  --s-22: 22px;
+  --s-32: 32px;
+  --s-40: 40px;
+
+  /* ── Radios ── */
+  --radius-xs: 5px; /* píldora de duración */
+  --radius-sm: 10px;
   --radius-md: 12px;
-  --radius-lg: 16px;
-  --radius-xl: 22px;
+  --radius-lg: 16px; /* tarjetas */
+  --radius-xl: 18px; /* contenedores */
   --radius-full: 999px;
 
-  /* ── Transiciones: solo cambio de color, sin movimiento ── */
+  /* ── Transiciones ──
+     Lo único que se mueve es el hover de la tarjeta, 3px y nada más. */
   --transition-fast: 120ms ease;
   --transition-med: 180ms ease;
+  --hover-lift: -3px;
 
-  /* ── Tipografía ── */
-  --font-sans: 'Sora', system-ui, -apple-system, 'Segoe UI', Roboto,
+  /* ── Tipografía ──
+     Archivo para la interfaz; Space Grotesk para la marca, los datos
+     numéricos y las etiquetas en mayúsculas. */
+  --font-sans: 'Archivo', system-ui, -apple-system, 'Segoe UI', Roboto,
     'Helvetica Neue', Arial, sans-serif;
+  --font-display: 'Space Grotesk', 'Archivo', system-ui, sans-serif;
   --font-mono: ui-monospace, 'Cascadia Code', Consolas, monospace;
 
-  /* Micro-etiquetas en mayúsculas: úsalas con cuentagotas (.eyebrow). */
-  --tracking-label: 0.12em;
+  --tracking-label: 0.07em;
 
-  /* ── Ancho del contenido ── */
-  --content-width: 1180px;
+  /* ── Ancho del contenido ──
+     El diseño se compone a 1440px con 40px de aire a cada lado. */
+  --content-width: 1360px;
 }
 
 /* ══════════════════════════════════════════════════════════════════════════
    TEMA OSCURO — el de fábrica
-
-   Azul nocturno derivado del navy de marca, no gris neutro: la plataforma
-   sigue leyéndose como CLARVI con la luz apagada.
    ══════════════════════════════════════════════════════════════════════════ */
 
 :root,
 :root[data-theme='dark'] {
   color-scheme: dark;
 
-  /* Superficies: cada capa aclara un paso sobre el fondo de página. */
-  --surface-page: #070d1c;
-  --surface-1: #0e1730;
-  --surface-2: #16213f;
-  --surface-3: #1e2b4d;
-  --surface-inset: #0a1226;
+  /* Superficies: casi negro de fondo, la tarjeta apenas se levanta. */
+  --surface-page: #0b0c0d;
+  --surface-1: #141618;
+  --surface-2: #1b1e21;
+  --surface-3: #24282c;
+  --surface-inset: #0f1112;
 
-  /* Texto */
-  --text-strong: #f2f6ff;
-  --text-body: #b9c5de;
-  --text-muted: #8494b3;
-  --text-inverse: #050c1c;
+  /* La barra superior es de marca en los dos temas. */
+  --surface-header: var(--brand-navy);
+  --on-header: #f2f2f0;
+  --on-header-muted: rgba(255, 255, 255, 0.66);
+  --on-header-soft: rgba(255, 255, 255, 0.08);
 
-  /* Líneas */
-  --line: #1f2c4c;
-  --line-mid: #35456e;
+  /* Texto.
+     --text-muted es el gris que se LEE (metadatos, subtítulos): va al 55%
+     porque el 42% del diseño da 4.05:1 sobre la tarjeta y no alcanza AA en
+     13px. El 42% se conserva en --text-faint para etiquetas decorativas
+     ("SIN INICIAR"), que no son contenido. */
+  --text-strong: #f2f2f0;
+  --text-body: rgba(255, 255, 255, 0.78);
+  --text-muted: rgba(255, 255, 255, 0.55);
+  --text-faint: rgba(255, 255, 255, 0.42);
+  --text-inverse: #0b0c0d;
 
-  /* Acento, en tres papeles que no son intercambiables:
-     - `--accent` es RELLENO y siempre lleva `--accent-contrast` (blanco)
-       encima, así que es un azul hondo: 5.9:1 con el texto blanco.
-     - `--accent-fill` es el azul brillante de barras, bordes y puntos, que
-       tiene que verse contra el fondo nocturno.
-     - `--accent-ink` es TINTA: enlaces y textos de acento sobre superficie
-       oscura (9.3:1). Usar `--accent` como color de texto aquí sería
-       ilegible. */
-  --accent: #1668a8;
-  --accent-hover: #1a76bd;
-  --accent-fill: #2ea8e6;
-  --accent-ink: #6ec5f4;
-  --accent-contrast: #ffffff;
-  --accent-soft: #142c46;
-  --accent-soft-hover: #1b3b5c;
-  --accent-line: #2a5c8a;
+  /* Líneas: el borde es lo que separa una superficie de otra. */
+  --line: rgba(255, 255, 255, 0.07);
+  --line-mid: rgba(255, 255, 255, 0.2);
 
-  /* Estados: fondo tenue + tinta legible sobre ese fondo. */
+  /* Acento único.
+     --accent es RELLENO y lleva --accent-contrast encima: sobre el cian, el
+     texto va en casi negro (6.2:1); en blanco daría 3.1:1.
+     --accent-ink es TINTA de enlaces y porcentajes sobre fondo oscuro. */
+  --accent: #009bdd;
+  --accent-hover: #4fbde9;
+  --accent-fill: #009bdd;
+  --accent-ink: #009bdd;
+  --accent-ink-hover: #4fbde9;
+  --accent-contrast: #0b0c0d;
+  --accent-soft: rgba(0, 155, 221, 0.12);
+  --accent-soft-hover: rgba(0, 155, 221, 0.2);
+  --accent-line: rgba(0, 155, 221, 0.5);
+
+  /* Pista de las barras de progreso. */
+  --track: rgba(255, 255, 255, 0.18);
+
+  /* Completado: chip navy de marca con borde de acento. */
+  --done-bg: var(--brand-navy);
+  --done-border: rgba(0, 155, 221, 0.5);
+  --done-text: #ffffff;
+
+  /* Estados */
   --state-success: #4ad6a0;
-  --state-success-bg: #0d3128;
+  --state-success-bg: rgba(74, 214, 160, 0.14);
   --state-warning: #f2b455;
-  --state-warning-bg: #35270f;
+  --state-warning-bg: rgba(242, 180, 85, 0.14);
   --state-danger: #ff8f8f;
-  --state-danger-bg: #3d1722;
-  --state-info: #6ec5f4;
-  --state-info-bg: #142c46;
+  --state-danger-bg: rgba(255, 143, 143, 0.14);
+  --state-info: var(--accent-ink);
+  --state-info-bg: var(--accent-soft);
 
-  /* Velo de los diálogos. */
-  --scrim: rgba(2, 6, 16, 0.72);
+  /* Velo de los diálogos y asiento del texto sobre la miniatura. */
+  --scrim: rgba(4, 5, 6, 0.78);
+  --cover-scrim: linear-gradient(to top, rgba(8, 9, 10, 0.96) 34%, transparent);
+  --cover-pill: rgba(0, 0, 0, 0.7);
+  --cover-empty: #1a1d20;
 }
 
 /* ══════════════════════════════════════════════════════════════════════════
    TEMA CLARO
+   Misma estructura y mismo acento; cambian las superficies y la tinta.
    ══════════════════════════════════════════════════════════════════════════ */
 
 :root[data-theme='light'] {
   color-scheme: light;
 
-  --surface-page: #f4f6fa;
+  --surface-page: #f4f5f6;
   --surface-1: #ffffff;
-  --surface-2: #f0f3f7;
-  --surface-3: #e7ecf4;
-  --surface-inset: #f7f9fc;
+  --surface-2: #eef0f2;
+  --surface-3: #e2e5e9;
+  --surface-inset: #f8f9fa;
 
-  --text-strong: #0b1b3a;
-  --text-body: #45536b;
-  --text-muted: #66748a;
+  --surface-header: var(--brand-navy);
+  --on-header: #f2f2f0;
+  --on-header-muted: rgba(255, 255, 255, 0.66);
+  --on-header-soft: rgba(255, 255, 255, 0.08);
+
+  --text-strong: #101214;
+  --text-body: #3c4249;
+  --text-muted: #61686f;
+  --text-faint: #8a9199;
   --text-inverse: #ffffff;
 
-  --line: #e4e9f0;
-  --line-mid: #c9d3e0;
+  --line: rgba(16, 18, 20, 0.1);
+  --line-mid: rgba(16, 18, 20, 0.24);
 
-  /* En claro la acción vuelve al navy de marca. El #009bdd no alcanza
-     contraste AA como texto, así que la tinta azul usa una variante honda y
-     el pantón queda para rellenos y barras. */
-  --accent: var(--brand-navy);
-  --accent-hover: #123a86;
+  /* Sobre papel blanco el cian no alcanza contraste como texto, así que la
+     tinta baja a una variante honda y el pantón queda para rellenos. */
+  --accent: #007fb6;
+  --accent-hover: #006793;
   --accent-fill: var(--brand-blue);
-  --accent-ink: #0071a3;
+  --accent-ink: #00688f;
+  --accent-ink-hover: #00506f;
   --accent-contrast: #ffffff;
-  --accent-soft: #eef1f7;
-  --accent-soft-hover: #dde4f0;
-  --accent-line: #cfeaf8;
+  --accent-soft: rgba(0, 155, 221, 0.1);
+  --accent-soft-hover: rgba(0, 155, 221, 0.18);
+  --accent-line: rgba(0, 155, 221, 0.55);
+
+  --track: rgba(16, 18, 20, 0.14);
+
+  --done-bg: var(--brand-navy);
+  --done-border: rgba(0, 155, 221, 0.5);
+  --done-text: #ffffff;
 
   --state-success: #0b7a53;
   --state-success-bg: #e7f5ee;
@@ -149,38 +197,37 @@
   --state-warning-bg: #fdf0dd;
   --state-danger: #c62828;
   --state-danger-bg: #fceaea;
-  --state-info: #0071a3;
-  --state-info-bg: #ebf7fd;
+  --state-info: var(--accent-ink);
+  --state-info-bg: var(--accent-soft);
 
-  --scrim: rgba(var(--brand-navy-rgb), 0.55);
+  --scrim: rgba(16, 18, 20, 0.5);
+  /* La miniatura es superficie de medio: no cambia con el tema, porque el
+     texto que lleva encima siempre va en blanco. */
+  --cover-scrim: linear-gradient(to top, rgba(8, 9, 10, 0.96) 34%, transparent);
+  --cover-pill: rgba(0, 0, 0, 0.7);
+  --cover-empty: #1a1d20;
 }
 
 /* ══════════════════════════════════════════════════════════════════════════
    Roles derivados
-
-   Nombres que ya consume la app, resueltos contra los tokens semánticos: por
-   eso los componentes siguen a su tema sin tocarlos uno por uno.
+   Nombres que ya consume la app, resueltos contra los tokens de arriba.
    ══════════════════════════════════════════════════════════════════════════ */
 
 :root {
-  /* Superficies */
   --bg-page: var(--surface-page);
   --bg-surface: var(--surface-1);
   --bg-subtle: var(--surface-2);
 
-  /* Marca como color de interfaz (cambia con el tema) */
   --clarvi-navy: var(--accent);
   --clarvi-navy-soft: var(--accent-hover);
   --clarvi-blue: var(--accent-fill);
   --clarvi-blue-ink: var(--accent-ink);
 
-  /* Tintes de acento */
   --navy-050: var(--accent-soft);
   --navy-100: var(--accent-soft-hover);
   --blue-050: var(--state-info-bg);
   --blue-100: var(--accent-line);
 
-  /* Estados */
   --color-success: var(--state-success);
   --color-success-bg: var(--state-success-bg);
   --color-warning: var(--state-warning);
@@ -190,7 +237,6 @@
   --color-info: var(--state-info);
   --color-info-bg: var(--state-info-bg);
 
-  /* Líneas */
   --rule: 1px solid var(--line);
   --accent-width: 3px;
 }
@@ -205,25 +251,26 @@
 
     --surface-page: #ffffff;
     --surface-1: #ffffff;
-    --surface-2: #f0f3f7;
-    --surface-3: #e7ecf4;
-    --surface-inset: #f7f9fc;
+    --surface-2: #eef0f2;
+    --surface-3: #e2e5e9;
+    --surface-inset: #f8f9fa;
 
-    --text-strong: #0b1b3a;
-    --text-body: #45536b;
-    --text-muted: #66748a;
+    --text-strong: #101214;
+    --text-body: #3c4249;
+    --text-muted: #61686f;
+    --text-faint: #8a9199;
     --text-inverse: #ffffff;
 
-    --line: #d8dfe9;
-    --line-mid: #c9d3e0;
+    --line: rgba(16, 18, 20, 0.16);
+    --line-mid: rgba(16, 18, 20, 0.3);
 
-    --accent: var(--brand-navy);
-    --accent-hover: #123a86;
+    --accent: #007fb6;
+    --accent-hover: #006793;
     --accent-fill: var(--brand-blue);
-    --accent-ink: #0071a3;
+    --accent-ink: #00688f;
     --accent-contrast: #ffffff;
-    --accent-soft: #eef1f7;
-    --accent-soft-hover: #dde4f0;
-    --accent-line: #cfeaf8;
+    --accent-soft: rgba(0, 155, 221, 0.1);
+    --accent-soft-hover: rgba(0, 155, 221, 0.18);
+    --accent-line: rgba(0, 155, 221, 0.55);
   }
 }

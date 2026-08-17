@@ -2,6 +2,7 @@
 // Perfil propio: datos personales y cambio de contraseña.
 
 import { computed, onMounted, ref } from 'vue'
+import TrainingCard from '@/components/trainings/TrainingCard.vue'
 import UiCard from '@/components/ui/UiCard.vue'
 import UiBadge from '@/components/ui/UiBadge.vue'
 import UiButton from '@/components/ui/UiButton.vue'
@@ -11,9 +12,14 @@ import { FEATURES } from '@/config/features'
 import { formatDateTime } from '@/composables/useFormat'
 import { listMyCertificates } from '@/services/certificates.service'
 import { updateProfile } from '@/services/profiles.service'
+import { listMyTrainingStatuses } from '@/services/trainings.service'
 import { useAuthStore } from '@/stores/auth.store'
 import { useCatalogsStore } from '@/stores/catalogs.store'
-import { ROLE_LABELS, type CertificateWithSnapshot } from '@/types/domain'
+import {
+  ROLE_LABELS,
+  type CertificateWithSnapshot,
+  type TrainingStatusRow,
+} from '@/types/domain'
 
 const auth = useAuthStore()
 const catalogs = useCatalogsStore()
@@ -53,6 +59,11 @@ const accountLabel = computed(() => {
 // encienda FEATURES.diplomas.
 const certificates = ref<CertificateWithSnapshot[]>([])
 
+// Cursos terminados. Mis cursos habla solo de lo que falta por hacer, así que
+// al llegar al 100 % un curso sale de ahí y aterriza aquí. Cuando se abra la
+// sección Certificados, esta lista se muda a esa pantalla.
+const completed = ref<TrainingStatusRow[]>([])
+
 onMounted(async () => {
   await catalogs.fetchCatalogs()
   if (auth.profile) {
@@ -60,9 +71,12 @@ onMounted(async () => {
     areaId.value = auth.profile.area_id ?? ''
     sucursalId.value = auth.profile.sucursal_id ?? ''
   }
-  if (FEATURES.diplomas && auth.userId) {
+  if (!auth.userId) return
+  if (FEATURES.diplomas) {
     certificates.value = await listMyCertificates(auth.userId)
   }
+  const rows = await listMyTrainingStatuses(auth.userId)
+  completed.value = rows.filter((row) => row.status === 'completed')
 })
 
 async function saveProfile(): Promise<void> {
@@ -205,16 +219,43 @@ async function savePassword(): Promise<void> {
         </div>
       </form>
     </UiCard>
+
+    <section v-if="completed.length" class="completed">
+      <h2>Cursos completados</h2>
+      <p class="muted completed-hint">
+        {{ completed.length }}
+        {{ completed.length === 1 ? 'curso terminado' : 'cursos terminados' }}.
+        Puedes volver a verlos cuando quieras.
+      </p>
+      <div class="courses-grid">
+        <TrainingCard
+          v-for="row in completed"
+          :key="row.training_id ?? ''"
+          :row="row"
+        />
+      </div>
+    </section>
   </div>
 </template>
 
 <style scoped>
-.profile-page {
+/* La página usa el ancho completo para que la rejilla de cursos terminados
+   respire; los formularios se quedan en una columna legible. */
+.profile-card {
   max-width: 620px;
+  margin-bottom: var(--s-14);
 }
 
-.profile-card {
-  margin-bottom: 1rem;
+.completed {
+  margin-top: var(--s-40);
+}
+
+.completed h2 {
+  margin: 0;
+}
+
+.completed-hint {
+  margin: var(--s-4) 0 var(--s-18);
 }
 
 .account-row {

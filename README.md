@@ -38,10 +38,12 @@ src/
   components/
     ui/                # kit de la plataforma: UiCard, UiButton, UiInput,
                        #   UiSelect, UiBadge, UiModal, UiIcon, UiBrand,
-                       #   UiAvatar, UiProgress, UiStat, UiSectionHeader,
-                       #   UiEmptyState, UiSkeleton, UiBackLink, UiThemeToggle
+                       #   UiAvatar, UiCourseStatus, UiSearchField,
+                       #   UiSectionHeader, UiEmptyState, UiSkeleton,
+                       #   UiBackLink, UiThemeToggle
     trainings/         # YoutubePlayer (con tracking), LiveYoutubePlayer,
-                       #   LiveViewersTable, TrainingCard, QrCodeDisplay
+                       #   LiveViewersTable, TrainingCard, UpcomingCalendar,
+                       #   QrCodeDisplay
     exams/             # constructor del examen (editors/) y aplicación (runners/)
     certificates/      # DiplomaSheet (formato imprimible; apagado por bandera)
     layout/            # AppHeader, AuthLayout, NotificationsBell
@@ -53,6 +55,7 @@ src/
     useQrCode.ts         # generación de QR de check-in
     useTrainingCover.ts  # portada de la tarjeta (imagen propia → miniatura de YouTube)
     useTheme.ts          # modo oscuro / claro (oscuro de fábrica, se recuerda)
+    useCourseSearch.ts   # término del buscador de la barra superior
   services/            # acceso a datos (supabase, trainings, live, profiles,
                        #   exams, notifications, certificates)
   stores/              # auth (sesión/rol), catalogs (áreas/sucursales),
@@ -63,23 +66,37 @@ docs/                  # documentación detallada (ver abajo)
 
 ## Diseño
 
-Interfaz **plana, moderna y minimalista**: superficies sólidas de esquinas
-redondeadas sobre el fondo de página, sin profundidad simulada.
+Interfaz **oscura, plana y densa**. Fondo de app casi negro, tarjetas apenas
+levantadas, un solo acento.
 
-- Color plano: nada de degradados, glass, blur, sombras ni destellos.
-- Curvas consistentes (`--radius-sm/md/lg/xl` y píldoras para tabs y badges).
-- Tipografía **Sora** (Google Fonts). La jerarquía se hace con tamaño, peso y
-  color: títulos en 600, el resto en regular. Las mayúsculas se reservan para
-  micro-etiquetas sueltas (`.eyebrow`), no para botones, tabs ni labels.
+- **Sin sombras.** La elevación se dice con el borde (7 % en reposo, 20 % en
+  hover) y un desplazamiento de 3px. Nada de glass, blur ni destellos.
+- **Un único degradado en todo el sistema**: el que asienta el texto sobre la
+  miniatura de la tarjeta de curso.
+- Tipografías **Archivo** (interfaz) y **Space Grotesk** (marca, datos
+  numéricos y etiquetas en mayúsculas), de Google Fonts.
+- Escala de espaciado 4/5/9/10/12/14/18/20/22/32/40 (`--s-*`). Radios: 5px en
+  la píldora de duración, 16px en tarjetas, 18px en contenedores, completo en
+  chips y barras.
 - **Sin emojis ni glifos de teclado como iconos.** Todo icono es un trazo SVG
   de `UiIcon`, que hereda color y tamaño del texto.
-- Lo único que se anima es el color (`color`, `background-color`,
-  `border-color`); no hay movimiento, escalas ni sombras animadas.
-- La barra de navegación es sólida (sin transparencias) y solo muestra el menú
-  a quien administra o aprueba registros: un colaborador únicamente ve sus
-  capacitaciones.
+- La barra superior es de marca (`#00205c`) en los dos temas y lleva el área de
+  la persona como badge.
 - La marca es **Campus CLARVI**, en una sola línea y sin símbolo al lado
   (componente `UiBrand`).
+- Diseño compuesto a 1440px; en teléfono la rejilla baja a una columna con la
+  misma tarjeta.
+
+### Arquitectura de información
+
+Dos reglas que la interfaz sostiene:
+
+- **Solo se ven los cursos asignados.** La vista `user_training_status` filtra
+  por área (`training_areas`), así que no hay catálogo abierto ni forma de
+  asomarse a otra área. El badge del encabezado refleja esa área.
+- **Un curso completado sale del home.** Al llegar al 100 % deja *Mis cursos* y
+  pasa al perfil, para que la pantalla principal hable siempre de lo que falta.
+  Cuando se encienda `FEATURES.diplomas`, esa lista se muda a *Certificados*.
 
 ### Modo oscuro y modo claro
 
@@ -98,13 +115,18 @@ solo. Los tokens de color tienen tres familias:
 | `--accent-*` | color de acción | ver abajo |
 | `--state-*` | éxito, aviso, error, info | `--state-danger`, `--state-success-bg` |
 
-El acento tiene tres papeles que **no** son intercambiables:
+El acento (`#009bdd`) tiene tres papeles que **no** son intercambiables:
 
-- `--accent` es **relleno** y siempre lleva `--accent-contrast` encima
-  (botón primario, tab activa).
-- `--accent-fill` es el azul brillante de **barras, bordes y puntos**.
-- `--accent-ink` es **tinta**: enlaces y textos de acento. Usar `--accent`
-  como color de texto sobre superficie oscura queda ilegible.
+- `--accent` es **relleno** y siempre lleva `--accent-contrast` encima. En
+  oscuro ese contraste es casi negro: sobre el cian, el texto blanco da 3.1:1
+  y no alcanza AA; el oscuro da 6.2:1.
+- `--accent-fill` es el color de **barras de progreso, bordes y puntos**.
+- `--accent-ink` es **tinta**: enlaces y porcentajes.
+
+Y dos grises de texto, no uno: `--text-muted` (55 %) es el que se **lee**
+—metadatos y subtítulos—, porque el 42 % del diseño da 4.05:1 sobre la tarjeta
+y no alcanza AA en 13px. `--text-faint` conserva el 42 % para etiquetas
+decorativas como `SIN INICIAR`.
 
 Los pantones de marca (`--brand-navy: #00205c`, `--brand-blue: #009bdd`) no
 cambian con el tema y solo los usa lo que se imprime: el diploma.
@@ -119,8 +141,9 @@ Cada tarjeta del dashboard muestra una imagen. El admin puede subirla desde el
 formulario (bucket público `training-covers`, escritura solo para
 administradores) o pegar una URL; si no elige ninguna y la capacitación ya
 tiene video, se usa la miniatura de YouTube (`maxresdefault`, con respaldo a
-`hqdefault`). Sin imagen ni video, la tarjeta marca el hueco con un icono del
-sistema.
+`hqdefault`). Sin imagen ni video, la miniatura queda en oscuro con el icono de
+reproducción: el título va encima en blanco, así que esa zona no puede
+aclararse con el tema.
 
 ## Documentación
 
