@@ -34,9 +34,12 @@ supabase/
   functions/register/      # Edge Function de registro (correo y usuario)
   functions/youtube-live/  # estado del directo leyendo la página de YouTube
 src/
-  assets/styles/       # tokens de marca (#00205c, #009bdd) + sistema plano
+  assets/styles/       # tokens de los dos temas + sistema plano
   components/
-    ui/                # UiCard, UiButton, UiInput, UiSelect, UiBadge, UiModal
+    ui/                # kit de la plataforma: UiCard, UiButton, UiInput,
+                       #   UiSelect, UiBadge, UiModal, UiIcon, UiBrand,
+                       #   UiAvatar, UiProgress, UiStat, UiSectionHeader,
+                       #   UiEmptyState, UiSkeleton, UiBackLink, UiThemeToggle
     trainings/         # YoutubePlayer (con tracking), LiveYoutubePlayer,
                        #   LiveViewersTable, TrainingCard, QrCodeDisplay
     exams/             # constructor del examen (editors/) y aplicación (runners/)
@@ -49,6 +52,7 @@ src/
     useYoutubePlayer.ts  # carga del IFrame API + parseo de links
     useQrCode.ts         # generación de QR de check-in
     useTrainingCover.ts  # portada de la tarjeta (imagen propia → miniatura de YouTube)
+    useTheme.ts          # modo oscuro / claro (oscuro de fábrica, se recuerda)
   services/            # acceso a datos (supabase, trainings, live, profiles,
                        #   exams, notifications, certificates)
   stores/              # auth (sesión/rol), catalogs (áreas/sucursales),
@@ -59,21 +63,51 @@ docs/                  # documentación detallada (ver abajo)
 
 ## Diseño
 
-Interfaz **plana, moderna y minimalista**: superficies blancas de esquinas
-redondeadas sobre un fondo gris muy claro, sin profundidad simulada.
+Interfaz **plana, moderna y minimalista**: superficies sólidas de esquinas
+redondeadas sobre el fondo de página, sin profundidad simulada.
 
 - Color plano: nada de degradados, glass, blur, sombras ni destellos.
 - Curvas consistentes (`--radius-sm/md/lg/xl` y píldoras para tabs y badges).
 - Tipografía **Sora** (Google Fonts). La jerarquía se hace con tamaño, peso y
   color: títulos en 600, el resto en regular. Las mayúsculas se reservan para
   micro-etiquetas sueltas (`.eyebrow`), no para botones, tabs ni labels.
-- Paleta: navy `#00205c` y azul `#009bdd`; como texto se usa
-  `--clarvi-blue-ink`, que sí alcanza contraste AA.
+- **Sin emojis ni glifos de teclado como iconos.** Todo icono es un trazo SVG
+  de `UiIcon`, que hereda color y tamaño del texto.
 - Lo único que se anima es el color (`color`, `background-color`,
   `border-color`); no hay movimiento, escalas ni sombras animadas.
 - La barra de navegación es sólida (sin transparencias) y solo muestra el menú
   a quien administra o aprueba registros: un colaborador únicamente ve sus
   capacitaciones.
+- La marca es **Campus CLARVI**, en una sola línea y sin símbolo al lado
+  (componente `UiBrand`).
+
+### Modo oscuro y modo claro
+
+La plataforma **abre en oscuro**; el botón del encabezado enciende la luz y la
+preferencia se recuerda en el navegador (`clarvi:theme`). El tema es un
+atributo en el `<html>` (`data-theme`), lo aplica `useTheme` y lo escribe
+también un script al principio del `index.html` para que no haya un destello
+del tema contrario antes de que Vue monte.
+
+Ningún componente pregunta por el tema: consume los tokens y el color cambia
+solo. Los tokens de color tienen tres familias:
+
+| Familia | Para qué | Ejemplos |
+|---|---|---|
+| `--surface-*`, `--text-*`, `--line*` | superficies, tinta y líneas | `--surface-1`, `--text-muted` |
+| `--accent-*` | color de acción | ver abajo |
+| `--state-*` | éxito, aviso, error, info | `--state-danger`, `--state-success-bg` |
+
+El acento tiene tres papeles que **no** son intercambiables:
+
+- `--accent` es **relleno** y siempre lleva `--accent-contrast` encima
+  (botón primario, tab activa).
+- `--accent-fill` es el azul brillante de **barras, bordes y puntos**.
+- `--accent-ink` es **tinta**: enlaces y textos de acento. Usar `--accent`
+  como color de texto sobre superficie oscura queda ilegible.
+
+Los pantones de marca (`--brand-navy: #00205c`, `--brand-blue: #009bdd`) no
+cambian con el tema y solo los usa lo que se imprime: el diploma.
 
 Todo esto vive en `src/assets/styles/tokens.css` (variables) y `base.css`
 (clases compartidas). Los componentes consumen esas variables; no se escriben
@@ -85,7 +119,8 @@ Cada tarjeta del dashboard muestra una imagen. El admin puede subirla desde el
 formulario (bucket público `training-covers`, escritura solo para
 administradores) o pegar una URL; si no elige ninguna y la capacitación ya
 tiene video, se usa la miniatura de YouTube (`maxresdefault`, con respaldo a
-`hqdefault`). Sin imagen ni video, la tarjeta pinta el logotipo.
+`hqdefault`). Sin imagen ni video, la tarjeta marca el hueco con un icono del
+sistema.
 
 ## Documentación
 

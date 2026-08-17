@@ -400,17 +400,17 @@ function backToTraining(): void {
 }
 
 .dot:hover {
-  border-color: var(--clarvi-navy);
+  border-color: var(--accent-fill);
 }
 
 .dot.is-answered {
-  background: var(--clarvi-blue);
-  border-color: var(--clarvi-blue);
+  background: var(--accent-fill);
+  border-color: var(--accent-fill);
 }
 
 .dot.is-current {
-  background: var(--clarvi-navy);
-  border-color: var(--clarvi-navy);
+  background: var(--accent-ink);
+  border-color: var(--accent-ink);
 }
 
 .intro-card,
@@ -460,7 +460,7 @@ function backToTraining(): void {
   font-weight: 600;
   line-height: 1;
   letter-spacing: -0.03em;
-  color: var(--clarvi-navy);
+  color: var(--accent-ink);
 }
 
 .result-head p {

@@ -1,17 +1,36 @@
 <!doctype html>
-<html lang="es">
+<html lang="es" data-theme="dark">
   <head>
     <meta charset="UTF-8" />
+    <script>
+      // Va primero a propósito, antes de cualquier <link>: una hoja de estilo
+      // pendiente bloquea los scripts que vengan después, así que si esto
+      // estuviera debajo de la fuente, un CDN lento dejaría a quien eligió
+      // modo claro mirando la pantalla en oscuro hasta que la fuente llegara.
+      //
+      // Aplica el tema antes del primer pintado. La app lee esta misma clave
+      // desde useTheme; sin preferencia guardada, oscuro.
+      (function () {
+        try {
+          var saved = window.localStorage.getItem('clarvi:theme')
+          document.documentElement.dataset.theme =
+            saved === 'light' || saved === 'dark' ? saved : 'dark'
+        } catch (e) {
+          document.documentElement.dataset.theme = 'dark'
+        }
+      })()
+    </script>
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="color-scheme" content="dark light" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
       rel="stylesheet"
       href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&display=swap"
     />
-    <meta name="description" content="Plataforma interna de capacitaciones de CLARVI" />
-    <title>CLARVI · Capacitaciones</title>
+    <meta name="description" content="Campus CLARVI, la plataforma interna de capacitaciones" />
+    <title>Campus CLARVI</title>
   </head>
   <body>
     <div id="app"></div>

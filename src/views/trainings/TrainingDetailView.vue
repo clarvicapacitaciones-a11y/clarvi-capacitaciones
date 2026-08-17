@@ -7,6 +7,7 @@
 
 import { computed, onBeforeUnmount, onMounted, ref, shallowRef } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import UiBackLink from '@/components/ui/UiBackLink.vue'
 import UiButton from '@/components/ui/UiButton.vue'
 import UiCard from '@/components/ui/UiCard.vue'
 import UiBadge from '@/components/ui/UiBadge.vue'
@@ -233,7 +234,7 @@ function goToExam(): void {
     <p v-else-if="error" class="form-error">{{ error }}</p>
 
     <template v-else-if="training">
-      <button class="back-link" @click="goBack">← Mis capacitaciones</button>
+      <UiBackLink label="Mis capacitaciones" @click="goBack" />
 
       <header class="page-header">
         <div>

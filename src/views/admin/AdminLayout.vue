@@ -61,7 +61,7 @@ onMounted(() => {
   margin-bottom: 1.75rem;
   padding: 0.25rem;
   border-radius: var(--radius-full);
-  background: var(--bg-subtle);
+  background: var(--surface-2);
   flex-wrap: wrap;
 }
 
@@ -79,8 +79,8 @@ onMounted(() => {
 }
 
 .admin-tab.router-link-active {
-  background: var(--clarvi-navy);
-  color: var(--text-inverse);
+  background: var(--accent);
+  color: var(--accent-contrast);
 }
 
 /* Pendientes por revisar: número al lado del nombre de la pestaña. */

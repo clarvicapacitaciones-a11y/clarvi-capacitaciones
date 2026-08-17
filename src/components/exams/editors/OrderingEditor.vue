@@ -4,6 +4,7 @@
 
 import { computed } from 'vue'
 import UiButton from '@/components/ui/UiButton.vue'
+import UiIcon from '@/components/ui/UiIcon.vue'
 import {
   newItemId,
   type ExamItem,
@@ -63,7 +64,7 @@ function move(index: number, delta: number): void {
         :disabled="index === 0"
         @click="move(index, -1)"
       >
-        ↑
+        <UiIcon name="arrow-up" :size="15" />
       </button>
       <button
         class="row-action"
@@ -72,7 +73,7 @@ function move(index: number, delta: number): void {
         :disabled="index === items.length - 1"
         @click="move(index, 1)"
       >
-        ↓
+        <UiIcon name="arrow-down" :size="15" />
       </button>
       <button
         class="row-action"
@@ -81,7 +82,7 @@ function move(index: number, delta: number): void {
         :disabled="items.length <= 2"
         @click="removeStep(index)"
       >
-        ×
+        <UiIcon name="close" :size="15" />
       </button>
     </div>
 

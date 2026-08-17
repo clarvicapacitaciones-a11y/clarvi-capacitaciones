@@ -45,11 +45,15 @@ async function handleCopy(): Promise<void> {
     <img v-if="dataUrl" :src="dataUrl" alt="Código QR de asistencia" class="qr-img" />
     <p class="qr-url">{{ checkinUrlForToken(token) }}</p>
     <div class="qr-actions">
-      <UiButton variant="ghost" @click="handleDownload">
+      <UiButton variant="ghost" icon="download" @click="handleDownload">
         Descargar PNG
       </UiButton>
-      <UiButton variant="ghost" @click="handleCopy">
-        {{ copied ? 'Copiado ✓' : 'Copiar link' }}
+      <UiButton
+        variant="ghost"
+        :icon="copied ? 'check' : 'link'"
+        @click="handleCopy"
+      >
+        {{ copied ? 'Copiado' : 'Copiar link' }}
       </UiButton>
     </div>
   </div>
@@ -63,8 +67,11 @@ async function handleCopy(): Promise<void> {
   gap: 0.6rem;
 }
 
+/* El QR se queda en blanco en los dos temas: un código invertido no lo lee
+   la mitad de los teléfonos. */
 .qr-img {
   width: min(230px, 100%);
+  padding: 0.5rem;
   border-radius: var(--radius-md);
   border: var(--rule);
   background: #fff;

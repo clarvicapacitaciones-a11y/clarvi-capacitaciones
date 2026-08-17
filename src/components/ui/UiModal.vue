@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import UiIcon from '@/components/ui/UiIcon.vue'
+
 defineProps<{
   open: boolean
   title: string
@@ -14,7 +16,7 @@ const emit = defineEmits<{ close: [] }>()
         <header class="modal-header">
           <h3>{{ title }}</h3>
           <button class="modal-close" aria-label="Cerrar" @click="emit('close')">
-            ×
+            <UiIcon name="close" :size="16" />
           </button>
         </header>
         <div class="modal-body">
@@ -37,14 +39,17 @@ const emit = defineEmits<{ close: [] }>()
   display: grid;
   place-items: center;
   padding: 1rem;
-  background: rgba(var(--clarvi-navy-rgb), 0.55);
+  background: var(--scrim);
 }
 
 .modal-panel {
   width: min(480px, 100%);
   max-height: 90vh;
   overflow-y: auto;
-  background: var(--bg-surface);
+  background: var(--surface-1);
+  /* En oscuro el panel y el velo son ambos oscuros: el borde es lo que
+     recorta el diálogo del fondo. */
+  border: var(--rule);
   border-radius: var(--radius-lg);
 }
 
@@ -72,7 +77,6 @@ const emit = defineEmits<{ close: [] }>()
   border: none;
   border-radius: var(--radius-full);
   background: none;
-  font-size: 1.3rem;
   line-height: 1;
   color: var(--text-muted);
   cursor: pointer;
@@ -80,7 +84,7 @@ const emit = defineEmits<{ close: [] }>()
 }
 
 .modal-close:hover {
-  background: var(--bg-subtle);
+  background: var(--surface-2);
   color: var(--text-strong);
 }
 

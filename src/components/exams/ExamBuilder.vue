@@ -185,7 +185,7 @@ function moveQuestion(index: number, delta: number): void {
 .switch input {
   width: 1.05rem;
   height: 1.05rem;
-  accent-color: var(--clarvi-blue);
+  accent-color: var(--accent-fill);
 }
 
 .publish-note {

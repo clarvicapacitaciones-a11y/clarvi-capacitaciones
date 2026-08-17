@@ -7,6 +7,7 @@ import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import AuthLayout from '@/components/layout/AuthLayout.vue'
 import UiButton from '@/components/ui/UiButton.vue'
+import UiIcon from '@/components/ui/UiIcon.vue'
 import { useAuthStore } from '@/stores/auth.store'
 import { useCatalogsStore } from '@/stores/catalogs.store'
 
@@ -43,7 +44,9 @@ async function handleLogout(): Promise<void> {
 <template>
   <AuthLayout subtitle="Registro en revisión">
     <div class="pending-body">
-      <div class="result-icon">⏳</div>
+      <div class="result-icon">
+        <UiIcon name="clock" :size="26" :stroke="1.5" />
+      </div>
       <p class="result-text">Tu registro está pendiente de aprobación</p>
       <p class="muted">
         Un líder tiene que confirmar que trabajas en CLARVI antes de darte
@@ -90,8 +93,8 @@ async function handleLogout(): Promise<void> {
   display: grid;
   place-items: center;
   border-radius: var(--radius-full);
-  background: var(--color-warning-bg);
-  font-size: 1.6rem;
+  background: var(--state-warning-bg);
+  color: var(--state-warning);
 }
 
 .result-text {

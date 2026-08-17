@@ -21,8 +21,11 @@ body {
   font-weight: 400;
   line-height: 1.6;
   color: var(--text-body);
-  background: var(--bg-page);
+  background: var(--surface-page);
   -webkit-font-smoothing: antialiased;
+  /* El tema se cambia con un botón, y el cambio se ve como un fundido de
+     color, no como un salto. */
+  transition: background-color var(--transition-med), color var(--transition-med);
 }
 
 /* Jerarquía: los títulos pesan 600, el resto del texto va en regular.
@@ -63,22 +66,46 @@ strong {
 }
 
 a {
-  color: var(--clarvi-blue-ink);
+  color: var(--accent-ink);
   text-decoration: none;
   transition: color var(--transition-fast);
 }
 
 a:hover {
-  color: var(--clarvi-navy);
+  color: var(--accent-hover);
 }
 
 :focus-visible {
-  outline: 2px solid var(--clarvi-blue);
+  outline: 2px solid var(--accent-fill);
   outline-offset: 2px;
   border-radius: var(--radius-sm);
 }
 
 ::selection {
-  background: var(--blue-100);
+  background: var(--accent-soft-hover);
   color: var(--text-strong);
+}
+
+/* Barras de desplazamiento acordes al tema (Firefox y navegadores WebKit). */
+* {
+  scrollbar-color: var(--line-mid) transparent;
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--line-mid);
+  border: 3px solid var(--surface-page);
+  border-radius: var(--radius-full);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--text-muted);
 }

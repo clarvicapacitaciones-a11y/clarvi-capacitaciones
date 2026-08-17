@@ -89,7 +89,7 @@ function setBlank(blankId: string, value: string): void {
   border: 1px solid var(--blue-100);
   border-radius: var(--radius-full);
   background: var(--color-info-bg);
-  color: var(--clarvi-navy);
+  color: var(--accent-ink);
   font-size: 0.82rem;
   font-weight: 600;
 }

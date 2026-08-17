@@ -313,6 +313,6 @@ function roleTone(role: UserRole): 'info' | 'warning' | 'neutral' {
 .toggle-row input {
   width: 1.05rem;
   height: 1.05rem;
-  accent-color: var(--clarvi-blue);
+  accent-color: var(--accent-fill);
 }
 </style>
