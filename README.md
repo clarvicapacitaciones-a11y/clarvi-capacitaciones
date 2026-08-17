@@ -91,9 +91,14 @@ levantadas, un solo acento.
 
 Dos reglas que la interfaz sostiene:
 
-- **Solo se ven los cursos asignados.** La vista `user_training_status` filtra
-  por área (`training_areas`), así que no hay catálogo abierto ni forma de
-  asomarse a otra área. El badge del encabezado refleja esa área.
+- **Solo se ven los cursos asignados, y todo lo asignado es obligatorio.** No
+  hay catálogo abierto, cursos opcionales ni forma de asomarse a otra área: si
+  un curso aparece en la pantalla de alguien, esa persona tiene que tomarlo. El
+  alcance lo aplica la vista `user_training_status` (por `training_areas`), y el
+  badge del encabezado dice de qué área es quien está viendo.
+
+  Por eso *Mis cursos* no separa obligatorios de complementarios: sus dos
+  secciones se reparten por avance —lo empezado y lo pendiente— y nada más.
 - **Un curso completado sale del home.** Al llegar al 100 % deja *Mis cursos* y
   pasa al perfil, para que la pantalla principal hable siempre de lo que falta.
   Cuando se encienda `FEATURES.diplomas`, esa lista se muda a *Certificados*.

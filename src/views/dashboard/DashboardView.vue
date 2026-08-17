@@ -6,9 +6,10 @@
 // empezar.
 //
 // Dos reglas de la plataforma que esta vista sostiene:
-//   · Solo se ven los cursos asignados. La vista `user_training_status` ya
-//     filtra por área, así que aquí no hay catálogo abierto ni forma de
-//     asomarse a otra área.
+//   · Solo se ven los cursos asignados, y todo lo asignado es obligatorio: no
+//     hay catálogo abierto, ni cursos opcionales, ni forma de asomarse a otra
+//     área. Lo filtra la vista `user_training_status`, así que si un curso
+//     llegó hasta aquí, esta persona tiene que tomarlo.
 //   · Un curso completado sale de esta pantalla. Al llegar al 100 % pasa a
 //     vivir en el perfil (y a Certificados cuando esa sección se abra), para
 //     que el home hable siempre de lo que falta por hacer.
@@ -80,8 +81,9 @@ const inProgressRows = computed(() =>
 )
 
 /**
- * Obligatorios: todo lo asignado que aún no se empieza. Como el alcance por
- * área lo aplica la vista de la base, lo que llega aquí ya es de la persona.
+ * Pendientes: lo asignado que todavía no se empieza. Las dos secciones de la
+ * página se reparten por avance y nada más — no hay un corte entre cursos
+ * obligatorios y opcionales, porque opcionales no existen.
  */
 const pendingRows = computed(() =>
   found.value.filter(
@@ -222,7 +224,7 @@ onBeforeUnmount(() => {
 
       <section v-if="pendingRows.length" class="course-section">
         <UiSectionHeader
-          title="Obligatorios de tu área"
+          title="Pendientes"
           :subtitle="countLabel(pendingRows.length, 'curso sin iniciar', 'cursos sin iniciar')"
         >
           <template #action>
