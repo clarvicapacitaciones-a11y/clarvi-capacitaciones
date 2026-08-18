@@ -3,6 +3,7 @@
 // funcione con el dedo y sin dependencias nuevas.
 
 import { computed, watch } from 'vue'
+import UiIcon from '@/components/ui/UiIcon.vue'
 import {
   isOrderingContent,
   type ExamItem,
@@ -63,7 +64,7 @@ watch(
           :disabled="index === 0"
           @click="move(index, -1)"
         >
-          ↑
+          <UiIcon name="arrow-up" :size="15" />
         </button>
         <button
           class="row-action"
@@ -72,7 +73,7 @@ watch(
           :disabled="index === orderedItems.length - 1"
           @click="move(index, 1)"
         >
-          ↓
+          <UiIcon name="arrow-down" :size="15" />
         </button>
       </div>
     </li>
@@ -106,7 +107,7 @@ watch(
   place-items: center;
   border-radius: var(--radius-full);
   background: var(--navy-050);
-  color: var(--clarvi-navy);
+  color: var(--accent-ink);
   font-weight: 500;
   font-size: 0.82rem;
   flex-shrink: 0;

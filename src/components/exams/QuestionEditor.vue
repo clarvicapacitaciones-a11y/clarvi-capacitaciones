@@ -3,6 +3,7 @@
 // corresponde a su tipo.
 
 import { computed } from 'vue'
+import UiIcon from '@/components/ui/UiIcon.vue'
 import UiSelect from '@/components/ui/UiSelect.vue'
 import ChoiceEditor from '@/components/exams/editors/ChoiceEditor.vue'
 import FillBlankEditor from '@/components/exams/editors/FillBlankEditor.vue'
@@ -78,7 +79,7 @@ const points = computed({
           :disabled="index === 0"
           @click="emit('move', -1)"
         >
-          ↑
+          <UiIcon name="arrow-up" :size="15" />
         </button>
         <button
           class="row-action"
@@ -87,7 +88,7 @@ const points = computed({
           :disabled="index === total - 1"
           @click="emit('move', 1)"
         >
-          ↓
+          <UiIcon name="arrow-down" :size="15" />
         </button>
         <button
           class="row-action is-danger"
@@ -95,7 +96,7 @@ const points = computed({
           aria-label="Eliminar pregunta"
           @click="emit('remove')"
         >
-          ×
+          <UiIcon name="close" :size="15" />
         </button>
       </div>
     </header>

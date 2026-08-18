@@ -1,6 +1,8 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
-  <!-- Marca plana: cuadrado sólido, sin degradado ni esquinas redondeadas. -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Campus CLARVI">
+  <!-- Icono de pestaña. La gota se retiró de la marca: queda el monograma de
+       Campus CLARVI, plano y sin degradados como el resto del sistema. -->
   <rect width="64" height="64" fill="#00205c"/>
-  <path d="M32 12c8 10.5 13 17.4 13 24a13 13 0 1 1-26 0c0-6.6 5-13.5 13-24z" fill="#ffffff"/>
-  <path d="M27 40a5.5 5.5 0 0 0 5.5 5.5" stroke="#009bdd" stroke-width="2.6" stroke-linecap="round" fill="none"/>
+  <path d="M41.96 20.64A13 13 0 1 0 41.96 37.36"
+        fill="none" stroke="#ffffff" stroke-width="7.5" stroke-linecap="round"/>
+  <rect x="19" y="47.5" width="26" height="5" rx="2.5" fill="#009bdd"/>
 </svg>

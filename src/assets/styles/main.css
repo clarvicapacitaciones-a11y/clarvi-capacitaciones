@@ -17,68 +17,103 @@ body,
 
 body {
   font-family: var(--font-sans);
-  font-size: 0.95rem;
+  font-size: 14px;
   font-weight: 400;
-  line-height: 1.6;
+  line-height: 1.55;
   color: var(--text-body);
-  background: var(--bg-page);
+  background: var(--surface-page);
   -webkit-font-smoothing: antialiased;
+  /* El tema se cambia con un botón, y el cambio se ve como un fundido de
+     color, no como un salto. */
+  transition: background-color var(--transition-med), color var(--transition-med);
 }
 
-/* Jerarquía: los títulos pesan 600, el resto del texto va en regular.
-   Nada de poner en negritas todo lo que se quiera destacar. */
+/* Escala tipográfica del diseño. Los títulos aprietan un poco el interletraje;
+   el texto corrido no. */
 h1,
 h2,
 h3,
 h4 {
   color: var(--text-strong);
-  margin: 0 0 0.5rem;
-  line-height: 1.3;
+  margin: 0 0 var(--s-10);
+  line-height: 1.25;
   font-weight: 600;
-  letter-spacing: -0.015em;
 }
 
 h1 {
-  font-size: 1.6rem;
+  font-size: 24px;
+  letter-spacing: -0.015em;
 }
 
 h2 {
-  font-size: 1.2rem;
+  font-size: 20px;
+  letter-spacing: -0.01em;
 }
 
 h3 {
-  font-size: 1.02rem;
+  font-size: 16px;
+  letter-spacing: -0.005em;
 }
 
 h4 {
-  font-size: 0.95rem;
+  font-size: 14.5px;
 }
 
 p {
-  margin: 0 0 0.75rem;
+  margin: 0 0 var(--s-10);
 }
 
 strong {
   font-weight: 600;
 }
 
+/* Los números se leen mejor en la display y alineados en columna. */
+.tabular {
+  font-family: var(--font-display);
+  font-variant-numeric: tabular-nums;
+}
+
 a {
-  color: var(--clarvi-blue-ink);
+  color: var(--accent-ink);
   text-decoration: none;
   transition: color var(--transition-fast);
 }
 
 a:hover {
-  color: var(--clarvi-navy);
+  color: var(--accent-ink-hover);
 }
 
 :focus-visible {
-  outline: 2px solid var(--clarvi-blue);
+  outline: 2px solid var(--accent-fill);
   outline-offset: 2px;
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius-xs);
 }
 
 ::selection {
-  background: var(--blue-100);
+  background: var(--accent-soft-hover);
   color: var(--text-strong);
+}
+
+/* Barras de desplazamiento acordes al tema. */
+* {
+  scrollbar-color: var(--line-mid) transparent;
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--line-mid);
+  border: 3px solid var(--surface-page);
+  border-radius: var(--radius-full);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--text-muted);
 }

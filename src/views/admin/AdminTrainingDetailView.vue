@@ -4,6 +4,7 @@
 
 import { computed, onBeforeUnmount, onMounted, ref, shallowRef } from 'vue'
 import { useRoute } from 'vue-router'
+import UiBackLink from '@/components/ui/UiBackLink.vue'
 import UiBadge from '@/components/ui/UiBadge.vue'
 import UiButton from '@/components/ui/UiButton.vue'
 import UiCard from '@/components/ui/UiCard.vue'
@@ -313,9 +314,7 @@ async function confirmRegenerate(): Promise<void> {
     <p v-else-if="error" class="form-error">{{ error }}</p>
 
     <template v-else-if="training">
-      <RouterLink :to="{ name: 'admin-trainings' }" class="back-link">
-        ← Capacitaciones
-      </RouterLink>
+      <UiBackLink label="Capacitaciones" :to="{ name: 'admin-trainings' }" />
 
       <header class="page-header">
         <div>

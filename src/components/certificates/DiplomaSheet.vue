@@ -8,6 +8,7 @@
 // reescribe un documento ya entregado.
 
 import { computed } from 'vue'
+import UiBrand from '@/components/ui/UiBrand.vue'
 import { formatDate, formatDateTime } from '@/composables/useFormat'
 import type { CertificateWithSnapshot } from '@/types/domain'
 
@@ -28,11 +29,8 @@ const sesion = computed(() =>
 <template>
   <article class="diploma">
     <header class="diploma-head">
-      <img src="/favicon.svg" alt="" class="diploma-logo" />
-      <div>
-        <p class="diploma-brand">CLARVI</p>
-        <p class="eyebrow">Constancia de capacitación</p>
-      </div>
+      <UiBrand size="md" tone="brand" />
+      <p class="eyebrow">Constancia de capacitación</p>
     </header>
 
     <div class="diploma-body">
@@ -86,34 +84,22 @@ const sesion = computed(() =>
   display: flex;
   flex-direction: column;
   padding: clamp(1.5rem, 4vw, 3rem);
-  background: var(--bg-surface);
+  background: var(--surface-1);
   border: var(--rule);
-  border-top: 4px solid var(--clarvi-navy);
+  /* La franja superior es el pantón de marca, no el acento del tema: el
+     diploma se imprime siempre igual. */
+  border-top: 4px solid var(--brand-navy);
   border-radius: var(--radius-lg);
 }
 
 .diploma-head {
   display: flex;
-  align-items: center;
-  gap: 0.75rem;
-}
-
-.diploma-logo {
-  width: 42px;
-  height: 42px;
-  border-radius: var(--radius-sm);
-}
-
-.diploma-brand {
-  margin: 0;
-  color: var(--clarvi-navy);
-  font-size: 1.05rem;
-  font-weight: 600;
-  letter-spacing: 0.08em;
+  flex-direction: column;
+  gap: 0.15rem;
 }
 
 .diploma-head .eyebrow {
-  margin: 0.1rem 0 0;
+  margin: 0;
 }
 
 .diploma-body {
@@ -132,7 +118,7 @@ const sesion = computed(() =>
 
 .diploma-name {
   margin: 0.4rem 0 1.1rem;
-  color: var(--clarvi-navy);
+  color: var(--brand-navy);
   font-size: clamp(1.6rem, 4vw, 2.4rem);
   font-weight: 600;
   line-height: 1.2;

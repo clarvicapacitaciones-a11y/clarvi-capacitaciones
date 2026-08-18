@@ -5,6 +5,7 @@
 
 import { computed } from 'vue'
 import UiButton from '@/components/ui/UiButton.vue'
+import UiIcon from '@/components/ui/UiIcon.vue'
 import {
   newItemId,
   type ExamItem,
@@ -122,7 +123,7 @@ function removeOption(index: number): void {
           :disabled="options.length <= 2"
           @click="removeOption(index)"
         >
-          ×
+          <UiIcon name="close" :size="15" />
         </button>
       </div>
 
@@ -149,7 +150,7 @@ function removeOption(index: number): void {
 .option-mark {
   width: 1.05rem;
   height: 1.05rem;
-  accent-color: var(--clarvi-blue);
+  accent-color: var(--accent-fill);
   flex-shrink: 0;
 }
 
@@ -179,16 +180,16 @@ function removeOption(index: number): void {
 }
 
 .tf-option:hover {
-  color: var(--clarvi-navy);
+  color: var(--accent-ink);
 }
 
 .tf-option.is-active {
-  border-color: var(--clarvi-navy);
-  color: var(--clarvi-navy);
+  border-color: var(--accent-fill);
+  color: var(--accent-ink);
   font-weight: 500;
 }
 
 .tf-option input {
-  accent-color: var(--clarvi-blue);
+  accent-color: var(--accent-fill);
 }
 </style>

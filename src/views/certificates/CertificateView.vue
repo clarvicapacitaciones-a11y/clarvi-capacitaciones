@@ -6,6 +6,7 @@
 import { onMounted, ref } from 'vue'
 import { useRoute } from 'vue-router'
 import DiplomaSheet from '@/components/certificates/DiplomaSheet.vue'
+import UiBackLink from '@/components/ui/UiBackLink.vue'
 import UiButton from '@/components/ui/UiButton.vue'
 import { getCertificate } from '@/services/certificates.service'
 import type { CertificateWithSnapshot } from '@/types/domain'
@@ -37,9 +38,7 @@ function printSheet(): void {
 <template>
   <div class="page certificate-page">
     <header class="page-actions">
-      <RouterLink :to="{ name: 'dashboard' }" class="back-link">
-        ← Mis capacitaciones
-      </RouterLink>
+      <UiBackLink label="Mis capacitaciones" :to="{ name: 'dashboard' }" />
       <UiButton v-if="certificate" @click="printSheet">
         Imprimir o guardar PDF
       </UiButton>

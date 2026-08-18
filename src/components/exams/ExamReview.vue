@@ -53,8 +53,11 @@ function describe(
     case 'matching': {
       if (!isMatchingContent(content)) return SIN_RESPUESTA
       const pairs = (value.pairs ?? {}) as Record<string, string>
+      // En palabras y no con una flecha: el repaso se lee como una frase, y el
+      // sistema no usa glifos de teclado como símbolos.
       const rows = content.left.map(
-        (left) => `${left.text} → ${textOf(content.right, pairs[left.id])}`,
+        (left) =>
+          `${left.text} corresponde a ${textOf(content.right, pairs[left.id])}`,
       )
       return rows.length ? rows : SIN_RESPUESTA
     }

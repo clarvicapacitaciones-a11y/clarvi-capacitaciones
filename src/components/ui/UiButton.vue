@@ -1,27 +1,48 @@
 <script setup lang="ts">
+// Botón de la plataforma. Cuatro variantes y tres tamaños: cualquier acción de
+// la app cabe en alguna combinación, y así no aparecen botones sueltos con
+// estilos propios.
+
+import UiIcon from '@/components/ui/UiIcon.vue'
+import type { IconName } from '@/components/ui/UiIcon.vue'
+
 withDefaults(
   defineProps<{
-    variant?: 'primary' | 'ghost' | 'danger'
+    variant?: 'primary' | 'ghost' | 'danger' | 'quiet'
+    size?: 'sm' | 'md' | 'lg'
     type?: 'button' | 'submit'
     disabled?: boolean
     loading?: boolean
     block?: boolean
+    /** Icono a la izquierda del texto. Nunca un emoji: entra por UiIcon. */
+    icon?: IconName
+    /** Icono a la derecha (flechas de avanzar, por ejemplo). */
+    iconEnd?: IconName
   }>(),
-  { variant: 'primary', type: 'button', disabled: false, loading: false, block: false },
+  {
+    variant: 'primary',
+    size: 'md',
+    type: 'button',
+    disabled: false,
+    loading: false,
+    block: false,
+  },
 )
 </script>
 
 <template>
   <button
     class="ui-btn"
-    :class="[`is-${variant}`, { 'is-block': block }]"
+    :class="[`is-${variant}`, `size-${size}`, { 'is-block': block }]"
     :type="type"
     :disabled="disabled || loading"
   >
     <span v-if="loading" class="loader" aria-hidden="true">
       <i /><i /><i />
     </span>
+    <UiIcon v-else-if="icon" :name="icon" :size="16" />
     <slot />
+    <UiIcon v-if="iconEnd && !loading" :name="iconEnd" :size="16" />
   </button>
 </template>
 
@@ -33,11 +54,9 @@ withDefaults(
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
-  padding: 0.65rem 1.2rem;
   border: 1px solid transparent;
   border-radius: var(--radius-md);
   font: inherit;
-  font-size: 0.9rem;
   font-weight: 500;
   line-height: 1.2;
   cursor: pointer;
@@ -47,43 +66,70 @@ withDefaults(
     color var(--transition-fast);
 }
 
+.size-sm {
+  padding: 0.4rem 0.8rem;
+  font-size: 0.84rem;
+}
+
+.size-md {
+  padding: 0.65rem 1.2rem;
+  font-size: 0.9rem;
+}
+
+.size-lg {
+  padding: 0.8rem 1.5rem;
+  font-size: 0.98rem;
+}
+
 .is-primary {
-  background: var(--clarvi-navy);
-  border-color: var(--clarvi-navy);
-  color: var(--text-inverse);
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--accent-contrast);
 }
 
 .is-primary:not(:disabled):hover {
-  background: var(--clarvi-navy-soft);
-  border-color: var(--clarvi-navy-soft);
+  background: var(--accent-hover);
+  border-color: var(--accent-hover);
 }
 
 .is-ghost {
-  background: var(--bg-surface);
+  background: var(--surface-1);
   border-color: var(--line);
   color: var(--text-strong);
 }
 
 .is-ghost:not(:disabled):hover {
-  background: var(--bg-subtle);
+  background: var(--surface-2);
   border-color: var(--line-mid);
 }
 
+/* Acción secundaria sin caja: ocupa poco y no compite con el botón principal. */
+.is-quiet {
+  background: transparent;
+  border-color: transparent;
+  color: var(--text-muted);
+}
+
+.is-quiet:not(:disabled):hover {
+  background: var(--surface-2);
+  color: var(--text-strong);
+}
+
 .is-danger {
-  background: var(--bg-surface);
+  background: var(--surface-1);
   border-color: var(--line);
-  color: var(--color-danger);
+  color: var(--state-danger);
 }
 
 .is-danger:not(:disabled):hover {
-  background: var(--color-danger-bg);
-  border-color: var(--color-danger-bg);
+  background: var(--state-danger-bg);
+  border-color: var(--state-danger-bg);
 }
 
 /* Deshabilitado explícito y plano (sin opacidad), después de las variantes
    para ganarles en especificidad. */
 .ui-btn:disabled {
-  background: var(--bg-subtle);
+  background: var(--surface-2);
   border-color: var(--line);
   color: var(--text-muted);
   cursor: not-allowed;
@@ -126,6 +172,12 @@ withDefaults(
   50%,
   100% {
     background: transparent;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .loader i {
+    animation: none;
   }
 }
 </style>

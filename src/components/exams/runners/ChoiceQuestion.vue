@@ -109,13 +109,13 @@ function select(optionId: string): void {
 }
 
 .option:hover:not(.is-selected) {
-  border-color: var(--clarvi-navy);
+  border-color: var(--accent-fill);
 }
 
 .option.is-selected {
-  border-color: var(--clarvi-navy);
-  background: var(--color-info-bg);
-  color: var(--clarvi-navy);
+  border-color: var(--accent-fill);
+  background: var(--state-info-bg);
+  color: var(--accent-ink);
   font-weight: 500;
 }
 
@@ -139,8 +139,8 @@ function select(optionId: string): void {
 }
 
 .option.is-selected .option-mark {
-  border-color: var(--clarvi-navy);
-  background: var(--clarvi-navy);
+  border-color: var(--accent-fill);
+  background: var(--accent-fill);
 }
 
 .option-text {

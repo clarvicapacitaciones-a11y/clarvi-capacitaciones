@@ -6,6 +6,7 @@
 import { computed, onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import ExamBuilder from '@/components/exams/ExamBuilder.vue'
+import UiBackLink from '@/components/ui/UiBackLink.vue'
 import UiButton from '@/components/ui/UiButton.vue'
 import UiCard from '@/components/ui/UiCard.vue'
 import UiInput from '@/components/ui/UiInput.vue'
@@ -166,9 +167,7 @@ async function handleSubmit(): Promise<void> {
 
 <template>
   <div class="form-page">
-    <RouterLink :to="{ name: 'admin-trainings' }" class="back-link">
-      ← Capacitaciones
-    </RouterLink>
+    <UiBackLink label="Capacitaciones" :to="{ name: 'admin-trainings' }" />
 
     <header class="page-header">
       <h1>{{ editingId ? 'Editar capacitación' : 'Nueva capacitación' }}</h1>

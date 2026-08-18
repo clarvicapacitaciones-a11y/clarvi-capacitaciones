@@ -5,6 +5,7 @@
 
 import { computed } from 'vue'
 import UiButton from '@/components/ui/UiButton.vue'
+import UiIcon from '@/components/ui/UiIcon.vue'
 import {
   newItemId,
   type ExamItem,
@@ -77,7 +78,7 @@ function removeDistractor(id: string): void {
         type="text"
         :placeholder="`Concepto ${index + 1}`"
       />
-      <span class="pair-arrow" aria-hidden="true">→</span>
+      <UiIcon name="arrow-right" :size="16" class="pair-arrow" />
       <input
         v-if="row.right"
         v-model="row.right.text"
@@ -92,7 +93,7 @@ function removeDistractor(id: string): void {
         :disabled="rows.length <= 2"
         @click="removePair(index)"
       >
-        ×
+        <UiIcon name="close" :size="15" />
       </button>
     </div>
 
@@ -117,7 +118,7 @@ function removeDistractor(id: string): void {
         aria-label="Quitar distractor"
         @click="removeDistractor(item.id)"
       >
-        ×
+        <UiIcon name="close" :size="15" />
       </button>
     </div>
 

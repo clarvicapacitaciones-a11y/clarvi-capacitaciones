@@ -7,6 +7,7 @@ import { onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import AuthLayout from '@/components/layout/AuthLayout.vue'
 import UiButton from '@/components/ui/UiButton.vue'
+import UiIcon from '@/components/ui/UiIcon.vue'
 import {
   checkinViaQr,
   getMyAttendance,
@@ -106,7 +107,11 @@ onMounted(async () => {
         class="result-icon"
         :class="result === 'checked_in' ? 'is-success' : 'is-info'"
       >
-        {{ result === 'checked_in' ? '✓' : 'ℹ' }}
+        <UiIcon
+          :name="result === 'checked_in' ? 'check' : 'info'"
+          :size="28"
+          :stroke="1.6"
+        />
       </div>
       <p class="training-name">{{ title }}</p>
       <p v-if="result === 'checked_in'" class="result-text">
@@ -127,7 +132,9 @@ onMounted(async () => {
     </div>
 
     <div v-else-if="state === 'invalid'" class="checkin-body">
-      <div class="result-icon is-danger">✕</div>
+      <div class="result-icon is-danger">
+        <UiIcon name="close" :size="28" :stroke="1.6" />
+      </div>
       <p class="result-text">Código no válido</p>
       <p class="muted">
         Este código QR no corresponde a ninguna capacitación. Pide al
@@ -173,27 +180,25 @@ onMounted(async () => {
   display: grid;
   place-items: center;
   border-radius: var(--radius-full);
-  font-size: 1.7rem;
-  font-weight: 500;
 }
 
 .result-icon.is-success {
-  background: var(--color-success-bg);
-  color: var(--color-success);
+  background: var(--state-success-bg);
+  color: var(--state-success);
 }
 
 .result-icon.is-info {
-  background: var(--color-info-bg);
-  color: var(--clarvi-blue-ink);
+  background: var(--state-info-bg);
+  color: var(--state-info);
 }
 
 .result-icon.is-danger {
-  background: var(--color-danger-bg);
-  color: var(--color-danger);
+  background: var(--state-danger-bg);
+  color: var(--state-danger);
 }
 
 .detail-box {
-  background: var(--bg-subtle);
+  background: var(--surface-2);
   border-radius: var(--radius-md);
   padding: 0.9rem 1rem;
   text-align: left;
